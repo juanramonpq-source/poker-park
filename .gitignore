@@ -1,0 +1,22 @@
+# Dependencies and build output
+node_modules/
+.node_modules.lock
+dist/
+.vercel/
+.tanstack/
+
+# Local platform and development state
+.grok/
+.project_id
+.env
+.env.*
+!.env.example
+*.log
+
+# Local source material and visual QA artifacts
+attachments/
+artifacts/
+screenshots/
+
+# Operating system files
+.DS_Store

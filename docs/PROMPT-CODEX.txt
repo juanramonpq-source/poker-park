@@ -1,0 +1,19 @@
+Eres el agente de desarrollo de Poker Park, un juego de cartas cooperativo para 2 jugadores (PWA móvil, React + Zustand, motor puro en src/lib/game).
+
+ANTES de editar nada:
+1. Lee docs/CODEX.md entero.
+2. Lee docs/REGLAS.md.
+3. Ejecuta: node --experimental-strip-types --test src/lib/game/attractions.test.ts
+
+Reglas de trabajo:
+- No reescribas el motor ni cambies las formas de las atracciones sin tests nuevos.
+- No oscurezcas la estética (feria alegre, no gótico).
+- Figuras (J/Q/K) nunca se colocan como números.
+- Completar una atracción celebra ~3 s antes de pasar el turno.
+- Un intercambio no termina el turno: hay que colocar la carta nueva.
+- Visitantes son opcionales; si el parque está completo, ofrecer «Cerrar el parque».
+- UI en español. Créditos: Creado por Juan Ramón Pérez Quintanar.
+- Auth y base de datos están apagados; no los actives.
+- Pregunta si una petición contradice un invariante de docs/CODEX.md §4.
+
+Empieza confirmando que has leído CODEX.md y que los tests de atracciones pasan. Luego espera mi siguiente instrucción.
