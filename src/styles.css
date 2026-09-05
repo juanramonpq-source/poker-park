@@ -139,6 +139,11 @@
   object-fit: cover;
 }
 
+.title-screen {
+  overscroll-behavior: none;
+  touch-action: none;
+}
+
 .title-cover {
   object-position: center center;
   animation: cover-arrive var(--motion-slow) var(--ease-smooth) both;
@@ -156,13 +161,13 @@
   position: relative;
   z-index: 1;
   display: flex;
-  min-height: 100dvh;
+  height: 100dvh;
   width: 100%;
   max-width: 30rem;
   margin: 0 auto;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 4rem 1.25rem max(2.5rem, env(safe-area-inset-bottom));
+  padding: max(1.5rem, env(safe-area-inset-top)) 1.25rem max(1.25rem, env(safe-area-inset-bottom));
 }
 
 .title-panel {
@@ -170,15 +175,33 @@
   border-radius: var(--radius-xl);
   background: color-mix(in oklab, var(--color-surface) 96%, var(--color-night));
   box-shadow: var(--shadow-lifted);
-  padding: 1.125rem 1.125rem 1.25rem;
+  padding: 1rem 1rem 1.125rem;
 }
 
 .title-hero {
   margin-top: auto;
-  margin-bottom: clamp(1.75rem, 6vh, 4rem);
+  margin-bottom: clamp(1.25rem, 4vh, 2.5rem);
   padding: 0 0.75rem;
   text-align: center;
   animation: title-float 4.6s ease-in-out infinite;
+}
+
+.title-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: color-mix(in oklab, var(--color-ivory) 90%, transparent);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.title-brand img {
+  width: 1.45rem;
+  height: 1.45rem;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 6px rgb(10 27 43 / 0.45));
 }
 
 .title-eyebrow {
@@ -228,7 +251,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 
 .title-menu-kicker {
@@ -240,9 +263,148 @@
   text-transform: uppercase;
 }
 
+.title-secondary-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.title-text-action {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  border-radius: var(--radius-sm);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition-property: color, background-color;
+  transition-duration: var(--motion-quick);
+  transition-timing-function: var(--ease-smooth);
+}
+
+.title-text-action:hover {
+  background: color-mix(in oklab, var(--color-surface-2) 58%, transparent);
+  color: var(--color-fg);
+}
+
+.tutorial-overlay {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  padding: 1rem;
+}
+
+.tutorial-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(10 27 43 / 0.68);
+}
+
+.tutorial-card {
+  position: relative;
+  width: min(100%, 30rem);
+  border: 1px solid color-mix(in oklab, var(--color-ivory) 35%, transparent);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lifted);
+  padding: 1.125rem;
+  animation: rise-in var(--motion-fast) var(--ease-smooth) both;
+}
+
+.tutorial-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.tutorial-kicker {
+  color: var(--color-muted);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tutorial-heading h2 {
+  margin-top: 0.25rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.tutorial-steps {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.tutorial-steps li {
+  display: grid;
+  grid-template-columns: 2rem 1fr;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.tutorial-steps span {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-accent);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tutorial-steps p {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.tutorial-steps strong {
+  color: var(--color-fg);
+}
+
+.end-brand {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  margin-top: 2rem;
+}
+
+.end-brand img {
+  width: min(12rem, 62vw);
+  height: auto;
+  object-fit: contain;
+}
+
+.end-brand p {
+  color: var(--color-fg);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
 .park-cover {
   object-position: center 42%;
   opacity: 0.32;
+}
+
+@media (max-height: 740px) {
+  .title-description,
+  .title-detail {
+    display: none;
+  }
+
+  .title-hero {
+    margin-bottom: 1rem;
+  }
 }
 
 .park-vignette {

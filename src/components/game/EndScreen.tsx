@@ -97,7 +97,10 @@ export function EndScreen() {
         <div className="stagger-in relative z-10 max-w-sm">
           <p className="font-display text-3xl font-medium tracking-tight">Fin</p>
           <p className="mt-2 text-lg text-muted">Gracias por jugar.</p>
-          <p className="mt-8 text-sm text-fg">Creado por Juan Ramón Pérez Quintanar</p>
+          <div className="end-brand">
+            <img src="/brand/pentonui-games-logo.webp" alt="Pentonúi Games" />
+            <p>Creado por Pentonúi Games</p>
+          </div>
           {lifetime ? (
             <p className="mt-4 rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-[12px] text-accent">
               Pase de por vida desbloqueado. La noria te espera en la entrada.

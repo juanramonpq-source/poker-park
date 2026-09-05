@@ -249,7 +249,7 @@ export function Park({ game }: { game: GameState }) {
   return (
     <div className="relative h-full min-h-0">
       <img
-        src="/images/park-cover.png"
+        src="/images/park-cover.webp"
         alt=""
         className="park-cover"
       />

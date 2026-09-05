@@ -583,6 +583,12 @@ function scheduleStep(time: number, step: Step, beat: number, index: number, mod
     if (step.beats >= 2) {
       tone(step.m * 1.5, dur * 0.45, "sine", peak * 0.16, musicBus, 0.12, 0, time);
     }
+    // Brillo de feria: un contrapunto ligero y original, distinto en cada escena.
+    const shimmer = mode === "title" ? 0.022 : 0.016;
+    tone(step.m * (mode === "title" ? 2 : 3), Math.min(dur * 0.42, 0.26), "triangle", shimmer, musicBus, 0.012, 0, time + beat * 0.28);
+  }
+  if (mode === "park" && index % 2 === 0) {
+    burst(0.035, 0.018, musicBus, index % 4 === 0 ? 220 : 620, 0.85, time);
   }
   if (mode === "park" && index % 48 === 24) {
     sweepWhoosh(time);

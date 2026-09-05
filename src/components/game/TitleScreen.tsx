@@ -1,4 +1,5 @@
-import { FerrisWheel, Users, UserRound } from "lucide-react";
+import { BookOpen, FerrisWheel, Sparkles, Users, UserRound, X } from "lucide-react";
+import { useState } from "react";
 import { startTitleBed, unlockAudio } from "@/lib/game/audio";
 import { loadSecrets } from "@/lib/game/persist";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ export function TitleScreen() {
   const setRulesOpen = useGameStore((s) => s.setRulesOpen);
   const canResume = Boolean(game && !game.ended);
   const secrets = loadSecrets();
+  const [tutorialOpen, setTutorialOpen] = useState(false);
 
   const wake = () => {
     unlockAudio();
@@ -29,11 +31,11 @@ export function TitleScreen() {
 
   return (
     <main
-      className="relative min-h-dvh overflow-hidden bg-bg text-fg"
+      className="title-screen fixed inset-0 h-dvh overflow-hidden bg-bg text-fg"
       onPointerDown={wake}
     >
       <img
-        src="/images/park-cover.png"
+        src="/images/park-cover.webp"
         alt=""
         className="title-cover"
       />
@@ -42,6 +44,10 @@ export function TitleScreen() {
 
       <div className="title-shell">
         <div className="title-hero">
+          <div className="title-brand" aria-label="Pentonúi Games">
+            <img src="/brand/pentonui-games-icon.png" alt="" />
+            <span>Pentonúi Games presenta</span>
+          </div>
           <div className="title-eyebrow">
             <FerrisWheel className={secrets.lifetime || secrets.perfect ? "size-5 text-accent" : "size-5"} strokeWidth={1.5} />
             <span>
@@ -74,16 +80,41 @@ export function TitleScreen() {
                 Continuar la jornada
               </Button>
             ) : null}
-            <button
-              type="button"
-              onClick={() => setRulesOpen(true)}
-              className="pt-1 text-center text-sm text-muted underline-offset-4 hover:text-fg hover:underline"
-            >
-              Cómo se juega
-            </button>
+            <div className="title-secondary-actions">
+              <button type="button" onClick={() => setTutorialOpen(true)} className="title-text-action">
+                <Sparkles className="size-4" strokeWidth={1.7} />
+                Tutorial rápido
+              </button>
+              <button type="button" onClick={() => setRulesOpen(true)} className="title-text-action">
+                <BookOpen className="size-4" strokeWidth={1.7} />
+                Reglas completas
+              </button>
+            </div>
           </div>
         </div>
       </div>
+      {tutorialOpen ? (
+        <div className="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+          <button className="tutorial-backdrop" type="button" aria-label="Cerrar tutorial" onClick={() => setTutorialOpen(false)} />
+          <section className="tutorial-card">
+            <div className="tutorial-heading">
+              <div>
+                <p className="tutorial-kicker">En menos de un minuto</p>
+                <h2 id="tutorial-title">Tu primera vuelta</h2>
+              </div>
+              <Button size="icon" variant="ghost" onClick={() => setTutorialOpen(false)} aria-label="Cerrar tutorial">
+                <X className="size-4" />
+              </Button>
+            </div>
+            <ol className="tutorial-steps">
+              <li><span>1</span><p><strong>Robad y hablad.</strong> La mano es compartida: decidid juntos dónde encaja cada carta.</p></li>
+              <li><span>2</span><p><strong>Tocad una atracción.</strong> Veréis su forma y las posiciones válidas para la carta elegida.</p></li>
+              <li><span>3</span><p><strong>Guardad los cambios.</strong> Solo hay tres para toda la jornada; usadlos cuando desbloqueen una atracción.</p></li>
+            </ol>
+            <Button size="lg" className="mt-5 w-full" onClick={() => setTutorialOpen(false)}>¡Entendido!</Button>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }
