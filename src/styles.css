@@ -364,6 +364,26 @@
   line-height: 1.05;
 }
 
+.tutorial-choice-card h2 {
+  margin-top: 0.375rem;
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.tutorial-choice-copy {
+  margin-top: 0.75rem;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.tutorial-choice-actions {
+  display: grid;
+  gap: 0.625rem;
+  margin-top: 1.25rem;
+}
+
 .tutorial-steps {
   display: grid;
   gap: 0.75rem;

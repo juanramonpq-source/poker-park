@@ -50,6 +50,10 @@ const CH_F: [number, number, number] = [F3, A3, C4];
 const CH_AM: [number, number, number] = [A3, C4, E4];
 const CH_EM: [number, number, number] = [E3, G3, B3];
 const CH_DM: [number, number, number] = [D3, F3, A3];
+const CH_C_TITLE: [number, number, number] = [C4, E4, G4];
+const CH_G_TITLE: [number, number, number] = [G3, B3, D4];
+const CH_F_TITLE: [number, number, number] = [F3, A3, C4];
+const CH_AM_TITLE: [number, number, number] = [A3, C4, E4];
 
 function s(m: number, beats: number, bass?: number, chord?: [number, number, number]): Step {
   return { m, beats, bass, chord };
@@ -121,41 +125,15 @@ const PARK_SCORE: Step[] = [
 ];
 
 const TITLE_SCORE: Step[] = [
-  s(C5, 2, C3, CH_C), s(0, 1),
-  s(E5, 2, E3), s(0, 1),
-  s(G5, 3, G3, CH_G),
-  s(0, 2, C3, CH_C), s(C5, 1),
-  s(E5, 2, A3, CH_AM), s(G5, 1),
-  s(A5, 3, F3, CH_F),
-  s(G5, 2, C3, CH_C), s(E5, 1),
-  s(C5, 3, C3, CH_C),
+  s(E5, 4, C3, CH_C_TITLE), s(0, 2),
+  s(G5, 3, G3, CH_G_TITLE), s(E5, 3),
+  s(A5, 4, A3, CH_AM_TITLE), s(0, 2),
+  s(G5, 3, F3, CH_F_TITLE), s(E5, 3),
 
-  s(0, 1, G3, CH_G), s(D5, 1), s(F5, 1),
-  s(E5, 3, C3, CH_C),
-  s(D5, 2, G3, CH_G), s(B4, 1),
-  s(C5, 3, C3, CH_C),
-  s(G5, 2, E3, CH_EM), s(0, 1),
-  s(A5, 2, A3, CH_AM), s(E5, 1),
-  s(G5, 3, C3, CH_C),
-  s(0, 3, C3, CH_C),
-
-  s(E5, 1, C3, CH_C), s(0, 1), s(G5, 1),
-  s(C6, 3, F3, CH_F),
-  s(B5, 2, G3, CH_G), s(G5, 1),
-  s(A5, 3, A3, CH_AM),
-  s(G5, 1, C3, CH_C), s(E5, 1), s(C5, 1),
-  s(D5, 3, G3, CH_G),
-  s(C5, 2, C3, CH_C), s(0, 1),
-  s(0, 3, C3, CH_C),
-
-  s(C5, 2, C3, CH_C), s(E5, 1),
-  s(G4, 3, G3, CH_G),
-  s(A4, 2, F3, CH_F), s(C5, 1),
-  s(E5, 3, C3, CH_C),
-  s(F5, 2, D3, CH_DM), s(D5, 1),
-  s(E5, 2, A3, CH_AM), s(C5, 1),
-  s(D5, 3, G3, CH_G),
-  s(C5, 3, C3, CH_C),
+  s(C5, 4, C3, CH_C_TITLE), s(0, 2),
+  s(D5, 3, G3, CH_G_TITLE), s(G4, 3),
+  s(A4, 4, A3, CH_AM_TITLE), s(C5, 2),
+  s(E5, 4, F3, CH_F_TITLE), s(0, 2),
 ];
 
 function now() {
@@ -297,8 +275,8 @@ function startPads(mode: MusicMode) {
     mode === "title"
       ? [
           { freq: C4, type: "sine" as const, peak: 0.032 },
-          { freq: E4, type: "sine" as const, peak: 0.022 },
-          { freq: G4, type: "triangle" as const, peak: 0.012 },
+          { freq: E4, type: "sine" as const, peak: 0.016 },
+          { freq: G4, type: "triangle" as const, peak: 0.008 },
         ]
       : [
           { freq: C3, type: "sine" as const, peak: 0.03 },
@@ -573,18 +551,18 @@ function scheduleStep(time: number, step: Step, beat: number, index: number, mod
   const dur = Math.max(0.18, step.beats * beat * 0.92);
   if (step.chord) glidePads(time, step.chord);
   if (step.bass) {
-    tone(step.bass, beat * 1.35, "sine", mode === "title" ? 0.03 : 0.038, musicBus, 0.04, 0, time);
+    tone(step.bass, beat * 1.35, "sine", mode === "title" ? 0.014 : 0.038, musicBus, 0.04, 0, time);
     tone(step.bass * 2, beat * 0.9, "triangle", 0.012, musicBus, 0.06, 0, time);
   }
   if (step.m) {
-    const peak = mode === "title" ? 0.04 : 0.048;
+    const peak = mode === "title" ? 0.022 : 0.048;
     tone(step.m, dur, "sine", peak, musicBus, 0.06, 0, time);
     tone(step.m * 2, dur * 0.7, "triangle", peak * 0.28, musicBus, 0.1, 4, time);
     if (step.beats >= 2) {
       tone(step.m * 1.5, dur * 0.45, "sine", peak * 0.16, musicBus, 0.12, 0, time);
     }
     // Brillo de feria: un contrapunto ligero y original, distinto en cada escena.
-    const shimmer = mode === "title" ? 0.022 : 0.016;
+    const shimmer = mode === "title" ? 0.01 : 0.016;
     tone(step.m * (mode === "title" ? 2 : 3), Math.min(dur * 0.42, 0.26), "triangle", shimmer, musicBus, 0.012, 0, time + beat * 0.28);
   }
   if (mode === "park" && index % 2 === 0) {
@@ -598,7 +576,7 @@ function scheduleStep(time: number, step: Step, beat: number, index: number, mod
 function musicTick() {
   if (!ctx || muted || musicMode === "off") return;
   const score = musicMode === "title" ? TITLE_SCORE : PARK_SCORE;
-  const beat = musicMode === "title" ? 0.7 : 0.56;
+  const beat = musicMode === "title" ? 0.86 : 0.56;
   const horizon = ctx.currentTime + 2.4;
   while (nextNote < horizon) {
     const step = score[noteIndex % score.length]!;
@@ -615,7 +593,7 @@ function startMode(mode: MusicMode) {
   musicMode = mode;
   noteIndex = 0;
   nextNote = ctx.currentTime + 0.12;
-  const target = mode === "title" ? 0.3 : 0.34;
+  const target = mode === "title" ? 0.2 : 0.34;
   musicBus.gain.setTargetAtTime(target, ctx.currentTime, 0.08);
   startPads(mode);
   if (mode === "park") startCrowd();

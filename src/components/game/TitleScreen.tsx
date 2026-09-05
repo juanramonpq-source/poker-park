@@ -2,6 +2,7 @@ import { BookOpen, FerrisWheel, Sparkles, Users, UserRound, X } from "lucide-rea
 import { useState } from "react";
 import { startTitleBed, unlockAudio } from "@/lib/game/audio";
 import { loadSecrets } from "@/lib/game/persist";
+import type { Mode } from "@/lib/game/types";
 import { Button } from "@/components/ui/button";
 import { useGameStore } from "@/store/game-store";
 
@@ -15,6 +16,8 @@ function Motes() {
   );
 }
 
+const TUTORIAL_SEEN_KEY = "poker-park-tutorial-seen";
+
 export function TitleScreen() {
   const start = useGameStore((s) => s.start);
   const resume = useGameStore((s) => s.resume);
@@ -23,10 +26,52 @@ export function TitleScreen() {
   const canResume = Boolean(game && !game.ended);
   const secrets = loadSecrets();
   const [tutorialOpen, setTutorialOpen] = useState(false);
+  const [tutorialChoiceOpen, setTutorialChoiceOpen] = useState(false);
+  const [pendingMode, setPendingMode] = useState<Mode | null>(null);
 
   const wake = () => {
     unlockAudio();
     startTitleBed();
+  };
+
+  const tutorialSeen = () =>
+    typeof window !== "undefined" && window.localStorage.getItem(TUTORIAL_SEEN_KEY) === "true";
+
+  const rememberTutorialChoice = () => {
+    window.localStorage.setItem(TUTORIAL_SEEN_KEY, "true");
+  };
+
+  const requestStart = (mode: Mode) => {
+    wake();
+    if (tutorialSeen()) {
+      start(mode);
+      return;
+    }
+    setPendingMode(mode);
+    setTutorialChoiceOpen(true);
+  };
+
+  const skipTutorial = () => {
+    if (!pendingMode) return;
+    rememberTutorialChoice();
+    const mode = pendingMode;
+    setPendingMode(null);
+    setTutorialChoiceOpen(false);
+    start(mode);
+  };
+
+  const showTutorial = () => {
+    setTutorialChoiceOpen(false);
+    setTutorialOpen(true);
+  };
+
+  const finishTutorial = () => {
+    setTutorialOpen(false);
+    if (!pendingMode) return;
+    rememberTutorialChoice();
+    const mode = pendingMode;
+    setPendingMode(null);
+    start(mode);
   };
 
   return (
@@ -70,11 +115,11 @@ export function TitleScreen() {
         <div className="title-panel stagger-in">
           <p className="title-menu-kicker">Elige cómo recorrer el parque</p>
           <div className="title-actions">
-            <Button size="lg" className="w-full" onClick={() => start("hotseat")}>
+            <Button size="lg" className="w-full" onClick={() => requestStart("hotseat")}>
               <Users className="size-4" strokeWidth={1.75} />
               Jugar en pareja
             </Button>
-            <Button size="lg" variant="secondary" className="w-full" onClick={() => start("ai")}>
+            <Button size="lg" variant="secondary" className="w-full" onClick={() => requestStart("ai")}>
               <UserRound className="size-4" strokeWidth={1.75} />
               Jugar con compañero
             </Button>
@@ -96,6 +141,20 @@ export function TitleScreen() {
           </div>
         </div>
       </div>
+      {tutorialChoiceOpen ? (
+        <div className="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="tutorial-choice-title">
+          <button className="tutorial-backdrop" type="button" aria-label="Cerrar pregunta de tutorial" onClick={() => setTutorialChoiceOpen(false)} />
+          <section className="tutorial-card tutorial-choice-card">
+            <p className="tutorial-kicker">Primera partida</p>
+            <h2 id="tutorial-choice-title">¿Quieres saltarte el tutorial?</h2>
+            <p className="tutorial-choice-copy">Dura menos de un minuto y explica lo esencial. Siempre podrás consultarlo después.</p>
+            <div className="tutorial-choice-actions">
+              <Button size="lg" variant="secondary" className="w-full" onClick={showTutorial}>No, ver tutorial</Button>
+              <Button size="lg" className="w-full" onClick={skipTutorial}>Sí, jugar ya</Button>
+            </div>
+          </section>
+        </div>
+      ) : null}
       {tutorialOpen ? (
         <div className="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
           <button className="tutorial-backdrop" type="button" aria-label="Cerrar tutorial" onClick={() => setTutorialOpen(false)} />
@@ -114,7 +173,9 @@ export function TitleScreen() {
               <li><span>2</span><p><strong>Tocad una atracción.</strong> Veréis su forma y las posiciones válidas para la carta elegida.</p></li>
               <li><span>3</span><p><strong>Guardad los cambios.</strong> Solo hay tres para toda la jornada; usadlos cuando desbloqueen una atracción.</p></li>
             </ol>
-            <Button size="lg" className="mt-5 w-full" onClick={() => setTutorialOpen(false)}>¡Entendido!</Button>
+            <Button size="lg" className="mt-5 w-full" onClick={finishTutorial}>
+              {pendingMode ? "Empezar partida" : "¡Entendido!"}
+            </Button>
           </section>
         </div>
       ) : null}
