@@ -169,7 +169,7 @@ export function TitleScreen() {
               </Button>
             </div>
             <ol className="tutorial-steps">
-              <li><span>1</span><p><strong>Robad y hablad.</strong> La mano es compartida: decidid juntos dónde encaja cada carta.</p></li>
+              <li><span>1</span><p><strong>Robad y hablad.</strong> Es un juego colaborativo: cada jugador tiene su propia mano y decidís juntos dónde encaja cada carta.</p></li>
               <li><span>2</span><p><strong>Tocad una atracción.</strong> Veréis su forma y las posiciones válidas para la carta elegida.</p></li>
               <li><span>3</span><p><strong>Guardad los cambios.</strong> Solo hay tres para toda la jornada; usadlos cuando desbloqueen una atracción.</p></li>
             </ol>
