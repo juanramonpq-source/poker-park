@@ -531,8 +531,6 @@
 
 .fx-ring {
   position: absolute;
-  top: 42%;
-  left: 50%;
   width: 28px;
   height: 28px;
   border: 2px solid rgb(214 69 61 / 0.45);
@@ -832,8 +830,15 @@
 .finale-bit {
   position: absolute;
   bottom: 8%;
+  color: var(--color-accent);
   line-height: 1;
   animation-fill-mode: both;
+}
+
+.finale-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  filter: drop-shadow(0 4px 6px rgb(16 38 59 / 0.2));
 }
 
 .finale-float {
@@ -896,7 +901,8 @@
 .finale-heart {
   position: absolute;
   top: 38%;
-  font-size: 2rem;
+  width: 2rem;
+  height: 2rem;
   color: #d6453d;
   animation: finale-kiss 2.2s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -924,17 +930,19 @@
   animation: finale-spin 2.3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.finale-wheel span {
+.finale-wheel svg {
   position: absolute;
   left: 50%;
   top: 50%;
-  font-size: 1.15rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--color-accent);
 }
 
-.finale-wheel span:nth-child(1) { transform: translate(-50%, -50%) rotate(0deg) translateY(-28px); }
-.finale-wheel span:nth-child(2) { transform: translate(-50%, -50%) rotate(90deg) translateY(-28px); }
-.finale-wheel span:nth-child(3) { transform: translate(-50%, -50%) rotate(180deg) translateY(-28px); }
-.finale-wheel span:nth-child(4) { transform: translate(-50%, -50%) rotate(270deg) translateY(-28px); }
+.finale-wheel svg:nth-child(1) { transform: translate(-50%, -50%) rotate(0deg) translateY(-28px); }
+.finale-wheel svg:nth-child(2) { transform: translate(-50%, -50%) rotate(90deg) translateY(-28px); }
+.finale-wheel svg:nth-child(3) { transform: translate(-50%, -50%) rotate(180deg) translateY(-28px); }
+.finale-wheel svg:nth-child(4) { transform: translate(-50%, -50%) rotate(270deg) translateY(-28px); }
 
 @keyframes finale-spin {
   0% { transform: scale(0.4) rotate(0deg); opacity: 0; }

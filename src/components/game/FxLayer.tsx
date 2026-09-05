@@ -2,6 +2,20 @@ import { useEffect, useRef, useState } from "react";
 import { PlayingCard } from "@/components/game/PlayingCard";
 import { useGameStore, type FxEvent } from "@/store/game-store";
 
+const ATTRACTION_ORIGINS = {
+  coaster: { x: 35, y: 35 },
+  haunted: { x: 82, y: 35 },
+  love: { x: 18, y: 58 },
+  forest: { x: 50, y: 58 },
+  chairs: { x: 82, y: 58 },
+  restaurant: { x: 18, y: 82 },
+  restrooms: { x: 50, y: 82 },
+} as const;
+
+function originFor(attractionId: FxEvent["attractionId"]) {
+  return attractionId ? ATTRACTION_ORIGINS[attractionId] : { x: 50, y: 55 };
+}
+
 interface Spark {
   id: number;
   x: number;
@@ -47,11 +61,12 @@ function spawnConfetti(): Confetti[] {
   }));
 }
 
-function spawn(kind: FxEvent["kind"]): Spark[] {
+function spawn(kind: FxEvent["kind"], attractionId: FxEvent["attractionId"]): Spark[] {
   const n = kind === "complete" || kind === "end" ? 36 : kind === "deal" ? 18 : 14;
   const out: Spark[] = [];
-  const cx = 40 + Math.random() * 20;
-  const cy = kind === "end" ? 36 : 46 + Math.random() * 14;
+  const origin = originFor(attractionId);
+  const cx = kind === "end" ? 50 : origin.x;
+  const cy = kind === "end" ? 36 : origin.y;
   const hues =
     kind === "complete"
       ? ["var(--color-accent)", "var(--color-good)", "#ffe7a0"]
@@ -83,6 +98,7 @@ export function FxLayer() {
   const [confetti, setConfetti] = useState<Confetti[]>([]);
   const [flash, setFlash] = useState<"off" | "soft" | "hard">("off");
   const [ring, setRing] = useState(false);
+  const [ringOrigin, setRingOrigin] = useState({ x: 50, y: 55 });
   const lastTime = useRef(0);
   const trauma = useRef(0);
   const raf = useRef(0);
@@ -113,7 +129,8 @@ export function FxLayer() {
       if (fx.kind === "complete" || fx.kind === "end") setFlash("soft");
       return;
     }
-    setSparks(spawn(fx.kind));
+    setSparks(spawn(fx.kind, fx.attractionId));
+    setRingOrigin(originFor(fx.attractionId));
     if (fx.kind === "complete") setConfetti(spawnConfetti());
     const add =
       fx.kind === "complete" ? 0.48 : fx.kind === "end" ? 0.32 : fx.kind === "exchange" ? 0.22 : 0.16;
@@ -146,7 +163,7 @@ export function FxLayer() {
   return (
     <div className="pointer-events-none fixed inset-0 z-40 overflow-hidden" aria-hidden>
       {flash !== "off" ? <div className={flash === "hard" ? "fx-flash" : "fx-flash-soft"} /> : null}
-      {ring ? <div className="fx-ring" /> : null}
+      {ring ? <div className="fx-ring" style={{ left: `${ringOrigin.x}%`, top: `${ringOrigin.y}%` }} /> : null}
       {swapFx ? (
         <div key={swapFx.n} className="swap-stage">
           <div className="swap-card swap-from">

@@ -67,7 +67,12 @@ function persist(game: GameState | null) {
   saveGame(game);
 }
 
-function juice(prev: GameState | null, next: GameState, pulse: GameStore["pulse"]) {
+function juice(
+  prev: GameState | null,
+  next: GameState,
+  pulse: GameStore["pulse"],
+  attractionId: AttractionId | null = null,
+) {
   if (next.lastCompleted && next.lastCompleted !== prev?.lastCompleted) {
     audio.playComplete(next.lastCompleted);
     audio.tapHaptic("complete");
@@ -83,7 +88,7 @@ function juice(prev: GameState | null, next: GameState, pulse: GameStore["pulse"
   } else {
     audio.playPlace();
     audio.tapHaptic("place");
-    pulse("place");
+    pulse("place", attractionId);
   }
 }
 
@@ -188,7 +193,12 @@ export const useGameStore = create<GameStore>((set, get) => {
       } catch {
         next = passTurn(current, true);
       }
-      juice(current, next, get().pulse);
+      juice(
+        current,
+        next,
+        get().pulse,
+        move.type === "place" || move.type === "visit" ? move.attractionId : null,
+      );
       const incoming = next.swappedCardId
         ? next.hands[next.currentPlayer].find((c) => c.id === next.swappedCardId)
         : undefined;
@@ -305,7 +315,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (!game || !selectedCardId || exchangeMode || get().aiThinking || game.pendingAdvance) return;
       try {
         const next = placeCard(game, selectedCardId, attractionId, index);
-        juice(game, next, get().pulse);
+        juice(game, next, get().pulse, attractionId);
         afterHuman(next);
       } catch {
         /* illegal */
@@ -316,7 +326,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (!game || !selectedCardId || get().aiThinking) return;
       try {
         const next = placeVisitor(game, selectedCardId, attractionId);
-        juice(game, next, get().pulse);
+        juice(game, next, get().pulse, attractionId);
         afterHuman(next);
       } catch {
         /* illegal */

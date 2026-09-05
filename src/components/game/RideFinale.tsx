@@ -1,24 +1,35 @@
 import { useId } from "react";
+import {
+  Droplets,
+  Fan,
+  Ghost,
+  Heart,
+  Moon,
+  Sparkles,
+  Trees,
+  UtensilsCrossed,
+  Waves,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { AttractionId } from "@/lib/game/types";
 
-function Bits({
-  glyphs,
+function IconBits({
+  icons,
   className,
 }: {
-  glyphs: string[];
+  icons: LucideIcon[];
   className: string;
 }) {
-  return glyphs.map((glyph, i) => (
+  return icons.map((Icon, i) => (
     <span
-      key={`${glyph}-${i}`}
+      key={`finale-icon-${i}`}
       className={className}
       style={{
         left: `${8 + ((i * 17) % 84)}%`,
         animationDelay: `${i * 90}ms`,
-        fontSize: `${1.1 + (i % 3) * 0.25}rem`,
       }}
     >
-      {glyph}
+      <Icon className="finale-icon" strokeWidth={1.7} />
     </span>
   ));
 }
@@ -46,31 +57,31 @@ export function RideFinale({ id }: { id: AttractionId }) {
         </svg>
       ) : null}
       {id === "haunted" ? (
-        <Bits glyphs={["👻", "🌙", "🦇", "👻", "✨", "👻"]} className="finale-bit finale-float" />
+        <IconBits icons={[Ghost, Moon, Sparkles, Ghost, Moon, Sparkles]} className="finale-bit finale-float" />
       ) : null}
       {id === "love" ? (
         <>
-          <span className="finale-heart finale-heart-l">♥</span>
-          <span className="finale-heart finale-heart-r">♥</span>
-          <Bits glyphs={["💕", "💗", "💖", "💞", "💘", "💕"]} className="finale-bit finale-rise" />
+          <Heart className="finale-heart finale-heart-l" fill="currentColor" />
+          <Heart className="finale-heart finale-heart-r" fill="currentColor" />
+          <IconBits icons={[Heart, Sparkles, Heart, Sparkles, Heart, Sparkles]} className="finale-bit finale-rise" />
         </>
       ) : null}
       {id === "forest" ? (
-        <Bits glyphs={["🍃", "✨", "🦋", "🌿", "🍃", "🌼", "✨"]} className="finale-bit finale-swirl" />
+        <IconBits icons={[Trees, Sparkles, Trees, Sparkles, Trees, Sparkles]} className="finale-bit finale-swirl" />
       ) : null}
       {id === "chairs" ? (
         <div className="finale-wheel">
-          <span>💺</span>
-          <span>💺</span>
-          <span>💺</span>
-          <span>💺</span>
+          <Fan />
+          <Fan />
+          <Fan />
+          <Fan />
         </div>
       ) : null}
       {id === "restaurant" ? (
-        <Bits glyphs={["🍽️", "✨", "🍰", "🍴", "⭐", "🥂"]} className="finale-bit finale-pop" />
+        <IconBits icons={[UtensilsCrossed, Sparkles, UtensilsCrossed, Sparkles, UtensilsCrossed]} className="finale-bit finale-pop" />
       ) : null}
       {id === "restrooms" ? (
-        <Bits glyphs={["🫧", "✨", "🫧", "💧", "🫧", "✨"]} className="finale-bit finale-bubble" />
+        <IconBits icons={[Droplets, Sparkles, Waves, Droplets, Sparkles, Waves]} className="finale-bit finale-bubble" />
       ) : null}
     </div>
   );
