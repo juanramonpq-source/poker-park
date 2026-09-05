@@ -186,22 +186,49 @@
   animation: title-float 4.6s ease-in-out infinite;
 }
 
-.title-brand {
+.title-studio-badge {
+  position: absolute;
+  z-index: 2;
+  top: max(0.875rem, env(safe-area-inset-top));
+  left: 0.875rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  color: color-mix(in oklab, var(--color-ivory) 90%, transparent);
-  font-size: 0.625rem;
+  gap: 0.35rem;
+  opacity: 0.48;
+  pointer-events: none;
+}
+
+.title-studio-badge img {
+  width: 1.2rem;
+  height: 1.2rem;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 6px rgb(10 27 43 / 0.45));
+}
+
+.title-studio-badge span {
+  display: grid;
+  gap: 0.1rem;
+  color: var(--color-ivory);
+  line-height: 1;
+}
+
+.title-studio-badge small,
+.title-studio-badge strong {
+  display: block;
+  white-space: nowrap;
+}
+
+.title-studio-badge small {
+  font-size: 0.42rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.title-brand img {
-  width: 1.45rem;
-  height: 1.45rem;
-  object-fit: contain;
-  filter: drop-shadow(0 3px 6px rgb(10 27 43 / 0.45));
+.title-studio-badge strong {
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
 }
 
 .title-eyebrow {

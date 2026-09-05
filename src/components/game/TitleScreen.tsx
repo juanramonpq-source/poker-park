@@ -41,13 +41,16 @@ export function TitleScreen() {
       />
       <div className="title-vignette" />
       <Motes />
+      <div className="title-studio-badge" aria-label="Poker Park por Pentonúi Games">
+        <img src="/brand/pentonui-games-icon.png" alt="" />
+        <span>
+          <small>Una producción de</small>
+          <strong>Pentonúi Games</strong>
+        </span>
+      </div>
 
       <div className="title-shell">
         <div className="title-hero">
-          <div className="title-brand" aria-label="Pentonúi Games">
-            <img src="/brand/pentonui-games-icon.png" alt="" />
-            <span>Pentonúi Games presenta</span>
-          </div>
           <div className="title-eyebrow">
             <FerrisWheel className={secrets.lifetime || secrets.perfect ? "size-5 text-accent" : "size-5"} strokeWidth={1.5} />
             <span>
