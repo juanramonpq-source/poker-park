@@ -191,7 +191,7 @@ El hueco 0 solo admite **2 o 3**. Ranks 2–10. Sin figuras ni ases.
 
 ### Casa del Terror `haunted` — 5
 ```
-     [4]  tejado = A♠ obligatorio
+     [4]  tejado = A♠ obligatorio, tras completar [0]–[3]
   [0][1]
   [2][3]  picas de número (no as, no figura)
 ```

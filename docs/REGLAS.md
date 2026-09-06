@@ -46,7 +46,7 @@ Números 2–10. Empieza con 2 o 3. Cada carta siguiente es exactamente +1. Sin 
 
 ### Casa del Terror (5)
 
-4 picas de número + **A♠** en el tejado.
+4 picas de número + **A♠** en el tejado. El as de picas solo se coloca cuando las cuatro picas anteriores ya están puestas.
 
 ### Túnel del Amor (7)
 

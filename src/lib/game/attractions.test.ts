@@ -60,6 +60,30 @@ describe("túnel del amor", () => {
   });
 });
 
+describe("ases", () => {
+  it("solo permite el as de picas en el tejado cuando la casa ya está formada", () => {
+    const empty: (Card | null)[] = Array.from({ length: 5 }, () => null);
+    assert.deepEqual(legalSlotsForCard("haunted", empty, card("spades", 1)), []);
+
+    const house = [
+      card("spades", 2), card("spades", 4), card("spades", 6), card("spades", 8), null,
+    ];
+    assert.deepEqual(legalSlotsForCard("haunted", house, card("spades", 1)), [4]);
+    const tooEarly = empty.slice();
+    tooEarly[4] = card("spades", 1);
+    assert.equal(isAttractionValid("haunted", tooEarly), false);
+  });
+
+  it("no deja usar ases fuera de sus huecos reservados", () => {
+    const restaurant: (Card | null)[] = Array.from({ length: 6 }, () => null);
+    assert.deepEqual(legalSlotsForCard("restaurant", restaurant, card("clubs", 1)), [1]);
+    assert.deepEqual(legalSlotsForCard("restaurant", restaurant, card("hearts", 1)), []);
+
+    const chairs: (Card | null)[] = Array.from({ length: 7 }, () => null);
+    assert.deepEqual(legalSlotsForCard("chairs", chairs, card("spades", 1)), []);
+  });
+});
+
 describe("figuras", () => {
   it("no se colocan como palos ni como números", () => {
     const love: (Card | null)[] = Array.from({ length: 7 }, () => null);

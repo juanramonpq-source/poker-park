@@ -21,7 +21,7 @@ export const ATTRACTION_DEFS: Record<AttractionId, AttractionDef> = {
     id: "haunted",
     name: "Casa del Terror",
     tagline: "4 picas de número y el as de picas",
-    rules: "Cuatro picas de número forman la casa. El tejado es siempre el as de picas (A♠).",
+    rules: "Cuatro picas de número forman la casa. Cuando estén las cuatro, el tejado se completa con el as de picas (A♠).",
     slotCount: 5,
   },
   love: {
@@ -125,7 +125,10 @@ export function isAttractionValid(id: AttractionId, slots: (Card | null)[]): boo
         if (card.suit !== "spades" || isAce(card)) return false;
       }
       const roof = slots[4];
-      if (roof && (roof.suit !== "spades" || !isAce(roof))) return false;
+      if (roof) {
+        if (roof.suit !== "spades" || !isAce(roof)) return false;
+        if (!slots.slice(0, 4).every(Boolean)) return false;
+      }
       return true;
     }
     case "love": {
@@ -168,7 +171,7 @@ export function isAttractionValid(id: AttractionId, slots: (Card | null)[]): boo
       }
       for (let i = 4; i < 7; i++) {
         const card = slots[i];
-        if (card && (card.suit !== "spades" || isFace(card))) return false;
+        if (card && (card.suit !== "spades" || isAce(card) || isFace(card))) return false;
       }
       return true;
     }
@@ -178,7 +181,7 @@ export function isAttractionValid(id: AttractionId, slots: (Card | null)[]): boo
         if (!card) continue;
         if (i === 1) {
           if (!(card.suit === "clubs" && isAce(card))) return false;
-        } else if (card.suit === "clubs" && isAce(card)) {
+        } else if (isAce(card)) {
           return false;
         }
       }
