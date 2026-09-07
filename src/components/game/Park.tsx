@@ -4,6 +4,7 @@ import {
   filledCount,
   isAttractionComplete,
 } from "@/lib/game/attractions";
+import { ArrowLeftRight, Check, MousePointer2 } from "lucide-react";
 import { isRed } from "@/lib/game/deck";
 import type { AttractionId, Card, GameState } from "@/lib/game/types";
 import { AttractionSheet, ICONS } from "@/components/game/AttractionBoard";
@@ -27,14 +28,14 @@ function Pip({ card }: { card: Card | null }) {
     return (
       <span
         className={cn(
-          "block size-3 rounded-[3px] shadow-[0_0_0_1px_rgb(239_210_168/0.55)]",
+          "map-pip is-filled",
           isRed(card.suit) ? "bg-suit-red" : "bg-suit-ink",
         )}
       />
     );
   }
   return (
-    <span className="block size-3 rounded-[3px] bg-[#f3e0c4]/70 shadow-[0_0_0_1px_rgb(239_210_168/0.4)]" />
+    <span className="map-pip" />
   );
 }
 
@@ -147,6 +148,7 @@ function MapTile({
   const filled = filledCount(attr.slots);
   const celebrating = bloomId === id;
   const wide = id === "coaster";
+  const unavailable = Boolean(selectedCardId) && !hot && !canVisit && !complete;
 
   return (
     <button
@@ -156,38 +158,36 @@ function MapTile({
         else openPark(id);
       }}
       className={cn(
-        "park-tile relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border px-2 py-2 text-center shadow-soft transition-[transform,box-shadow,border-color] duration-150",
+        "park-tile relative flex h-full min-h-0 flex-col overflow-hidden border text-left shadow-soft",
         TILE_THEME[id],
         complete ? "tile-won attraction-lit" : hot ? "tile-hot" : "border-border/80",
         canVisit && "tile-hot",
+        unavailable && "tile-unavailable",
         bloomId === id && "attraction-bloom",
         className,
       )}
-      aria-label={`${def.name}, ${complete ? "conseguido" : attractionProgress(id, attr.slots)}`}
+      aria-label={`${def.name}, ${complete ? "conseguido" : attractionProgress(id, attr.slots)}${hot || canVisit ? ", disponible para la carta elegida" : ""}`}
+      data-attraction-id={id}
     >
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5">
+      <div className="tile-topline">
         <Icon
           className={cn(
-            "shrink-0",
-            wide ? "size-10" : "size-8",
-            complete ? "text-good" : "text-accent",
+            "tile-icon",
+            wide && "is-wide",
+            complete && "is-complete",
           )}
           strokeWidth={1.85}
         />
-        <MiniShape id={id} slots={attr.slots} />
+        <span className={cn("tile-progress", complete && "is-complete")}>
+          {complete ? <Check aria-hidden /> : `${filled}/${def.slotCount}`}
+        </span>
       </div>
-      <div className="mt-1 shrink-0 leading-tight">
-        <p className="font-display text-[12px] font-medium tracking-tight text-fg sm:text-[13px]">
-          {def.name}
-        </p>
-        <p
-          className={cn(
-            "text-[10px] font-semibold tabular-nums",
-            complete ? "text-good" : "text-muted",
-          )}
-        >
-          {complete ? "Conseguido" : `${filled}/${def.slotCount}`}
-        </p>
+      <div className="tile-shape"><MiniShape id={id} slots={attr.slots} /></div>
+      <div className="tile-label">
+        <p>{def.name}</p>
+        <span className={cn(complete && "text-good", (hot || canVisit) && "text-good")}>
+          {complete ? "Conseguido" : hot || canVisit ? "Disponible" : "Ver esquema"}
+        </span>
       </div>
       {celebrating ? <RideFinale id={id} /> : null}
       {complete && !celebrating ? (
@@ -210,10 +210,14 @@ function EntranceTile({ game, className }: { game: GameState; className?: string
   return (
     <section
       className={cn(
-        "park-entrance flex h-full min-h-0 flex-col rounded-2xl border border-border/80 px-2 py-2 shadow-soft",
+        "park-entrance flex h-full min-h-0 flex-col border border-border/80 shadow-soft",
         className,
       )}
     >
+      <div className="entrance-heading">
+        <span><ArrowLeftRight aria-hidden /> Entrada</span>
+        <small>Intercambio</small>
+      </div>
       <div className="flex min-h-0 flex-1 items-center justify-center gap-2">
         {game.entrance.map((card, i) => {
           const index = i as 0 | 1;
@@ -234,9 +238,6 @@ function EntranceTile({ game, className }: { game: GameState; className?: string
           );
         })}
       </div>
-      <p className="mt-1 shrink-0 text-center font-display text-[12px] font-medium leading-tight tracking-tight text-fg sm:text-[13px]">
-        Entrada
-      </p>
     </section>
   );
 }
@@ -244,7 +245,33 @@ function EntranceTile({ game, className }: { game: GameState; className?: string
 export function Park({ game }: { game: GameState }) {
   const openAttraction = useGameStore((s) => s.openAttraction);
   const aiThinking = useGameStore((s) => s.aiThinking);
+  const selectedCardId = useGameStore((s) => s.selectedCardId);
+  const exchangeMode = useGameStore((s) => s.exchangeMode);
   const name = game.names[game.currentPlayer];
+  const busy = aiThinking || game.pendingAdvance;
+  const step = selectedCardId ? 2 : 1;
+  const statusTitle = aiThinking
+    ? `${game.names[1]} está pensando`
+    : game.pendingAdvance
+      ? "¡Atracción conseguida!"
+      : exchangeMode
+        ? selectedCardId
+          ? "Elige la carta que quieres recibir"
+          : "Elige una carta de tu mano"
+        : selectedCardId
+          ? "Toca una atracción iluminada"
+          : `Turno de ${name}`;
+  const statusDetail = busy
+    ? game.pendingAdvance
+      ? "Celebrando antes del siguiente turno"
+      : "Tu compañero prepara su jugada"
+    : selectedCardId
+      ? exchangeMode
+        ? "Puede estar en la entrada o en una atracción"
+        : "Solo se destacan los destinos válidos"
+      : exchangeMode
+        ? "Será la carta que entregarás"
+        : "Después te mostraremos dónde puede colocarse";
 
   return (
     <div className="relative h-full min-h-0">
@@ -254,20 +281,13 @@ export function Park({ game }: { game: GameState }) {
         className="park-cover"
       />
       <div className="park-vignette" />
-      <div className="relative grid h-full min-h-0 grid-cols-3 grid-rows-[auto_1fr_1fr_1fr] gap-1.5 p-2">
-        <p className="turn-banner col-span-3 truncate px-3 py-1 text-center text-[11px] text-muted">
-          <span className="font-semibold text-fg">
-            {aiThinking ? `${game.names[1]} piensa` : game.pendingAdvance ? "¡Atracción conseguida!" : `Turno de ${name}`}
+      <div className="park-grid">
+        <div className="turn-banner" role="status" aria-live="polite">
+          <span className={cn("turn-step", busy && "is-busy")}>
+            {busy ? <MousePointer2 aria-hidden /> : step}
           </span>
-          <span className="mx-1.5 text-faint">·</span>
-          <span className="tabular-nums">Mazo {game.deck.length}</span>
-          {game.lastMessage ? (
-            <>
-              <span className="mx-1.5 text-faint">·</span>
-              {game.lastMessage}
-            </>
-          ) : null}
-        </p>
+          <span className="turn-copy"><strong>{statusTitle}</strong><small>{statusDetail}</small></span>
+        </div>
         <MapTile id="coaster" game={game} className="col-span-2" />
         <MapTile id="haunted" game={game} />
         <MapTile id="love" game={game} />

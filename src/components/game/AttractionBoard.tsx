@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import {
   RollerCoaster,
   Ghost,
@@ -7,6 +6,8 @@ import {
   Fan,
   UtensilsCrossed,
   UserRound,
+  CircleHelp,
+  MousePointer2,
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -18,6 +19,7 @@ import {
 } from "@/lib/game/attractions";
 import type { AttractionId, Card, GameState } from "@/lib/game/types";
 import { EmptySlot, PlayingCard } from "@/components/game/PlayingCard";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { attractionIsHot, useGameStore, useLegalForSelected } from "@/store/game-store";
 import { RideFinale } from "@/components/game/RideFinale";
@@ -84,16 +86,6 @@ function SlotCell({
       onClick={canPlace ? () => place(attractionId, index) : undefined}
     />
   );
-}
-
-function GridWrap({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return <div className={cn("gap-1", className)}>{children}</div>;
 }
 
 export function AttractionLayout({
@@ -283,59 +275,67 @@ export function AttractionSheet({
   const openPark = useGameStore((s) => s.openPark);
   const { visits } = useLegalForSelected();
   const canVisit = visits.includes(id);
+  const selectedCardId = useGameStore((s) => s.selectedCardId);
+  const exchangeMode = useGameStore((s) => s.exchangeMode);
+  const hot = attractionIsHot(game, id, selectedCardId, exchangeMode);
   const bloomId = useGameStore((s) => s.bloomId);
   const celebrating = bloomId === id;
   const Icon = ICONS[id];
 
   return (
-    <div className="absolute inset-0 z-30 flex items-stretch p-2">
+    <div className="attraction-overlay">
       <button
         type="button"
-        className="absolute inset-0 bg-fg/25 backdrop-blur-[2px]"
+        className="attraction-backdrop"
         aria-label="Cerrar atracción"
         onClick={() => openPark(null)}
       />
       <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="attraction-title"
         className={cn(
-          "relative z-10 flex min-h-0 w-full flex-col rounded-2xl border bg-surface p-3 shadow-soft sheet-enter",
+          "attraction-sheet sheet-enter",
           complete ? "tile-won attraction-lit" : "border-border",
         )}
       >
-        <header className="mb-2 flex shrink-0 items-start justify-between gap-2">
-          <div className="flex min-w-0 items-center gap-2">
-            <Icon className="size-5 shrink-0 text-accent" strokeWidth={1.6} />
+        <header className="attraction-sheet-header">
+          <div className="attraction-sheet-title">
+            <span className="attraction-sheet-icon"><Icon strokeWidth={1.7} /></span>
             <div className="min-w-0">
-              <h2 className="font-display text-lg font-medium tracking-tight text-fg">
+              <h2 id="attraction-title">
                 {def.name}
               </h2>
-              <p className="text-[11px] leading-snug text-muted">{def.tagline}</p>
+              <p>{def.tagline}</p>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="attraction-sheet-actions">
             <span
               className={cn(
-                "text-[11px] font-medium tabular-nums",
+                "sheet-progress",
                 complete ? "text-good" : "text-faint",
               )}
             >
               {complete ? "Conseguido" : attractionProgress(id, attr.slots)}
             </span>
-            <button
-              type="button"
-              className="grid size-9 place-items-center rounded-md text-muted"
+            <Button
+              size="icon"
+              variant="ghost"
+              className="sheet-close"
               onClick={() => openPark(null)}
               aria-label="Cerrar"
             >
-              <X className="size-4" />
-            </button>
+              <X aria-hidden />
+            </Button>
           </div>
         </header>
 
-        <p className="mb-2 shrink-0 rounded-lg bg-bg/80 px-2.5 py-1.5 text-[11px] leading-snug text-fg/80">
-          {def.rules}
-        </p>
+        <div className="attraction-rule">
+          <CircleHelp aria-hidden />
+          <p>{def.rules}</p>
+        </div>
 
-        <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-visible py-2">
+        <div className="attraction-layout-wrap">
           <div
             key={`${id}-scheme`}
             className={cn(!complete && "scheme-show")}
@@ -358,14 +358,17 @@ export function AttractionSheet({
           </div>
         ) : null}
 
+        {hot && !complete && !canVisit ? (
+          <div className="sheet-guide" role="status">
+            <MousePointer2 aria-hidden />
+            <span><strong>Elige un hueco iluminado</strong><small>Solo aparecen activos los lugares válidos.</small></span>
+          </div>
+        ) : null}
+
         {canVisit ? (
-          <button
-            type="button"
-            onClick={() => visit(id)}
-            className="mt-2 w-full shrink-0 rounded-md border border-accent/40 bg-accent/10 py-2.5 text-sm font-semibold text-accent"
-          >
+          <Button size="lg" onClick={() => visit(id)} className="mt-2 w-full shrink-0">
             Dejar visitante
-          </button>
+          </Button>
         ) : null}
       </section>
     </div>

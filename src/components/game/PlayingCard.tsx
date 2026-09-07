@@ -1,5 +1,5 @@
 import type { Card, Rank, Suit } from "@/lib/game/types";
-import { isRed, rankLabel } from "@/lib/game/deck";
+import { cardName, isRed, rankLabel } from "@/lib/game/deck";
 import { AceArt, FaceArt } from "@/components/game/CardArt";
 import { cn } from "@/lib/utils";
 
@@ -113,7 +113,7 @@ const NUMBER_PIPS: Record<number, Spot[]> = {
 
 const sizeMap = {
   xs: "w-8 h-11 text-[8px] rounded-[5px]",
-  sm: "w-10 h-14 text-[9px] rounded-[6px]",
+  sm: "w-11 h-16 text-[10px] rounded-[7px]",
   md: "w-[4.25rem] h-[6.1rem] text-[11px] rounded-[8px]",
   lg: "w-24 h-36 text-sm rounded-[10px]",
 };
@@ -217,7 +217,7 @@ export function PlayingCard({
     hidden ? "border-border" : "bg-card-face border-suit-ink/10",
     selected && "card-picked z-10",
     legal && "ring-2 ring-good",
-    dimmed && "opacity-45",
+    dimmed && "opacity-60",
     clickable && "transition-[transform,box-shadow,filter] duration-200 ease-out active:scale-[0.97]",
     className,
   );
@@ -231,7 +231,7 @@ export function PlayingCard({
   const label = hidden
     ? "Carta boca abajo"
     : card
-      ? `${rankLabel(card.rank)} de ${card.suit}`
+      ? cardName(card)
       : "Hueco";
   const inner =
     !hidden && card ? (
@@ -248,7 +248,7 @@ export function PlayingCard({
 
   if (clickable) {
     return (
-      <button type="button" onClick={onClick} className={classes} style={style} aria-label={label}>
+      <button type="button" onClick={onClick} className={classes} style={style} aria-label={label} aria-pressed={selected}>
         {inner}
       </button>
     );

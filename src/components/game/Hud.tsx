@@ -1,4 +1,5 @@
-import { ArrowLeftRight, BookOpen, LogOut, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeftRight, BookOpen, LogOut, MoreHorizontal, UserRound, Volume2, VolumeX } from "lucide-react";
+import { useState } from "react";
 import { MAX_EXCHANGES } from "@/lib/game/types";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
@@ -13,89 +14,89 @@ export function Hud() {
   const exchangeMode = useGameStore((s) => s.exchangeMode);
   const toggleExchange = useGameStore((s) => s.toggleExchange);
   const aiThinking = useGameStore((s) => s.aiThinking);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   if (!game) return null;
   const locked = aiThinking || game.pendingAdvance;
   const remaining = MAX_EXCHANGES - game.exchangesUsed;
-  const aforo = game.exchangesUsed >= 3;
+  const aforo = remaining <= 0;
+  const currentName = game.names[game.currentPlayer];
+
+  const openRules = () => {
+    setMenuOpen(false);
+    setRulesOpen(true);
+  };
+
+  const toggleSound = () => {
+    toggleMute();
+    setMenuOpen(false);
+  };
+
+  const exitGame = () => {
+    setMenuOpen(false);
+    goTitle();
+  };
 
   return (
-    <header className="shrink-0 border-b border-border bg-bg/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
-      <div className="flex items-center justify-end gap-1 px-2 py-1.5">
-        <div
-          className="deck-chip mr-1 flex h-12 shrink-0 items-center gap-2 rounded-xl border border-border bg-surface px-2.5"
-          aria-label={`${game.deck.length} cartas en el mazo`}
-        >
-          <span className="deck-stack" aria-hidden />
-          <span className="leading-none">
-            <span className="block text-[9px] font-bold uppercase tracking-wider text-muted">
-              Mazo
-            </span>
-            <span className="block text-lg font-black tabular-nums text-fg">
-              {game.deck.length}
-            </span>
+    <header className="game-hud">
+      <div className="hud-bar">
+        <div className="player-chip" aria-live="polite">
+          <span className="player-avatar" aria-hidden><UserRound /></span>
+          <span className="player-copy">
+            <small>{aiThinking ? "Pensando" : "Turno"}</small>
+            <strong>{currentName}</strong>
           </span>
         </div>
-        <button
-          type="button"
-          className={cn(
-            "cambio-btn mr-1 inline-flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-base font-extrabold tracking-wide text-accent-fg shadow-soft transition-[transform,box-shadow,background-color] duration-150",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/70",
-            "active:not-disabled:scale-[0.97]",
-            aforo || locked
-              ? "cursor-not-allowed bg-muted/70 opacity-55"
-              : exchangeMode
-                ? "bg-accent ring-4 ring-accent/35 ring-offset-2 ring-offset-bg"
-                : "bg-accent hover:bg-accent/90",
-          )}
-          disabled={aforo || locked}
-          onClick={toggleExchange}
-          aria-pressed={exchangeMode}
-          aria-label={aforo ? "Aforo completo" : "Intercambiar"}
-        >
-          <ArrowLeftRight className="size-5 shrink-0" strokeWidth={2.75} />
-          <span>{aforo ? "Aforo" : exchangeMode ? "Cambiando" : "Cambio"}</span>
-          <span
-            className={cn(
-              "grid size-6 place-items-center rounded-full text-xs font-black tabular-nums",
-              aforo ? "bg-white/20" : "bg-white/30 text-accent-fg",
-            )}
+
+        <div className="hud-actions">
+          <div className="deck-chip" aria-label={`${game.deck.length} cartas en el mazo`}>
+            <span className="deck-stack" aria-hidden />
+            <span><small>Mazo</small><strong>{game.deck.length}</strong></span>
+          </div>
+          <button
+            type="button"
+            className={cn("exchange-action", exchangeMode && "is-active")}
+            disabled={aforo || locked}
+            onClick={toggleExchange}
+            aria-pressed={exchangeMode}
+            aria-label={aforo ? "Intercambios agotados" : `${remaining} intercambios disponibles`}
           >
-            {aforo ? "0" : remaining}
-          </span>
-        </button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="size-10 text-muted"
-          onClick={() => setRulesOpen(true)}
-          aria-label="Reglas"
-        >
-          <BookOpen className="size-4" strokeWidth={1.75} />
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="size-10 text-muted"
-          onClick={toggleMute}
-          aria-label={muted ? "Activar sonido" : "Silenciar"}
-        >
-          {muted ? (
-            <VolumeX className="size-4" strokeWidth={1.75} />
-          ) : (
-            <Volume2 className="size-4" strokeWidth={1.75} />
-          )}
-        </Button>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="size-10 text-muted"
-          onClick={goTitle}
-          aria-label="Salir"
-        >
-          <LogOut className="size-4" strokeWidth={1.75} />
-        </Button>
+            <ArrowLeftRight aria-hidden />
+            <span>{aforo ? "Sin cambios" : exchangeMode ? "Cancelar" : "Cambiar"}</span>
+            {!aforo ? <strong>{remaining}</strong> : null}
+          </button>
+          <Button
+            size="icon"
+            variant="ghost"
+            className="hud-menu-trigger"
+            onClick={() => setMenuOpen((open) => !open)}
+            aria-label="Abrir opciones"
+            aria-expanded={menuOpen}
+          >
+            <MoreHorizontal aria-hidden />
+          </Button>
+        </div>
       </div>
+
+      {menuOpen ? (
+        <>
+          <button type="button" className="hud-menu-backdrop" onClick={() => setMenuOpen(false)} aria-label="Cerrar opciones" />
+          <div className="hud-menu-panel" role="menu" aria-label="Opciones de la partida">
+            <button type="button" role="menuitem" onClick={openRules}>
+              <BookOpen aria-hidden />
+              <span><strong>Cómo se juega</strong><small>Consulta las reglas</small></span>
+            </button>
+            <button type="button" role="menuitem" onClick={toggleSound}>
+              {muted ? <VolumeX aria-hidden /> : <Volume2 aria-hidden />}
+              <span><strong>{muted ? "Activar sonido" : "Silenciar"}</strong><small>Música y efectos</small></span>
+            </button>
+            <button type="button" role="menuitem" onClick={exitGame}>
+              <LogOut aria-hidden />
+              <span><strong>Volver al inicio</strong><small>La partida queda guardada</small></span>
+            </button>
+          </div>
+        </>
+      ) : null}
     </header>
   );
 }

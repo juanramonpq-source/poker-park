@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, MousePointer2, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useGameStore } from "@/store/game-store";
 
@@ -39,41 +39,50 @@ export function RulesSheet() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div className="rules-overlay">
       <button
         type="button"
-        className="absolute inset-0 bg-bg/70"
+        className="rules-backdrop"
         aria-label="Cerrar reglas"
         onClick={() => setRulesOpen(false)}
       />
       <div
         role="dialog"
+        aria-modal="true"
         aria-labelledby="rules-title"
-        className="relative max-h-[86dvh] w-full max-w-md overflow-y-auto rounded-t-xl border border-border bg-surface p-5 shadow-soft sm:rounded-xl"
+        className="rules-sheet"
       >
-        <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="rules-heading">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.18em] text-muted">Reglas</p>
-            <h2 id="rules-title" className="font-display text-2xl tracking-tight">
-              Cómo se juega
-            </h2>
+            <p>Guía de juego</p>
+            <h2 id="rules-title">Cómo recorrer el parque</h2>
           </div>
           <Button
             size="icon"
             variant="ghost"
-            className="size-10"
+            className="rules-close"
             onClick={() => setRulesOpen(false)}
             aria-label="Cerrar"
           >
-            <X className="size-4" />
+            <X aria-hidden />
           </Button>
         </div>
-        <div className="flex flex-col gap-4 pb-4">
-          {SECTIONS.map((section) => (
-            <section key={section.title}>
-              <h3 className="text-sm font-medium text-fg">{section.title}</h3>
-              <p className="mt-1 text-sm leading-relaxed text-muted">{section.body}</p>
-            </section>
+
+        <ol className="rules-quickstart" aria-label="Resumen en tres pasos">
+          <li><span>1</span><MousePointer2 aria-hidden /><p><strong>Elige una carta</strong><small>de tu propia mano</small></p></li>
+          <li><span>2</span><Sparkles aria-hidden /><p><strong>Busca la luz verde</strong><small>marca destinos válidos</small></p></li>
+          <li><span>3</span><ArrowLeftRight aria-hidden /><p><strong>Usa los cambios</strong><small>solo hay tres</small></p></li>
+        </ol>
+
+        <div className="rules-sections">
+          {SECTIONS.map((section, index) => (
+            <details key={section.title} open={index === 0}>
+              <summary>
+                <span>{section.title}</span>
+                <ChevronDown aria-hidden />
+              </summary>
+              <p>{section.body}</p>
+            </details>
           ))}
         </div>
       </div>

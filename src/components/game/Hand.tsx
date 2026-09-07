@@ -1,7 +1,9 @@
-import { isFace } from "@/lib/game/deck";
+import { cardName, isFace } from "@/lib/game/deck";
 import { canVisitAnything } from "@/lib/game/engine";
+import { Check, X } from "lucide-react";
 import { PlayingCard } from "@/components/game/PlayingCard";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useGameStore, useLegalForSelected } from "@/store/game-store";
 
 export function Hand() {
@@ -22,31 +24,48 @@ export function Hand() {
   const selectedHasMove =
     places.length + visits.length + exchanges.length > 0 || !selectedCardId;
   const selectedCard = hand.find((c) => c.id === selectedCardId);
+  const noMove = Boolean(selectedCardId) && !selectedHasMove && !locked;
+  const guideTitle = locked
+    ? game.pendingAdvance
+      ? "¡Atracción conseguida!"
+      : "Espera a tu compañero"
+    : noMove
+      ? "Esta carta no encaja ahora"
+      : selectedCard
+        ? exchangeMode
+          ? "Elige qué carta quieres recibir"
+          : "Ahora elige una atracción"
+        : exchangeMode
+          ? "Elige la carta que quieres cambiar"
+          : "Elige una carta de tu mano";
+  const guideDetail = selectedCard
+    ? `Seleccionada: ${cardName(selectedCard)}`
+    : `${hand.length} cartas disponibles`;
 
   return (
-    <footer className="shrink-0 overflow-visible border-t border-border bg-surface/95 pb-[max(0.45rem,env(safe-area-inset-bottom))]">
-      <div className="mx-auto max-w-3xl px-2 pt-2">
-        <div className="mb-1.5 flex items-center justify-between gap-2">
-          <p className="min-w-0 truncate text-[11px] text-muted">
-            {locked
-              ? game.pendingAdvance
-                ? "¡Atracción conseguida!"
-                : "Espera a tu compañero"
-              : exchangeMode
-                ? "Carta de la mano, luego una del parque"
-                : visitorPromptHidden && canVisitAnything(game)
-                  ? "Elige una figura y toca una atracción"
-                  : game.swappedCardId
-                    ? "Coloca la carta que acaba de entrar"
-                    : "Elige una carta y toca una atracción"}
-          </p>
+    <footer className="hand-panel">
+      <div className="hand-inner">
+        <div className="hand-guide" aria-live="polite">
+          <span className={cn("hand-step", selectedCard && !noMove && "is-ready")}>
+            {selectedCard && !noMove ? <Check aria-hidden /> : 1}
+          </span>
+          <span className="hand-guide-copy">
+            <strong>{visitorPromptHidden && canVisitAnything(game) ? "Elige una figura para dejarla de visitante" : guideTitle}</strong>
+            <small>{guideDetail}</small>
+          </span>
+          {selectedCard && !game.swappedCardId && !locked ? (
+            <button type="button" className="clear-selection" onClick={() => selectCard(selectedCard.id)}>
+              <X aria-hidden />
+              <span>Quitar</span>
+            </button>
+          ) : null}
           {visitorPromptHidden && !locked ? (
             <Button size="sm" variant="secondary" onClick={closePark}>
               Cerrar el parque
             </Button>
           ) : null}
         </div>
-        <div className="flex items-end justify-center px-2 pt-3 pb-1">
+        <div className="hand-cards" role="group" aria-label={`Tu mano: ${hand.length} cartas`}>
           {hand.map((card, i) => {
             const selected = selectedCardId === card.id;
             const tilt = (i - (hand.length - 1) / 2) * 5.5;
@@ -73,8 +92,8 @@ export function Hand() {
             );
           })}
         </div>
-        {selectedCardId && !selectedHasMove && !locked ? (
-          <p className="pt-1 text-center text-[10px] leading-snug text-muted">
+        {noMove ? (
+          <p className="hand-warning">
             {selectedCard && isFace(selectedCard)
               ? "Las figuras van a las sillas, los aseos o a visitantes."
               : "Esa carta no encaja ahora. Prueba otra o un intercambio."}
