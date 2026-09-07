@@ -149,6 +149,12 @@
   object-fit: cover;
 }
 
+.title-cover-picture {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
 .title-screen {
   overscroll-behavior: none;
   touch-action: none;

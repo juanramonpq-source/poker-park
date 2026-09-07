@@ -79,11 +79,14 @@ export function TitleScreen() {
       className="title-screen fixed inset-0 h-dvh overflow-hidden bg-bg text-fg"
       onPointerDown={wake}
     >
-      <img
-        src="/images/park-cover.webp"
-        alt=""
-        className="title-cover"
-      />
+      <picture className="title-cover-picture" aria-hidden="true">
+        <source media="(min-width: 768px)" srcSet="/images/park-cover-desktop.webp" />
+        <img
+          src="/images/park-cover.webp"
+          alt=""
+          className="title-cover"
+        />
+      </picture>
       <div className="title-vignette" />
       <Motes />
       <div className="title-studio-badge" aria-label="Poker Park por Pentonúi Games">
