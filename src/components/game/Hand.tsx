@@ -1,5 +1,5 @@
 import { cardName, isFace } from "@/lib/game/deck";
-import { canVisitAnything } from "@/lib/game/engine";
+import { canVisitAnything, legalExchanges } from "@/lib/game/engine";
 import { Check, X } from "lucide-react";
 import { PlayingCard } from "@/components/game/PlayingCard";
 import { Button } from "@/components/ui/button";
@@ -22,9 +22,12 @@ export function Hand() {
   const viewer = game.mode === "ai" ? 0 : game.currentPlayer;
   const hand = game.hands[viewer];
   const locked = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance || (game.mode === "ai" && game.currentPlayer === 1);
-  const selectedHasMove =
-    places.length + visits.length + exchanges.length > 0 || !selectedCardId;
   const selectedCard = hand.find((c) => c.id === selectedCardId);
+  const selectedCanExchange = Boolean(
+    selectedCard && !game.swappedCardId && legalExchanges(game, selectedCard.id).length,
+  );
+  const selectedHasMove =
+    places.length + visits.length + exchanges.length > 0 || selectedCanExchange || !selectedCardId;
   const noMove = Boolean(selectedCardId) && !selectedHasMove && !locked;
   const guideTitle = locked
     ? game.pendingAdvance
@@ -33,9 +36,13 @@ export function Hand() {
     : noMove
       ? "Esta carta no encaja ahora"
       : selectedCard
-        ? exchangeMode
-          ? "Elige qué carta quieres recibir"
-          : "Ahora elige una atracción"
+        ? game.swappedCardId
+          ? "Ahora coloca la carta recibida"
+          : exchangeMode
+            ? "Elige qué carta quieres recibir"
+            : selectedCanExchange
+              ? "Colócala o pulsa Cambiar"
+              : "Ahora elige una atracción"
         : exchangeMode
           ? "Elige la carta que quieres cambiar"
           : "Elige una carta de tu mano";

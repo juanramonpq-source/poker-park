@@ -6,6 +6,7 @@ import {
 } from "@/lib/game/attractions";
 import { ArrowLeftRight, Check, MousePointer2 } from "lucide-react";
 import { cardName, isRed } from "@/lib/game/deck";
+import { legalExchanges } from "@/lib/game/engine";
 import type { AttractionId, Card, GameState } from "@/lib/game/types";
 import { AttractionSheet, ICONS } from "@/components/game/AttractionBoard";
 import { RideFinale } from "@/components/game/RideFinale";
@@ -266,6 +267,9 @@ export function Park({ game }: { game: GameState }) {
   const selectedCardId = useGameStore((s) => s.selectedCardId);
   const exchangeMode = useGameStore((s) => s.exchangeMode);
   const name = game.names[game.currentPlayer];
+  const selectedCanExchange = Boolean(
+    selectedCardId && !game.swappedCardId && legalExchanges(game, selectedCardId).length,
+  );
   const turnLabel =
     game.mode === "ai"
       ? game.currentPlayer === 0
@@ -285,7 +289,11 @@ export function Park({ game }: { game: GameState }) {
           ? "Elige la carta que quieres recibir"
           : "Elige una carta de tu mano"
         : selectedCardId
-          ? "Toca una atracción iluminada"
+          ? game.swappedCardId
+            ? "Coloca la carta que has recibido"
+            : selectedCanExchange
+              ? "Colócala o pulsa Cambiar"
+              : "Toca una atracción iluminada"
           : turnLabel;
   const statusDetail = aiMoveFx
     ? `${aiMoveFx.kind === "visit" ? "Visitante en" : "Colocada en"} ${ATTRACTION_DEFS[aiMoveFx.attractionId].name}`

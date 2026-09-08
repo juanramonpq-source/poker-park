@@ -13,7 +13,7 @@ const SECTIONS = [
   },
   {
     title: "Intercambios y aforo",
-    body: "Solo 3 intercambios en toda la partida, compartidos. Cambias una carta de tu mano por otra ya colocada, si se mantiene la estructura. Tras el cambio sigues tú: coloca la carta que entra. El segundo cierra la primera carta de la entrada; el tercero cierra la segunda. Aforo completo: no hay más intercambios.",
+    body: "Solo 3 intercambios en toda la partida, compartidos. Puedes pulsar Cambiar y elegir tu carta, o elegir primero la carta de tu mano y después pulsar Cambiar. Luego escoge qué carta recibes de la entrada o de una atracción, si se mantiene la estructura. Tras el cambio sigues tú: coloca la carta que entra. El segundo cierra la primera carta de la entrada; el tercero cierra la segunda. Aforo completo: no hay más intercambios.",
   },
   {
     title: "Atracciones",

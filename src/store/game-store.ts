@@ -342,10 +342,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       set({ selectedCardId: next });
     },
     toggleExchange: () => {
-      const { game } = get();
-      if (!game || game.exchangesUsed >= 3) return;
+      const { game, exchangeMode } = get();
+      if (!game || game.exchangesUsed >= 3 || game.swappedCardId) return;
       audio.playUi();
-      set({ exchangeMode: !get().exchangeMode, selectedCardId: null });
+      set({ exchangeMode: !exchangeMode });
     },
     openPark: (id) => {
       audio.playUi();

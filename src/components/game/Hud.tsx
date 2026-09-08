@@ -1,6 +1,7 @@
 import { ArrowLeftRight, BookOpen, LogOut, MoreHorizontal, UserRound, Volume2, VolumeX } from "lucide-react";
 import { useState } from "react";
 import { MAX_EXCHANGES } from "@/lib/game/types";
+import { legalExchanges } from "@/lib/game/engine";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ export function Hud() {
   const setRulesOpen = useGameStore((s) => s.setRulesOpen);
   const goTitle = useGameStore((s) => s.goTitle);
   const exchangeMode = useGameStore((s) => s.exchangeMode);
+  const selectedCardId = useGameStore((s) => s.selectedCardId);
   const toggleExchange = useGameStore((s) => s.toggleExchange);
   const aiThinking = useGameStore((s) => s.aiThinking);
   const aiMoveFx = useGameStore((s) => s.aiMoveFx);
@@ -21,6 +23,12 @@ export function Hud() {
   const locked = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance;
   const remaining = MAX_EXCHANGES - game.exchangesUsed;
   const aforo = remaining <= 0;
+  const selectedCanExchange = selectedCardId
+    ? legalExchanges(game, selectedCardId).length > 0
+    : true;
+  const mustPlaceSwap = Boolean(game.swappedCardId);
+  const exchangeDisabled = aforo || locked || mustPlaceSwap || !selectedCanExchange;
+  const exchangeReady = Boolean(selectedCardId) && selectedCanExchange && !exchangeMode;
   const currentName = game.names[game.currentPlayer];
 
   const openRules = () => {
@@ -56,14 +64,30 @@ export function Hud() {
           </div>
           <button
             type="button"
-            className={cn("exchange-action", exchangeMode && "is-active")}
-            disabled={aforo || locked}
+            className={cn(
+              "exchange-action",
+              exchangeMode && "is-active",
+              exchangeReady && "is-ready",
+            )}
+            disabled={exchangeDisabled}
             onClick={toggleExchange}
             aria-pressed={exchangeMode}
-            aria-label={aforo ? "Intercambios agotados" : `${remaining} intercambios disponibles`}
+            aria-label={
+              aforo
+                ? "Intercambios agotados"
+                : mustPlaceSwap
+                  ? "Coloca primero la carta recibida"
+                  : !selectedCanExchange
+                    ? "La carta seleccionada no se puede intercambiar"
+                    : exchangeMode
+                      ? "Cancelar intercambio"
+                      : selectedCardId
+                        ? `Intercambiar la carta seleccionada; quedan ${remaining}`
+                        : `${remaining} intercambios disponibles`
+            }
           >
             <ArrowLeftRight aria-hidden />
-            <span>{aforo ? "Sin cambios" : exchangeMode ? "Cancelar" : "Cambiar"}</span>
+            <span>{aforo ? "Sin cambios" : mustPlaceSwap ? "Colócala" : exchangeMode ? "Cancelar" : "Cambiar"}</span>
             {!aforo ? <strong>{remaining}</strong> : null}
           </button>
           <Button
