@@ -108,13 +108,30 @@ export function ParkMascots() {
   );
 }
 
-export function MascotParade({ place }: { place: "tally" | "credits" }) {
+export function MascotParade({ place, celebration = false }: { place: "tally" | "credits"; celebration?: boolean }) {
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setCurrent((value) => (value + 1) % MASCOTS.length);
+    }, 3600);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const mascot = MASCOTS[current]!;
+
   return (
     <section className={cn("mascot-parade", `mascot-parade-${place}`)} aria-label="Mascotas de Poker Park">
-      <div>
-        {MASCOTS.map(({ id }) => <MascotButton key={id} id={id} alwaysVisible />)}
-      </div>
-      <p>{place === "credits" ? "Tuga · Púa · Burbujas" : "La pandilla acompaña el recuento"}</p>
+      {celebration ? (
+        <div className="mascot-perfect-party">
+          {MASCOTS.map(({ id }) => <MascotButton key={id} id={id} className="mascot-party-member" alwaysVisible />)}
+        </div>
+      ) : (
+        <div className="mascot-parade-stage">
+          <MascotButton key={mascot.id} id={mascot.id} className="mascot-parade-current" alwaysVisible />
+        </div>
+      )}
+      <p>{celebration ? <strong>¡Las tres celebran el parque perfecto!</strong> : <><strong>{mascot.name}</strong> · Mascota de Poker Park</>}</p>
     </section>
   );
 }

@@ -26,6 +26,12 @@ const FESTIVAL_BRIEFING = [
   "Si repetís la misma atracción en dos colocaciones seguidas, el combo vuelve a ×1. Las bombillas indican el brillo conseguido; no cambian qué cartas son válidas.",
 ];
 
+const MIRROR_BRIEFING = [
+  "Montaña Rusa: empieza en la salida y rellena la vía hacia atrás. Casa del Terror: el A♠ del tejado va primero.",
+  "Túnel del Amor: abre con A♥ en la cumbre y baja por los dos lados. Bosque: primero las dos columnas de la entrada.",
+  "Sillas Voladoras: cuelga las cuatro figuras antes de levantar la torre. Restaurante: A♣ primero. Aseos: reina antes que rey.",
+];
+
 const MASTER_MODES: {
   id: MasterMode;
   title: string;
@@ -48,7 +54,7 @@ const MASTER_MODES: {
     id: "mirror",
     title: "Parque Espejo",
     kicker: "Todo empieza al otro lado",
-    rule: "Los planos aparecen reflejados. Las reglas son las mismas, pero la lectura cambia.",
+    rule: "No solo se refleja el plano: cada atracción debe construirse en el orden inverso.",
     reward: "Insignia Plata de Luna",
     icon: FlipHorizontal2,
     secretKey: "mirrorPerfect",
@@ -66,7 +72,7 @@ const MASTER_MODES: {
     id: "impossible",
     title: "Poker Park 00:13",
     kicker: "El parque imposible",
-    rule: "Espejo, tormenta y combos de luz en una única jornada final.",
+    rule: "Espejo, tormenta y combos de luz en una única jornada final. No tiene cronómetro: solo acaba si cerráis el parque, se agotan las cartas o ambos os bloqueáis.",
     reward: "Final verdadero, Reverso DUAL y Galería Maestro",
     icon: Crown,
     secretKey: "impossiblePerfect",
@@ -129,6 +135,24 @@ export function MasterPassOverlay({
                   {FESTIVAL_BRIEFING.map((rule, index) => <li key={rule}><span>{index + 1}</span>{rule}</li>)}
                 </ol>
                 <p className="festival-briefing-example"><strong>Ejemplo:</strong> Montaña Rusa → Túnel del Amor → Bosque da combo ×3 y 6 bombillas. Bosque otra vez reinicia el combo a ×1.</p>
+              </section>
+            ) : null}
+            {selectedMode.id === "impossible" ? (
+              <section className="festival-briefing impossible-ending-briefing" aria-label="Cuándo termina Poker Park 00:13">
+                <p><strong>Importante: 00:13 no tiene reloj.</strong> La tormenta solo bloquea una atracción durante un turno; no acaba la partida.</p>
+                <ol>
+                  <li><span>1</span>Se termina al pulsar <strong>Cerrar</strong>.</li>
+                  <li><span>2</span>Se termina si ya no queda ninguna carta en el mazo ni en las manos.</li>
+                  <li><span>3</span>Se termina cuando ambos jugadores pasan seguidos sin poder colocar ni intercambiar.</li>
+                </ol>
+              </section>
+            ) : null}
+            {selectedMode.id === "mirror" ? (
+              <section className="festival-briefing mirror-briefing" aria-label="Cómo jugar al Parque Espejo">
+                <p><strong>Objetivo del modo</strong> Completar las 7 atracciones, pero respetando sus dependencias al revés. Las jugadas válidas se iluminan igual que siempre.</p>
+                <ol>
+                  {MIRROR_BRIEFING.map((rule, index) => <li key={rule}><span>{index + 1}</span>{rule}</li>)}
+                </ol>
               </section>
             ) : null}
             <div className="master-start-actions">

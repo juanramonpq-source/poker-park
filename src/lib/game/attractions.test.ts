@@ -159,11 +159,55 @@ describe("figuras", () => {
 });
 
 describe("retos del Pase Maestro", () => {
+  it("el Parque Espejo invierte las dependencias de todas las atracciones", () => {
+    const coaster: (Card | null)[] = Array.from({ length: 8 }, () => null);
+    assert.deepEqual(legalSlotsForCard("coaster", coaster, card("hearts", 2), true), [7]);
+    coaster[7] = card("hearts", 2);
+    assert.deepEqual(legalSlotsForCard("coaster", coaster, card("clubs", 3), true), [6]);
+
+    const haunted: (Card | null)[] = Array.from({ length: 5 }, () => null);
+    assert.deepEqual(legalSlotsForCard("haunted", haunted, card("spades", 1), true), [4]);
+    assert.deepEqual(legalSlotsForCard("haunted", haunted, card("spades", 6), true), []);
+    haunted[4] = card("spades", 1);
+    assert.deepEqual(legalSlotsForCard("haunted", haunted, card("spades", 6), true), [0, 1, 2, 3]);
+
+    const love: (Card | null)[] = Array.from({ length: 7 }, () => null);
+    assert.deepEqual(legalSlotsForCard("love", love, card("hearts", 1), true), [3]);
+    love[3] = card("hearts", 1);
+    assert.deepEqual(legalSlotsForCard("love", love, card("hearts", 6), true), [2, 4]);
+
+    const forest: (Card | null)[] = Array.from({ length: 11 }, () => null);
+    assert.deepEqual(legalSlotsForCard("forest", forest, card("diamonds", 6), true), [9, 10]);
+    assert.deepEqual(legalSlotsForCard("forest", forest, card("clubs", 6), true), []);
+    forest[9] = card("diamonds", 4);
+    forest[10] = card("diamonds", 6);
+    assert.deepEqual(legalSlotsForCard("forest", forest, card("clubs", 7), true), [0, 1, 2, 3, 5, 6, 7, 8]);
+
+    const chairs: (Card | null)[] = Array.from({ length: 7 }, () => null);
+    assert.deepEqual(legalSlotsForCard("chairs", chairs, card("hearts", 11), true), [0, 1, 2, 3]);
+    assert.deepEqual(legalSlotsForCard("chairs", chairs, card("spades", 7), true), []);
+    chairs[0] = card("hearts", 11);
+    chairs[1] = card("clubs", 12);
+    chairs[2] = card("diamonds", 13);
+    chairs[3] = card("spades", 11);
+    assert.deepEqual(legalSlotsForCard("chairs", chairs, card("spades", 7), true), [4, 5, 6]);
+
+    const restaurant: (Card | null)[] = Array.from({ length: 6 }, () => null);
+    assert.deepEqual(legalSlotsForCard("restaurant", restaurant, card("clubs", 1), true), [1]);
+    assert.deepEqual(legalSlotsForCard("restaurant", restaurant, card("hearts", 5), true), []);
+    restaurant[1] = card("clubs", 1);
+    assert.deepEqual(legalSlotsForCard("restaurant", restaurant, card("hearts", 5), true), [0, 2, 3, 4, 5]);
+
+    const restrooms: (Card | null)[] = [null, null];
+    assert.deepEqual(legalSlotsForCard("restrooms", restrooms, card("hearts", 13), true), []);
+    assert.deepEqual(legalSlotsForCard("restrooms", restrooms, card("hearts", 12), true), [0, 1]);
+  });
+
   it("el Festival premia alternar atracciones y reinicia el combo si se repite", () => {
     const game = {
       challenge: "festival",
       festival: { combo: 0, bestCombo: 0, bulbs: 0, lastAttractionId: null },
-    } as GameState;
+    } as unknown as GameState;
     recordFestivalPlacement(game, "coaster");
     recordFestivalPlacement(game, "love");
     recordFestivalPlacement(game, "forest");

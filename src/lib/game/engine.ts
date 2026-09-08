@@ -7,6 +7,7 @@ import {
 import { cardName, isFace, makeDeck, shuffle } from "./deck";
 import {
   advanceStorm,
+  hasMirrorRules,
   recordFestivalPlacement,
   stormClosedAttraction,
 } from "./challenges";
@@ -155,13 +156,13 @@ export function visitorPhase(state: GameState): boolean {
     if (!isAttractionUnlocked(state, id)) continue;
     if (isAttractionStormClosed(state, id)) continue;
     const attr = state.attractions[id];
-    if (isAttractionComplete(id, attr.slots)) continue;
+    if (isAttractionComplete(id, attr.slots, hasMirrorRules(state))) continue;
     for (const card of pool) {
-      if (legalSlotsForCard(id, attr.slots, card).length > 0) return false;
+      if (legalSlotsForCard(id, attr.slots, card, hasMirrorRules(state)).length > 0) return false;
     }
   }
   return ATTRACTION_IDS.some((id) =>
-    isAttractionComplete(id, state.attractions[id].slots),
+    isAttractionComplete(id, state.attractions[id].slots, hasMirrorRules(state)),
   );
 }
 
@@ -175,7 +176,7 @@ export function legalPlacements(
   for (const id of ATTRACTION_IDS) {
     if (!isAttractionUnlocked(state, id)) continue;
     if (isAttractionStormClosed(state, id)) continue;
-    for (const index of legalSlotsForCard(id, state.attractions[id].slots, card)) {
+    for (const index of legalSlotsForCard(id, state.attractions[id].slots, card, hasMirrorRules(state))) {
       out.push({ attractionId: id, index });
     }
   }
@@ -189,7 +190,7 @@ export function legalVisits(state: GameState, cardId: string): AttractionId[] {
   return ATTRACTION_IDS.filter((id) =>
     isAttractionUnlocked(state, id) &&
     !isAttractionStormClosed(state, id) &&
-    isAttractionComplete(id, state.attractions[id].slots),
+    isAttractionComplete(id, state.attractions[id].slots, hasMirrorRules(state)),
   );
 }
 
@@ -210,12 +211,12 @@ export function legalExchanges(state: GameState, cardId: string): ExchangeTarget
     if (!isAttractionUnlocked(state, id)) continue;
     if (isAttractionStormClosed(state, id)) continue;
     const slots = state.attractions[id].slots;
-    if (isAttractionComplete(id, slots)) continue;
+    if (isAttractionComplete(id, slots, hasMirrorRules(state))) continue;
     slots.forEach((parkCard, index) => {
       if (!parkCard) return;
       const nextSlots = slots.slice();
       nextSlots[index] = card;
-      if (legalSlotsForCard(id, slots.map((c, i) => (i === index ? null : c)), card).includes(index)) {
+      if (legalSlotsForCard(id, slots.map((c, i) => (i === index ? null : c)), card, hasMirrorRules(state)).includes(index)) {
         targets.push({ kind: "slot", attractionId: id, index });
       }
     });
@@ -268,7 +269,7 @@ export function canVisitAnything(state: GameState): boolean {
 
 export function parkSolved(state: GameState): boolean {
   return ATTRACTION_IDS.every((id) =>
-    isAttractionComplete(id, state.attractions[id].slots),
+    isAttractionComplete(id, state.attractions[id].slots, hasMirrorRules(state)),
   );
 }
 
@@ -277,7 +278,7 @@ export function closePark(state: GameState): GameState {
   next.ended = true;
   next.pendingAdvance = false;
   next.lastCompleted = null;
-  next.endReason = parkSolved(next) ? "empty" : "block";
+  next.endReason = "closed";
   next.lastMessage = isNightShift(next)
     ? "Fin del turno de guardia"
     : "Fin de la jornada en el parque";
@@ -291,8 +292,8 @@ function finishAction(prev: GameState, next: GameState, message: string): GameSt
   advanceStorm(next);
   const justDone = ATTRACTION_IDS.find(
     (id) =>
-      isAttractionComplete(id, next.attractions[id].slots) &&
-      !isAttractionComplete(id, prev.attractions[id].slots),
+      isAttractionComplete(id, next.attractions[id].slots, hasMirrorRules(next)) &&
+      !isAttractionComplete(id, prev.attractions[id].slots, hasMirrorRules(prev)),
   );
   next.lastCompleted = justDone ?? null;
   if (justDone) {
@@ -470,7 +471,7 @@ export function passTurn(state: GameState, force = false): GameState {
 
 export function completedAttractions(state: GameState): AttractionId[] {
   return ATTRACTION_IDS.filter((id) =>
-    isAttractionComplete(id, state.attractions[id].slots),
+    isAttractionComplete(id, state.attractions[id].slots, hasMirrorRules(state)),
   );
 }
 

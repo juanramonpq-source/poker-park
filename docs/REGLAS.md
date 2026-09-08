@@ -78,6 +78,8 @@ Cuando ya no se puede ampliar ninguna atracción (o el parque está completo), l
 - bloqueo irresoluble (los dos jugadores pasan), o
 - el parque está resuelto y se elige **Cerrar el parque**.
 
+En **Poker Park 00:13** no hay límite de tiempo: la tormenta solo cierra una atracción durante un turno. La partida acaba por una de estas mismas condiciones o al elegir **Cerrar el parque**.
+
 ## Evaluación
 
 - 0 Colas eternas

@@ -113,7 +113,7 @@ GameState.version = 7
   drawnThisTurn, consecutivePasses
   lastMessage, lastCompleted, swappedCardId
   pendingAdvance   // true mientras dura la fiesta de “conseguido”
-  ended, endReason: empty | block | null
+  ended, endReason: empty | block | closed | null
 ```
 
 `MAX_EXCHANGES = 3`. Mano inicial: 3 cartas. Entrada del parque: 2 cartas

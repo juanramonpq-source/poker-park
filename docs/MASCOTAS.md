@@ -17,3 +17,5 @@ Los tres prompts fijan estas condiciones comunes: hoja exacta 2×2 sin divisores
 - **Burbujas:** pez mágico turquesa de vientre cian, aletas coral y estrella dorada junto a la cola; sin pecera ni agua; ciclo de cola izquierda, ascenso, cola derecha y descenso.
 
 Las hojas originales de alta resolución permanecen en el historial del generador. Las versiones publicadas están normalizadas a 256×256 px para evitar peso innecesario en la PWA.
+
+En partida y en los créditos las mascotas se turnan de una en una. Las tres solo aparecen juntas en el recuento de un parque perfecto, dentro de la celebración con fuegos artificiales.

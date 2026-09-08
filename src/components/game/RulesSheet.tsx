@@ -35,6 +35,10 @@ const SECTIONS = [
     title: "La Noche de Guardia",
     body: "Se desbloquea al completar las siete atracciones. Sois el personal de mantenimiento y empezáis con dos sectores encendidos. Cada atracción revisada permite dar corriente a otra. Si no existe ninguna maniobra obligatoria, el generador abre un sector y el mismo turno continúa. El informe final cuenta revisiones e incidencias.",
   },
+  {
+    title: "Poker Park 00:13",
+    body: "La jornada final junta espejo, tormenta y luces. No hay límite de tiempo: la tormenta solo cierra una atracción durante ese turno. La partida termina únicamente si pulsáis Cerrar, se agotan todas las cartas o los dos jugadores pasan seguidos porque no pueden colocar ni intercambiar.",
+  },
 ];
 
 export function RulesSheet() {

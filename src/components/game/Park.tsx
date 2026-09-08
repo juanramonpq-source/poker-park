@@ -154,7 +154,7 @@ function MapTile({
 }) {
   const def = ATTRACTION_DEFS[id];
   const attr = game.attractions[id];
-  const complete = isAttractionComplete(id, attr.slots);
+  const complete = isAttractionComplete(id, attr.slots, hasMirrorRules(game));
   const locked = !isAttractionUnlocked(game, id);
   const stormClosed = isAttractionStormClosed(game, id);
   const selectedCardId = useGameStore((s) => s.selectedCardId);
@@ -347,7 +347,7 @@ export function Park({ game }: { game: GameState }) {
           {challenge === "festival" ? (
             <span className="mode-meter festival-meter"><Lightbulb aria-hidden /><span><small>Meta: 7 · bonus</small><strong>×{game.festival?.combo ?? 0} · {game.festival?.bulbs ?? 0} bombillas</strong></span></span>
           ) : challenge === "mirror" ? (
-            <span className="mode-meter mirror-meter"><FlipHorizontal2 aria-hidden /><span><small>Plano</small><strong>Espejo</strong></span></span>
+            <span className="mode-meter mirror-meter"><FlipHorizontal2 aria-hidden /><span><small>Reglas</small><strong>Orden invertido</strong></span></span>
           ) : challenge === "storm" ? (
             <span className="mode-meter storm-meter"><CloudLightning aria-hidden /><span><small>Ahora · después</small><strong>{stormNow ? ATTRACTION_DEFS[stormNow].name : "Despejado"} → {stormNext ? ATTRACTION_DEFS[stormNext].name : "despejado"}</strong></span></span>
           ) : challenge === "impossible" ? (

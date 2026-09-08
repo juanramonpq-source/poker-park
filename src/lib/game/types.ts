@@ -71,7 +71,7 @@ export interface GameState {
   swappedCardId: string | null;
   pendingAdvance: boolean;
   ended: boolean;
-  endReason: "empty" | "block" | null;
+  endReason: "empty" | "block" | "closed" | null;
 }
 
 export type DayRating =

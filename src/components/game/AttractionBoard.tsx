@@ -15,8 +15,10 @@ import {
   ATTRACTION_DEFS,
   attractionProgress,
   isAttractionComplete,
+  attractionRules,
   slotHint,
 } from "@/lib/game/attractions";
+import { hasMirrorRules } from "@/lib/game/challenges";
 import type { AttractionId, Card, GameState } from "@/lib/game/types";
 import { EmptySlot, PlayingCard } from "@/components/game/PlayingCard";
 import { Button } from "@/components/ui/button";
@@ -41,12 +43,14 @@ function SlotCell({
   index,
   card,
   slots,
+  mirrored = false,
   size = "sm",
 }: {
   attractionId: AttractionId;
   index: number;
   card: Card | null;
   slots: (Card | null)[];
+  mirrored?: boolean;
   size?: CardSize;
 }) {
   const selectedCardId = useGameStore((s) => s.selectedCardId);
@@ -59,7 +63,7 @@ function SlotCell({
   const canSwap = exchanges.some(
     (t) => t.kind === "slot" && t.attractionId === attractionId && t.index === index,
   );
-  const hint = slotHint(attractionId, slots, index);
+  const hint = slotHint(attractionId, slots, index, mirrored);
 
   if (card) {
     return (
@@ -91,10 +95,12 @@ function SlotCell({
 export function AttractionLayout({
   id,
   slots,
+  mirrored = false,
   size = "sm",
 }: {
   id: AttractionId;
   slots: (Card | null)[];
+  mirrored?: boolean;
   size?: CardSize;
 }) {
   const cell = (index: number) => (
@@ -104,6 +110,7 @@ export function AttractionLayout({
       index={index}
       card={slots[index] ?? null}
       slots={slots}
+      mirrored={mirrored}
       size={size}
     />
   );
@@ -270,7 +277,8 @@ export function AttractionSheet({
 }) {
   const def = ATTRACTION_DEFS[id];
   const attr = game.attractions[id];
-  const complete = isAttractionComplete(id, attr.slots);
+  const mirrored = hasMirrorRules(game);
+  const complete = isAttractionComplete(id, attr.slots, mirrored);
   const visit = useGameStore((s) => s.visit);
   const openPark = useGameStore((s) => s.openPark);
   const { visits } = useLegalForSelected();
@@ -332,7 +340,7 @@ export function AttractionSheet({
 
         <div className="attraction-rule">
           <CircleHelp aria-hidden />
-          <p>{def.rules}</p>
+          <p>{attractionRules(id, mirrored)}</p>
         </div>
 
         <div className="attraction-layout-wrap">
@@ -340,7 +348,7 @@ export function AttractionSheet({
             key={`${id}-scheme`}
             className={cn(!complete && "scheme-show")}
           >
-            <AttractionLayout id={id} slots={attr.slots} size="sm" />
+            <AttractionLayout id={id} slots={attr.slots} mirrored={mirrored} size="sm" />
           </div>
           {celebrating ? <RideFinale id={id} /> : null}
           {complete && !celebrating ? (
@@ -384,7 +392,8 @@ export function AttractionBoard({
 }) {
   const def = ATTRACTION_DEFS[id];
   const attr = game.attractions[id];
-  const complete = isAttractionComplete(id, attr.slots);
+  const mirrored = hasMirrorRules(game);
+  const complete = isAttractionComplete(id, attr.slots, mirrored);
   const selectedCardId = useGameStore((s) => s.selectedCardId);
   const exchangeMode = useGameStore((s) => s.exchangeMode);
   const visit = useGameStore((s) => s.visit);
@@ -422,7 +431,7 @@ export function AttractionBoard({
         </span>
       </header>
 
-      <AttractionLayout id={id} slots={attr.slots} />
+      <AttractionLayout id={id} slots={attr.slots} mirrored={mirrored} />
 
       {attr.visitors.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-1">

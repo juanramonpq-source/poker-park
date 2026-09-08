@@ -1,5 +1,6 @@
 import { isAttractionComplete, legalSlotsForCard } from "./attractions";
 import { isAce, isFace } from "./deck";
+import { hasMirrorRules } from "./challenges";
 import {
   hasLegalAction,
   hasRequiredAction,
@@ -29,11 +30,11 @@ function uniqueNeed(card: Card): AttractionId | null {
 function facesStillNeeded(state: GameState): number {
   let need = 0;
   const chairs = state.attractions.chairs;
-  if (!isAttractionComplete("chairs", chairs.slots)) {
+  if (!isAttractionComplete("chairs", chairs.slots, hasMirrorRules(state))) {
     need += chairs.slots.slice(0, 4).filter((s) => !s).length;
   }
   const rest = state.attractions.restrooms;
-  if (!isAttractionComplete("restrooms", rest.slots)) {
+  if (!isAttractionComplete("restrooms", rest.slots, hasMirrorRules(state))) {
     need += rest.slots.filter((s) => !s).length;
   }
   return need;
@@ -51,7 +52,7 @@ function scorePlace(
   next[index] = card;
   const filled = next.filter(Boolean).length;
   score += filled * 6;
-  if (isAttractionComplete(attractionId, next)) score += 140;
+  if (isAttractionComplete(attractionId, next, hasMirrorRules(state))) score += 140;
 
   const key = uniqueNeed(card);
   if (key === attractionId) score += 90;
@@ -122,7 +123,7 @@ export function chooseAiMove(state: GameState): AiMove {
           const slots = state.attractions[target.attractionId].slots.slice();
           const previous = slots[target.index];
           slots[target.index] = card;
-          if (isAttractionComplete(target.attractionId, slots)) score += 160;
+          if (isAttractionComplete(target.attractionId, slots, hasMirrorRules(state))) score += 160;
           if (previous && uniqueNeed(card) === target.attractionId) score += 40;
         }
         consider(score, { type: "exchange", cardId: card.id, target });
@@ -138,5 +139,5 @@ export function anyLegalOnAttraction(
   attractionId: AttractionId,
   card: Card,
 ): number[] {
-  return legalSlotsForCard(attractionId, state.attractions[attractionId].slots, card);
+  return legalSlotsForCard(attractionId, state.attractions[attractionId].slots, card, hasMirrorRules(state));
 }

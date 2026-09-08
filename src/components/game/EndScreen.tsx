@@ -12,7 +12,7 @@ import { ATTRACTION_DEFS } from "@/lib/game/attractions";
 import { playLifetimeUnlock, playParty, playRollCrash, playRollFill, playRollTick } from "@/lib/game/audio";
 import { loadSecrets, masterTrialsComplete, unlockSecret, type Secrets } from "@/lib/game/persist";
 import { CHALLENGE_NAMES } from "@/lib/game/challenges";
-import type { GameChallenge } from "@/lib/game/types";
+import type { GameChallenge, GameState } from "@/lib/game/types";
 import { Button } from "@/components/ui/button";
 import { MascotParade } from "@/components/game/ParkMascots";
 import { cn } from "@/lib/utils";
@@ -64,6 +64,31 @@ function nightCopy(count: number) {
   if (count >= 3) return { title: "Guardia en marcha", body: "Varias zonas vuelven a latir en la oscuridad. El equipo del amanecer sabrá por dónde continuar." };
   if (count >= 1) return { title: "Primera comprobación", body: "Una luz encendida basta para demostrar que la noche todavía puede remontar." };
   return { title: "Sin corriente", body: "El turno fue difícil. El parque descansará esta noche y volveréis con nuevas herramientas." };
+}
+
+function endingCopy(game: GameState) {
+  switch (game.endReason) {
+    case "empty":
+      return {
+        label: "Se agotaron las cartas",
+        body: "No quedaban cartas ni en el mazo ni en las manos. La jornada termina aquí.",
+      };
+    case "block":
+      return {
+        label: "Dos turnos sin jugada",
+        body: "Los dos jugadores se quedaron sin una colocación o intercambio posible. La tormenta puede cerrar un sector, pero no termina la partida por sí sola.",
+      };
+    case "closed":
+      return {
+        label: "Habéis cerrado la jornada",
+        body: "Se eligió Cerrar y se guarda este recuento. No hace falta completar las siete atracciones para terminar.",
+      };
+    default:
+      return {
+        label: "Fin de la jornada",
+        body: "Este es el recuento de las atracciones completadas.",
+      };
+  }
 }
 
 function maintenanceBadges(count: number, emergencyUses: number): DayBadge[] {
@@ -144,6 +169,7 @@ export function EndScreen() {
   }, [step, done.length, perfect, isNight, challenge, pulse]);
 
   if (!game) return null;
+  const ending = endingCopy(game);
 
   const onTapScale = () => {
     if (isNight) return;
@@ -234,7 +260,7 @@ export function EndScreen() {
           <p className="mt-2 font-display text-xl text-fg">{currentTitle}</p>
         </button>
 
-        <MascotParade place="tally" />
+        {perfect && resolved ? <MascotParade place="tally" celebration /> : null}
 
         <ol className="mt-4 space-y-1.5">
           {scale.map((title, count) => (
@@ -250,6 +276,11 @@ export function EndScreen() {
           <div className="stagger-in">
             <h1 className="mt-6 font-display text-3xl font-medium tracking-tight">{copy.title}</h1>
             <p className="mt-2 text-sm leading-relaxed text-muted">{copy.body}</p>
+            <section className="end-reason-card" aria-label="Por qué terminó la partida">
+              <small>Por qué ha terminado</small>
+              <strong>{ending.label}</strong>
+              <p>{ending.body}</p>
+            </section>
             <h2 className="mt-6 font-display text-lg">{isNight ? "Acreditaciones" : "Insignias"}</h2>
             <ul className="mt-2 grid grid-cols-2 gap-2">{badges.map((badge) => <li key={badge.id} className={cn("rounded-xl border px-3 py-2", badge.secret ? "border-accent/35 bg-accent/8" : "border-border bg-surface")}><p className="text-[12px] font-semibold text-fg">{badge.name}</p><p className="mt-0.5 text-[10px] leading-snug text-muted">{badge.hint}</p></li>)}</ul>
             {isNight && perfect && nightReward ? (
