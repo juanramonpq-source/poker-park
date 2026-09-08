@@ -23,6 +23,13 @@ import type { AttractionId, Card, ExchangeTarget, GameState, Mode, Screen } from
 
 export type FxKind = "place" | "complete" | "exchange" | "end" | "deal";
 export type FxEvent = { n: number; kind: FxKind; attractionId: AttractionId | null };
+export type AiMoveFx = {
+  n: number;
+  card: Card;
+  attractionId: AttractionId;
+  index: number | null;
+  kind: "place" | "visit";
+};
 
 interface GameStore {
   screen: Screen;
@@ -36,6 +43,7 @@ interface GameStore {
   fx: FxEvent | null;
   bloomId: AttractionId | null;
   swapFx: { n: number; incoming: Card; outgoing: Card } | null;
+  aiMoveFx: AiMoveFx | null;
   visitorPromptHidden: boolean;
   hydrate: () => void;
   start: (mode: Mode) => void;
@@ -58,6 +66,8 @@ interface GameStore {
 }
 
 let aiTimer = 0;
+let aiRevealTimer = 0;
+let aiRevealClearTimer = 0;
 let bloomTimer = 0;
 let advanceTimer = 0;
 let fxN = 0;
@@ -182,6 +192,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       const move = chooseAiMove(current);
       let next = current;
       let outgoing: Card | undefined;
+      const playedCard =
+        move.type === "place" || move.type === "visit"
+          ? current.hands[current.currentPlayer].find((card) => card.id === move.cardId)
+          : undefined;
       try {
         if (move.type === "place") next = placeCard(current, move.cardId, move.attractionId, move.index);
         else if (move.type === "visit") next = placeVisitor(current, move.cardId, move.attractionId);
@@ -193,12 +207,29 @@ export const useGameStore = create<GameStore>((set, get) => {
       } catch {
         next = passTurn(current, true);
       }
-      juice(
-        current,
-        next,
-        get().pulse,
-        move.type === "place" || move.type === "visit" ? move.attractionId : null,
-      );
+      if ((move.type === "place" || move.type === "visit") && playedCard) {
+        const reveal: AiMoveFx = {
+          n: Date.now(),
+          card: playedCard,
+          attractionId: move.attractionId,
+          index: move.type === "place" ? move.index : null,
+          kind: move.type,
+        };
+        persist(next);
+        window.clearTimeout(aiRevealTimer);
+        window.clearTimeout(aiRevealClearTimer);
+        set({ aiMoveFx: reveal, aiThinking: true, openAttraction: null });
+        aiRevealTimer = window.setTimeout(() => {
+          if (get().aiMoveFx?.n !== reveal.n) return;
+          juice(current, next, get().pulse, move.attractionId);
+          afterHuman(next, false);
+        }, 680);
+        aiRevealClearTimer = window.setTimeout(() => {
+          if (get().aiMoveFx?.n === reveal.n) set({ aiMoveFx: null });
+        }, 1650);
+        return;
+      }
+      juice(current, next, get().pulse, null);
       const incoming = next.swappedCardId
         ? next.hands[next.currentPlayer].find((c) => c.id === next.swappedCardId)
         : undefined;
@@ -224,6 +255,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     fx: null,
     bloomId: null,
     swapFx: null,
+    aiMoveFx: null,
     visitorPromptHidden: false,
     pulse,
     hydrate: () => {
@@ -236,6 +268,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       }));
     },
     start: (mode) => {
+      window.clearTimeout(aiRevealTimer);
+      window.clearTimeout(aiRevealClearTimer);
       audio.unlockAudio();
       audio.startParkBed();
       audio.playStart();
@@ -252,6 +286,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         exchangeMode: false,
         openAttraction: null,
         aiThinking: false,
+        aiMoveFx: null,
         visitorPromptHidden: false,
       });
     },
@@ -269,10 +304,13 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
     goTitle: () => {
       window.clearTimeout(aiTimer);
+      window.clearTimeout(aiRevealTimer);
+      window.clearTimeout(aiRevealClearTimer);
       audio.startTitleBed();
       set({
         screen: "title",
         aiThinking: false,
+        aiMoveFx: null,
         selectedCardId: null,
         exchangeMode: false,
         openAttraction: null,
@@ -280,6 +318,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
     quitToTitle: () => {
       window.clearTimeout(aiTimer);
+      window.clearTimeout(aiRevealTimer);
+      window.clearTimeout(aiRevealClearTimer);
       clearGame();
       audio.startTitleBed();
       set({
@@ -289,6 +329,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         exchangeMode: false,
         openAttraction: null,
         aiThinking: false,
+        aiMoveFx: null,
       });
     },
     selectCard: (id) => {

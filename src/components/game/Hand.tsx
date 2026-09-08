@@ -13,6 +13,7 @@ export function Hand() {
   const exchangeMode = useGameStore((s) => s.exchangeMode);
   const swapFx = useGameStore((s) => s.swapFx);
   const aiThinking = useGameStore((s) => s.aiThinking);
+  const aiMoveFx = useGameStore((s) => s.aiMoveFx);
   const visitorPromptHidden = useGameStore((s) => s.visitorPromptHidden);
   const closePark = useGameStore((s) => s.closePark);
   const { places, visits, exchanges } = useLegalForSelected();
@@ -20,7 +21,7 @@ export function Hand() {
   if (!game) return null;
   const viewer = game.mode === "ai" ? 0 : game.currentPlayer;
   const hand = game.hands[viewer];
-  const locked = aiThinking || game.pendingAdvance || (game.mode === "ai" && game.currentPlayer === 1);
+  const locked = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance || (game.mode === "ai" && game.currentPlayer === 1);
   const selectedHasMove =
     places.length + visits.length + exchanges.length > 0 || !selectedCardId;
   const selectedCard = hand.find((c) => c.id === selectedCardId);

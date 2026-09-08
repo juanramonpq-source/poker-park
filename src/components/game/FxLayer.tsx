@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { PlayingCard } from "@/components/game/PlayingCard";
-import { useGameStore, type FxEvent } from "@/store/game-store";
+import { useGameStore, type AiMoveFx, type FxEvent } from "@/store/game-store";
+import { ATTRACTION_DEFS } from "@/lib/game/attractions";
+import { cardName } from "@/lib/game/deck";
 
 const ATTRACTION_ORIGINS = {
   coaster: { x: 35, y: 35 },
@@ -94,6 +96,7 @@ function spawn(kind: FxEvent["kind"], attractionId: FxEvent["attractionId"]): Sp
 export function FxLayer() {
   const fx = useGameStore((s) => s.fx);
   const swapFx = useGameStore((s) => s.swapFx);
+  const aiMoveFx = useGameStore((s) => s.aiMoveFx);
   const [sparks, setSparks] = useState<Spark[]>([]);
   const [confetti, setConfetti] = useState<Confetti[]>([]);
   const [flash, setFlash] = useState<"off" | "soft" | "hard">("off");
@@ -174,6 +177,7 @@ export function FxLayer() {
           </div>
         </div>
       ) : null}
+      {aiMoveFx ? <AiMoveReveal key={aiMoveFx.n} move={aiMoveFx} /> : null}
       {confetti.map((bit) => (
         <span
           key={bit.id}
@@ -207,6 +211,39 @@ export function FxLayer() {
           }}
         />
       ))}
+    </div>
+  );
+}
+
+function AiMoveReveal({ move }: { move: AiMoveFx }) {
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const card = cardRef.current;
+    const target = document.querySelector<HTMLElement>(`[data-attraction-id="${move.attractionId}"]`);
+    if (!card || !target || reducedMotion()) return;
+    const box = target.getBoundingClientRect();
+    const animation = card.animate(
+      [
+        { left: "50%", top: "14%", opacity: 0, transform: "translate(-50%, -50%) rotate(-8deg) scale(.72)" },
+        { left: "50%", top: "24%", opacity: 1, transform: "translate(-50%, -50%) rotate(3deg) scale(1.05)", offset: 0.24 },
+        { left: `${box.left + box.width / 2}px`, top: `${box.top + box.height / 2}px`, opacity: 1, transform: "translate(-50%, -50%) rotate(0deg) scale(.72)", offset: 0.72 },
+        { left: `${box.left + box.width / 2}px`, top: `${box.top + box.height / 2}px`, opacity: 0, transform: "translate(-50%, -50%) scale(.5)" },
+      ],
+      { duration: 1120, easing: "cubic-bezier(.22,1,.36,1)", fill: "forwards" },
+    );
+    return () => animation.cancel();
+  }, [move.attractionId]);
+
+  return (
+    <div className="ai-move-reveal">
+      <div className="ai-move-card" ref={cardRef}>
+        <PlayingCard card={move.card} size="md" />
+      </div>
+      <div className="ai-move-toast" role="status" aria-live="polite">
+        <small>Jugada del compañero</small>
+        <strong>{cardName(move.card)} · {ATTRACTION_DEFS[move.attractionId].name}</strong>
+      </div>
     </div>
   );
 }

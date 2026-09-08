@@ -5,7 +5,7 @@ import {
   isAttractionComplete,
 } from "@/lib/game/attractions";
 import { ArrowLeftRight, Check, MousePointer2 } from "lucide-react";
-import { isRed } from "@/lib/game/deck";
+import { cardName, isRed } from "@/lib/game/deck";
 import type { AttractionId, Card, GameState } from "@/lib/game/types";
 import { AttractionSheet, ICONS } from "@/components/game/AttractionBoard";
 import { RideFinale } from "@/components/game/RideFinale";
@@ -23,13 +23,14 @@ const TILE_THEME: Record<AttractionId, string> = {
   restrooms: "park-tile-restrooms",
 };
 
-function Pip({ card }: { card: Card | null }) {
+function Pip({ card, highlighted = false }: { card: Card | null; highlighted?: boolean }) {
   if (card) {
     return (
       <span
         className={cn(
           "map-pip is-filled",
           isRed(card.suit) ? "bg-suit-red" : "bg-suit-ink",
+          highlighted && "is-ai-move",
         )}
       />
     );
@@ -39,8 +40,18 @@ function Pip({ card }: { card: Card | null }) {
   );
 }
 
-function MiniShape({ id, slots }: { id: AttractionId; slots: (Card | null)[] }) {
-  const pip = (i: number) => <Pip key={i} card={slots[i] ?? null} />;
+function MiniShape({
+  id,
+  slots,
+  highlightIndex,
+}: {
+  id: AttractionId;
+  slots: (Card | null)[];
+  highlightIndex?: number | null;
+}) {
+  const pip = (i: number) => (
+    <Pip key={i} card={slots[i] ?? null} highlighted={highlightIndex === i} />
+  );
   switch (id) {
     case "coaster":
       return (
@@ -142,11 +153,13 @@ function MapTile({
   const visit = useGameStore((s) => s.visit);
   const { visits } = useLegalForSelected();
   const bloomId = useGameStore((s) => s.bloomId);
+  const aiMoveFx = useGameStore((s) => s.aiMoveFx);
   const hot = attractionIsHot(game, id, selectedCardId, exchangeMode);
   const canVisit = visits.includes(id);
   const Icon = ICONS[id];
   const filled = filledCount(attr.slots);
   const celebrating = bloomId === id;
+  const showingAiMove = aiMoveFx?.attractionId === id;
   const wide = id === "coaster";
   const unavailable = Boolean(selectedCardId) && !hot && !canVisit && !complete;
 
@@ -164,6 +177,7 @@ function MapTile({
         canVisit && "tile-hot",
         unavailable && "tile-unavailable",
         bloomId === id && "attraction-bloom",
+        showingAiMove && "tile-ai-move",
         className,
       )}
       aria-label={`${def.name}, ${complete ? "conseguido" : attractionProgress(id, attr.slots)}${hot || canVisit ? ", disponible para la carta elegida" : ""}`}
@@ -182,7 +196,9 @@ function MapTile({
           {complete ? <Check aria-hidden /> : `${filled}/${def.slotCount}`}
         </span>
       </div>
-      <div className="tile-shape"><MiniShape id={id} slots={attr.slots} /></div>
+      <div className="tile-shape">
+        <MiniShape id={id} slots={attr.slots} highlightIndex={showingAiMove ? aiMoveFx.index : null} />
+      </div>
       <div className="tile-label">
         <p>{def.name}</p>
         <span className={cn(complete && "text-good", (hot || canVisit) && "text-good")}>
@@ -198,6 +214,7 @@ function MapTile({
           +{attr.visitors.length}
         </span>
       ) : null}
+      {showingAiMove ? <span className="ai-move-tile-badge">Jugada CPU</span> : null}
     </button>
   );
 }
@@ -245,12 +262,15 @@ function EntranceTile({ game, className }: { game: GameState; className?: string
 export function Park({ game }: { game: GameState }) {
   const openAttraction = useGameStore((s) => s.openAttraction);
   const aiThinking = useGameStore((s) => s.aiThinking);
+  const aiMoveFx = useGameStore((s) => s.aiMoveFx);
   const selectedCardId = useGameStore((s) => s.selectedCardId);
   const exchangeMode = useGameStore((s) => s.exchangeMode);
   const name = game.names[game.currentPlayer];
-  const busy = aiThinking || game.pendingAdvance;
+  const busy = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance;
   const step = selectedCardId ? 2 : 1;
-  const statusTitle = aiThinking
+  const statusTitle = aiMoveFx
+    ? `${game.names[1]} jugó ${cardName(aiMoveFx.card)}`
+    : aiThinking
     ? `${game.names[1]} está pensando`
     : game.pendingAdvance
       ? "¡Atracción conseguida!"
@@ -261,7 +281,9 @@ export function Park({ game }: { game: GameState }) {
         : selectedCardId
           ? "Toca una atracción iluminada"
           : `Turno de ${name}`;
-  const statusDetail = busy
+  const statusDetail = aiMoveFx
+    ? `${aiMoveFx.kind === "visit" ? "Visitante en" : "Colocada en"} ${ATTRACTION_DEFS[aiMoveFx.attractionId].name}`
+    : busy
     ? game.pendingAdvance
       ? "Celebrando antes del siguiente turno"
       : "Tu compañero prepara su jugada"

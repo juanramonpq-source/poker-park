@@ -14,10 +14,11 @@ export function Hud() {
   const exchangeMode = useGameStore((s) => s.exchangeMode);
   const toggleExchange = useGameStore((s) => s.toggleExchange);
   const aiThinking = useGameStore((s) => s.aiThinking);
+  const aiMoveFx = useGameStore((s) => s.aiMoveFx);
   const [menuOpen, setMenuOpen] = useState(false);
 
   if (!game) return null;
-  const locked = aiThinking || game.pendingAdvance;
+  const locked = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance;
   const remaining = MAX_EXCHANGES - game.exchangesUsed;
   const aforo = remaining <= 0;
   const currentName = game.names[game.currentPlayer];
@@ -43,8 +44,8 @@ export function Hud() {
         <div className="player-chip" aria-live="polite">
           <span className="player-avatar" aria-hidden><UserRound /></span>
           <span className="player-copy">
-            <small>{aiThinking ? "Pensando" : "Turno"}</small>
-            <strong>{currentName}</strong>
+            <small>{aiMoveFx ? "Última jugada" : aiThinking ? "Pensando" : "Turno"}</small>
+            <strong>{aiMoveFx ? game.names[1] : currentName}</strong>
           </span>
         </div>
 

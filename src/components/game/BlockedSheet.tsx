@@ -9,7 +9,8 @@ export function BlockedSheet() {
   const hideVisitorPrompt = useGameStore((s) => s.hideVisitorPrompt);
   const visitorPromptHidden = useGameStore((s) => s.visitorPromptHidden);
   const aiThinking = useGameStore((s) => s.aiThinking);
-  if (!game || game.ended || game.pendingAdvance || aiThinking) return null;
+  const aiMoveFx = useGameStore((s) => s.aiMoveFx);
+  if (!game || game.ended || game.pendingAdvance || aiThinking || aiMoveFx) return null;
   if (game.mode === "ai" && game.currentPlayer === 1) return null;
   if (hasRequiredAction(game)) return null;
   if (visitorPromptHidden) return null;
