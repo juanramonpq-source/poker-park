@@ -2020,6 +2020,57 @@
 .challenge-storm .title-vignette { background: linear-gradient(180deg, rgb(4 24 30 / .08), rgb(4 24 30 / .44) 40%, #061b24 94%); }
 .challenge-impossible .title-vignette { background: radial-gradient(circle at 50% 25%, rgb(255 206 88 / .14), transparent 22%), linear-gradient(180deg, rgb(8 8 34 / .08), rgb(8 8 34 / .45) 40%, #090b26 94%); }
 
+.storm-atmosphere,
+.void-atmosphere {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.storm-atmosphere::before {
+  position: absolute;
+  inset: -25% -15%;
+  background-image: repeating-linear-gradient(106deg, transparent 0 12px, rgb(196 235 255 / .2) 13px, transparent 15px 25px);
+  content: "";
+  opacity: .56;
+  transform: translate3d(0, -16%, 0);
+  animation: storm-rain .72s linear infinite;
+}
+.storm-atmosphere::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(112deg, transparent 0 43%, rgb(224 246 255 / .14) 48%, transparent 54%);
+  content: "";
+  opacity: 0;
+  mix-blend-mode: screen;
+  animation: storm-sky-flash 9.6s steps(1, end) infinite;
+}
+.void-atmosphere::before,
+.void-atmosphere::after {
+  position: absolute;
+  inset: -10%;
+  border: 1px solid rgb(141 113 255 / .12);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 48%, transparent 0 24%, rgb(63 40 113 / .1) 39%, transparent 57%);
+  content: "";
+  opacity: .5;
+  animation: void-breathe 7.3s cubic-bezier(.55, 0, .45, 1) infinite;
+}
+.void-atmosphere::after { animation-delay: -3.65s; filter: hue-rotate(28deg); }
+@keyframes storm-rain {
+  to { transform: translate3d(-3%, 16%, 0); }
+}
+@keyframes storm-sky-flash {
+  0%, 67%, 70%, 100% { opacity: 0; }
+  68%, 69.2% { opacity: 1; }
+  69.4% { opacity: .28; }
+}
+@keyframes void-breathe {
+  0%, 100% { opacity: .18; transform: scale(.78) rotate(-3deg); }
+  48% { opacity: .58; transform: scale(1.18) rotate(3deg); }
+}
+
 .mode-meter {
   display: inline-flex;
   min-width: 0;
@@ -2043,6 +2094,14 @@
 .storm-lock { background: linear-gradient(165deg, rgb(8 31 40 / .66), rgb(5 17 27 / .82)); }
 .storm-lock svg { color: #ffd05b; animation: storm-flash 2.7s ease-in-out infinite; }
 @keyframes storm-flash { 47%, 53% { filter: drop-shadow(0 0 10px #fff2ac); transform: scale(1.16); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .storm-atmosphere::before,
+  .storm-atmosphere::after,
+  .void-atmosphere::before,
+  .void-atmosphere::after { animation: none; }
+  .storm-atmosphere::before { opacity: .2; }
+}
 
 .mirror-board .tile-shape > div,
 .mirror-board .attraction-layout-wrap > div:first-child { transform: scaleX(-1); }

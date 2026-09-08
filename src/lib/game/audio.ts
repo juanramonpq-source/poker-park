@@ -7,6 +7,7 @@ let master: GainNode | null = null;
 let musicBus: GainNode | null = null;
 let sfxBus: GainNode | null = null;
 let noiseBuf: AudioBuffer | null = null;
+let rainBuf: AudioBuffer | null = null;
 let muted = false;
 let musicMode: MusicMode = "off";
 let musicTimer = 0;
@@ -15,6 +16,7 @@ let noteIndex = 0;
 let visBound = false;
 let padNodes: { osc: OscillatorNode; gain: GainNode }[] = [];
 let crowd: { src: AudioBufferSourceNode; gain: GainNode; filter: BiquadFilterNode } | null = null;
+let weatherNodes: { src: AudioBufferSourceNode; gain: GainNode; filters: BiquadFilterNode[] }[] = [];
 
 const C3 = 130.81,
   D3 = 146.83,
@@ -25,17 +27,25 @@ const C3 = 130.81,
   BB3 = 233.08,
   B3 = 246.94,
   C4 = 261.63,
+  CS4 = 277.18,
   D4 = 293.66,
+  DS4 = 311.13,
   E4 = 329.63,
   F4 = 349.23,
+  FS4 = 369.99,
   G4 = 392.0,
+  GS4 = 415.3,
   A4 = 440.0,
   B4 = 493.88,
   C5 = 523.25,
+  CS5 = 554.37,
   D5 = 587.33,
+  DS5 = 622.25,
   E5 = 659.25,
   F5 = 698.46,
+  FS5 = 739.99,
   G5 = 783.99,
+  GS5 = 830.61,
   A5 = 880.0,
   B5 = 987.77,
   C6 = 1046.5,
@@ -58,6 +68,8 @@ const CH_EM: [number, number, number] = [E3, G3, B3];
 const CH_DM: [number, number, number] = [D3, F3, A3];
 const CH_BB: [number, number, number] = [BB3, D4, F4];
 const CH_GM: [number, number, number] = [G3, BB3, D4];
+const CH_STORM: [number, number, number] = [D3, F3, GS4 / 2];
+const CH_VOID: [number, number, number] = [D3, GS4 / 2, CS4];
 const CH_C_TITLE: [number, number, number] = [C4, E4, G4];
 const CH_G_TITLE: [number, number, number] = [G3, B3, D4];
 const CH_F_TITLE: [number, number, number] = [F3, A3, C4];
@@ -206,25 +218,39 @@ const MIRROR_SCORE: Step[] = [
 ];
 
 const STORM_SCORE: Step[] = [
-  s(D5, 2, D3, CH_DM), s(0, 1), s(A4, 1),
-  s(F5, 2, BB3, CH_BB), s(E5, 1), s(D5, 1),
-  s(C5, 2, C3, CH_C), s(G4, 1), s(C5, 1),
-  s(A4, 3, A3, CH_AM), s(0, 1),
-  s(F5, 1, F3, CH_F), s(G5, 1), s(A5, 2),
-  s(E5, 2, E3, CH_EM), s(D5, 1), s(B4, 1),
-  s(C5, 2, C3, CH_C), s(E5, 1), s(G5, 1),
-  s(D5, 3, D3, CH_DM), s(0, 1),
+  // Motor de emergencia: ostinato corto, ascensos y cortes que no dejan reposar.
+  s(D5, 0.5, D3, CH_STORM), s(A4, 0.5), s(D5, 0.5), s(F5, 0.5),
+  s(E5, 1, C3), s(CS5, 0.5), s(D5, 0.5),
+  s(F5, 0.5, BB3, CH_BB), s(A5, 0.5), s(G5, 0.5), s(FS5, 0.5),
+  s(E5, 1, A3), s(0, 0.5), s(A4, 0.5),
+
+  s(D5, 0.5, D3, CH_DM), s(F5, 0.5), s(A5, 1),
+  s(C6, 0.5, C3, CH_STORM), s(A5, 0.5), s(G5, 0.5), s(E5, 0.5),
+  s(F5, 1, BB3, CH_BB), s(E5, 0.5), s(CS5, 0.5),
+  s(D5, 1.5, D3, CH_STORM), s(0, 0.5),
+
+  s(A4, 0.5, D3), s(D5, 0.5), s(F5, 0.5), s(A5, 0.5),
+  s(GS4, 0.5, E3, CH_STORM), s(B4, 0.5), s(E5, 1),
+  s(F5, 0.5, F3), s(G5, 0.5), s(A5, 0.5), s(C6, 0.5),
+  s(CS5, 1, A3, CH_STORM), s(0, 0.5), s(A4, 0.5),
 ];
 
 const IMPOSSIBLE_SCORE: Step[] = [
-  s(D5, 1, D3, CH_DM), s(F5, 1), s(A5, 1), s(D6, 1),
-  s(C6, 2, BB3, CH_BB), s(A5, 1), s(F5, 1),
-  s(E5, 1, C3, CH_C), s(G5, 1), s(B5, 1), s(E6, 1),
-  s(D6, 2, G3, CH_GM), s(A5, 1), s(D5, 1),
-  s(F5, 1, F3, CH_F), s(A5, 1), s(C6, 1), s(F6, 1),
-  s(E6, 2, A3, CH_AM), s(C6, 1), s(A5, 1),
-  s(B5, 1, E3, CH_EM), s(G5, 1), s(E5, 1), s(B4, 1),
-  s(D5, 4, D3, CH_DM), s(0, 2),
+  // 00:13: intervalos que no resuelven y compases deliberadamente irregulares.
+  s(D5, 0.5, D3, CH_VOID), s(GS4, 1.5), s(DS5, 0.5), s(A4, 1),
+  s(CS5, 0.5, C3), s(FS5, 0.75), s(C5, 0.5), s(0, 0.25),
+  s(D5, 1.25, BB3, CH_STORM), s(GS5, 0.5), s(DS5, 0.75),
+  s(A4, 0.5, D3), s(CS5, 1), s(G4, 0.5), s(0, 0.5),
+
+  s(FS4, 0.5, E3, CH_VOID), s(C5, 0.75), s(DS5, 0.5), s(A5, 1.25),
+  s(GS4, 0.5, C3), s(D5, 0.5), s(CS5, 1),
+  s(F5, 0.75, D3, CH_STORM), s(B4, 0.5), s(DS5, 0.75),
+  s(G4, 0.5, BB3), s(CS5, 1.5), s(0, 0.25),
+
+  s(D5, 0.5, D3, CH_VOID), s(DS5, 0.5), s(A4, 1.5),
+  s(CS5, 0.75, C3), s(GS4, 0.5), s(FS5, 0.75),
+  s(F4, 0.5, D3, CH_STORM), s(B4, 1), s(DS4, 0.5),
+  s(CS5, 2.25, D3, CH_VOID), s(0, 0.75),
 ];
 
 function now() {
@@ -232,17 +258,21 @@ function now() {
 }
 
 function makeNoise() {
-  if (!ctx || noiseBuf) return;
+  if (!ctx || (noiseBuf && rainBuf)) return;
   const len = ctx.sampleRate * 2;
   const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const rain = ctx.createBuffer(1, len, ctx.sampleRate);
   const data = buf.getChannelData(0);
+  const rainData = rain.getChannelData(0);
   let last = 0;
   for (let i = 0; i < len; i++) {
     const white = Math.random() * 2 - 1;
     last = (last + 0.027 * white) / 1.027;
     data[i] = last * 3.4;
+    rainData[i] = white * 0.72 + (Math.random() > 0.997 ? white * 0.28 : 0);
   }
   noiseBuf = buf;
+  rainBuf = rain;
 }
 
 function tone(
@@ -369,11 +399,17 @@ function startPads(mode: MusicMode) {
           { freq: E4, type: "sine" as const, peak: 0.016 },
           { freq: G4, type: "triangle" as const, peak: 0.008 },
         ]
-      : mode === "night" || mode === "storm" || mode === "impossible"
+      : mode === "night" || mode === "storm"
         ? [
             { freq: D3, type: "sine" as const, peak: 0.026 },
             { freq: A3, type: "sine" as const, peak: 0.014 },
             { freq: F3, type: "triangle" as const, peak: 0.008 },
+          ]
+      : mode === "impossible"
+        ? [
+            { freq: D3, type: "sine" as const, peak: 0.024 },
+            { freq: GS4 / 2, type: "sawtooth" as const, peak: 0.007 },
+            { freq: CS4, type: "triangle" as const, peak: 0.009 },
           ]
       : mode === "mirror"
         ? [
@@ -448,6 +484,86 @@ function startCrowd() {
   g.connect(musicBus);
   src.start(t);
   crowd = { src, gain: g, filter };
+}
+
+function stopWeather() {
+  if (!ctx) {
+    weatherNodes = [];
+    return;
+  }
+  const t = now();
+  for (const layer of weatherNodes) {
+    layer.gain.gain.cancelScheduledValues(t);
+    layer.gain.gain.setValueAtTime(Math.max(0.0001, layer.gain.gain.value), t);
+    layer.gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+    try {
+      layer.src.stop(t + 0.5);
+    } catch {
+      /* already stopped */
+    }
+  }
+  weatherNodes = [];
+}
+
+function addWeatherLayer(
+  filterSpecs: { type: BiquadFilterType; frequency: number; q: number }[],
+  peak: number,
+  fade = 1.6,
+  texture: "air" | "rain" = "air",
+) {
+  if (!ctx || !musicBus || !noiseBuf) return;
+  const src = ctx.createBufferSource();
+  src.buffer = texture === "rain" ? rainBuf ?? noiseBuf : noiseBuf;
+  src.loop = true;
+  const filters = filterSpecs.map((spec) => {
+    const filter = ctx!.createBiquadFilter();
+    filter.type = spec.type;
+    filter.frequency.value = spec.frequency;
+    filter.Q.value = spec.q;
+    return filter;
+  });
+  const g = ctx.createGain();
+  const t = now();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(peak, t + fade);
+  let source: AudioNode = src;
+  for (const filter of filters) {
+    source.connect(filter);
+    source = filter;
+  }
+  source.connect(g);
+  g.connect(musicBus);
+  src.start(t, Math.random() * 1.5);
+  weatherNodes.push({ src, gain: g, filters });
+}
+
+function startWeather(mode: MusicMode) {
+  stopWeather();
+  if (mode === "storm") {
+    // Dos capas de lluvia: agua fina en primer plano y masa grave a lo lejos.
+    addWeatherLayer([
+      { type: "highpass", frequency: 1250, q: 0.35 },
+      { type: "lowpass", frequency: 6800, q: 0.25 },
+    ], 0.052, 1.6, "rain");
+    addWeatherLayer([{ type: "lowpass", frequency: 240, q: 0.45 }], 0.018, 2.4);
+  } else if (mode === "impossible") {
+    // El final no hereda la lluvia: queda un aire mecánico, estrecho e incómodo.
+    addWeatherLayer([
+      { type: "highpass", frequency: 210, q: 0.7 },
+      { type: "lowpass", frequency: 760, q: 1.1 },
+    ], 0.018, 2.8);
+  }
+}
+
+function scheduleThunder(time: number, intensity = 1) {
+  if (!musicBus) return;
+  // El chasquido precede al cuerpo grave para que el rayo se reconozca incluso
+  // con altavoces pequeños, sin convertirlo en un pico molesto de volumen.
+  burst(0.09, 0.026 * intensity, musicBus, 2600, 0.4, time);
+  burst(2.4, 0.052 * intensity, musicBus, 92, 0.3, time + 0.08);
+  burst(1.7, 0.024 * intensity, musicBus, 180, 0.42, time + 0.18);
+  tone(42, 2.5, "sine", 0.045 * intensity, musicBus, 0.08, -7, time + 0.08);
+  tone(57, 1.9, "triangle", 0.018 * intensity, musicBus, 0.12, 9, time + 0.16);
 }
 
 export function unlockAudio() {
@@ -675,21 +791,24 @@ function scheduleStep(time: number, step: Step, beat: number, index: number, mod
   const dur = Math.max(0.18, step.beats * beat * 0.92);
   if (step.chord) glidePads(time, step.chord);
   if (step.bass) {
-    const calmMode = mode === "night" || mode === "mirror" || mode === "storm";
-    const bassPeak = mode === "title" ? 0.014 : calmMode ? 0.022 : mode === "impossible" ? 0.032 : 0.038;
-    tone(step.bass, beat * (calmMode ? 2.2 : 1.35), "sine", bassPeak, musicBus, 0.08, 0, time);
-    tone(step.bass * 2, beat * 0.9, "triangle", calmMode ? 0.006 : 0.012, musicBus, 0.1, 0, time);
+    const calmMode = mode === "night" || mode === "mirror";
+    const bassPeak = mode === "title" ? 0.014 : calmMode ? 0.022 : mode === "impossible" ? 0.036 : mode === "storm" ? 0.034 : 0.038;
+    tone(step.bass, beat * (calmMode ? 2.2 : mode === "impossible" ? 1.8 : 1.35), "sine", bassPeak, musicBus, 0.08, 0, time);
+    tone(step.bass * 2, beat * 0.9, mode === "impossible" ? "sawtooth" : "triangle", calmMode ? 0.006 : mode === "impossible" ? 0.007 : 0.012, musicBus, 0.1, mode === "impossible" ? -13 : 0, time);
   }
   if (step.m) {
-    const calmMode = mode === "night" || mode === "mirror" || mode === "storm";
-    const peak = mode === "title" ? 0.022 : calmMode ? 0.032 : mode === "impossible" ? 0.042 : 0.048;
-    tone(step.m, dur, "sine", peak, musicBus, calmMode ? 0.14 : 0.06, 0, time);
-    tone(step.m * 2, dur * 0.7, "triangle", peak * (calmMode ? 0.18 : 0.28), musicBus, 0.1, calmMode ? -3 : 4, time);
+    const calmMode = mode === "night" || mode === "mirror";
+    const peak = mode === "title" ? 0.022 : calmMode ? 0.032 : mode === "impossible" ? 0.038 : mode === "storm" ? 0.044 : 0.048;
+    tone(step.m, dur, mode === "impossible" ? "triangle" : "sine", peak, musicBus, calmMode ? 0.14 : mode === "impossible" ? 0.018 : 0.045, mode === "impossible" ? -11 : 0, time);
+    tone(step.m * 2, dur * 0.7, mode === "storm" ? "sawtooth" : "triangle", peak * (calmMode ? 0.18 : mode === "impossible" ? 0.2 : 0.28), musicBus, 0.08, mode === "impossible" ? 17 : 4, time);
+    if (mode === "impossible") {
+      tone(step.m * 1.006, dur * 1.15, "sine", peak * 0.34, musicBus, 0.12, 23, time + beat * 0.08);
+    }
     if (step.beats >= 2) {
       tone(step.m * 1.5, dur * 0.45, "sine", peak * (mode === "night" ? 0.09 : 0.16), musicBus, 0.12, 0, time);
     }
     // Brillo de feria: un contrapunto ligero y original, distinto en cada escena.
-    const shimmer = mode === "title" ? 0.01 : calmMode ? 0.008 : 0.016;
+    const shimmer = mode === "title" ? 0.01 : calmMode ? 0.008 : mode === "impossible" ? 0.005 : 0.016;
     const shimmerOctave = mode === "night" ? (Math.floor(index / NIGHT_SCORE.length) % 2 === 0 ? 2 : 3) : mode === "title" ? 2 : 3;
     tone(step.m * shimmerOctave, Math.min(dur * 0.42, 0.32), "triangle", shimmer, musicBus, 0.02, 0, time + beat * 0.32);
   }
@@ -710,8 +829,17 @@ function scheduleStep(time: number, step: Step, beat: number, index: number, mod
     burst(0.04, 0.022, musicBus, 2300, 0.9, time);
     tone(index % 8 === 0 ? C6 : G5, 0.18, "triangle", 0.012, musicBus, 0.01, 0, time + beat * 0.5);
   }
-  if ((mode === "storm" || mode === "impossible") && index % 12 === 8) {
-    burst(0.5, mode === "impossible" ? 0.018 : 0.012, musicBus, 150, 0.35, time);
+  if (mode === "storm") {
+    if (index % 2 === 0) burst(0.045, 0.022, musicBus, index % 4 === 0 ? 165 : 1150, 0.55, time);
+    if (index % 32 === 6) scheduleThunder(time + beat * 0.28, 0.82);
+    if (index % 64 === 39) scheduleThunder(time + beat * 0.12, 1.08);
+  }
+  if (mode === "impossible") {
+    if (index % 3 !== 1) burst(0.035, 0.014, musicBus, index % 6 === 0 ? 105 : 1860, 0.8, time);
+    if (index % 11 === 7) {
+      tone(73.42, beat * 2.8, "sawtooth", 0.012, musicBus, 0.04, index % 22 === 7 ? -31 : 29, time);
+      burst(0.75, 0.012, musicBus, 310, 2.4, time + beat * 0.2);
+    }
   }
   if (mode === "mirror" && index % 8 === 4 && step.m) {
     tone(step.m / 2, dur * 0.8, "sine", 0.01, musicBus, 0.16, -7, time + beat * 0.35);
@@ -742,9 +870,9 @@ function musicTick() {
         : musicMode === "mirror"
           ? 0.68
           : musicMode === "storm"
-            ? 0.62
+            ? 0.4
             : musicMode === "impossible"
-              ? 0.48
+              ? 0.46
               : 0.56;
   const horizon = ctx.currentTime + 2.4;
   while (nextNote < horizon) {
@@ -765,6 +893,7 @@ function startMode(mode: MusicMode) {
   const target = mode === "title" ? 0.2 : mode === "night" || mode === "mirror" || mode === "storm" ? 0.25 : mode === "impossible" ? 0.3 : 0.34;
   musicBus.gain.setTargetAtTime(target, ctx.currentTime, 0.08);
   startPads(mode);
+  startWeather(mode);
   if (mode === "park") startCrowd();
   else stopCrowd();
   musicTick();
@@ -799,6 +928,7 @@ export function stopParkBed() {
   musicMode = "off";
   stopPads();
   stopCrowd();
+  stopWeather();
   if (musicBus && ctx) {
     musicBus.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.12);
   }

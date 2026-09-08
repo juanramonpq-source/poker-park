@@ -335,6 +335,8 @@ export function Park({ game }: { game: GameState }) {
         className={cn("park-cover", isNight && "park-cover-night")}
       />
       <div className="park-vignette" />
+      {challenge === "storm" ? <div className="storm-atmosphere" aria-hidden="true" /> : null}
+      {challenge === "impossible" ? <div className="void-atmosphere" aria-hidden="true" /> : null}
       <div className="park-grid">
         <div className="turn-banner" role="status" aria-live="polite">
           <span className={cn("turn-step", busy && "is-busy")}>
