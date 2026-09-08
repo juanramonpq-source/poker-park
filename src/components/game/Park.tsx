@@ -4,9 +4,9 @@ import {
   filledCount,
   isAttractionComplete,
 } from "@/lib/game/attractions";
-import { ArrowLeftRight, Check, MousePointer2 } from "lucide-react";
+import { ArrowLeftRight, Check, LockKeyhole, MousePointer2 } from "lucide-react";
 import { cardName, isRed } from "@/lib/game/deck";
-import { legalExchanges } from "@/lib/game/engine";
+import { isAttractionUnlocked, legalExchanges } from "@/lib/game/engine";
 import type { AttractionId, Card, GameState } from "@/lib/game/types";
 import { AttractionSheet, ICONS } from "@/components/game/AttractionBoard";
 import { RideFinale } from "@/components/game/RideFinale";
@@ -148,6 +148,7 @@ function MapTile({
   const def = ATTRACTION_DEFS[id];
   const attr = game.attractions[id];
   const complete = isAttractionComplete(id, attr.slots);
+  const locked = !isAttractionUnlocked(game, id);
   const selectedCardId = useGameStore((s) => s.selectedCardId);
   const exchangeMode = useGameStore((s) => s.exchangeMode);
   const openPark = useGameStore((s) => s.openPark);
@@ -162,15 +163,17 @@ function MapTile({
   const celebrating = bloomId === id;
   const showingAiMove = aiMoveFx?.attractionId === id;
   const wide = id === "coaster";
-  const unavailable = Boolean(selectedCardId) && !hot && !canVisit && !complete;
+  const unavailable = !locked && Boolean(selectedCardId) && !hot && !canVisit && !complete;
 
   return (
     <button
       type="button"
       onClick={() => {
+        if (locked) return;
         if (canVisit) visit(id);
         else openPark(id);
       }}
+      disabled={locked}
       className={cn(
         "park-tile relative flex h-full min-h-0 flex-col overflow-hidden border text-left shadow-soft",
         TILE_THEME[id],
@@ -179,9 +182,10 @@ function MapTile({
         unavailable && "tile-unavailable",
         bloomId === id && "attraction-bloom",
         showingAiMove && "tile-ai-move",
+        locked && "tile-locked",
         className,
       )}
-      aria-label={`${def.name}, ${complete ? "conseguido" : attractionProgress(id, attr.slots)}${hot || canVisit ? ", disponible para la carta elegida" : ""}`}
+      aria-label={`${def.name}, ${locked ? "sin suministro" : complete ? "conseguido" : attractionProgress(id, attr.slots)}${hot || canVisit ? ", disponible para la carta elegida" : ""}`}
       data-attraction-id={id}
     >
       <div className="tile-topline">
@@ -203,9 +207,10 @@ function MapTile({
       <div className="tile-label">
         <p>{def.name}</p>
         <span className={cn(complete && "text-good", (hot || canVisit) && "text-good")}>
-          {complete ? "Conseguido" : hot || canVisit ? "Disponible" : "Ver esquema"}
+          {locked ? "Sin suministro" : complete ? "Revisada" : hot || canVisit ? "Disponible" : "Ver esquema"}
         </span>
       </div>
+      {locked ? <span className="tile-lock"><LockKeyhole aria-hidden /><small>Sector cerrado</small></span> : null}
       {celebrating ? <RideFinale id={id} /> : null}
       {complete && !celebrating ? (
         <span className="tile-won-stamp"><span className="tile-won-label">Conseguido</span></span>
@@ -277,13 +282,14 @@ export function Park({ game }: { game: GameState }) {
         : "Turno del compañero"
       : `Turno de ${name}`;
   const busy = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance;
+  const isNight = game.challenge === "night";
   const step = selectedCardId ? 2 : 1;
   const statusTitle = aiMoveFx
     ? `${game.names[1]} jugó ${cardName(aiMoveFx.card)}`
     : aiThinking
     ? `${game.names[1]} está pensando`
     : game.pendingAdvance
-      ? "¡Atracción conseguida!"
+      ? isNight ? "¡Revisión superada!" : "¡Atracción conseguida!"
       : exchangeMode
         ? selectedCardId
           ? "Elige la carta que quieres recibir"
@@ -294,12 +300,12 @@ export function Park({ game }: { game: GameState }) {
             : selectedCanExchange
               ? "Colócala o pulsa Cambiar"
               : "Toca una atracción iluminada"
-          : turnLabel;
+          : isNight ? `${turnLabel} · Guardia nocturna` : turnLabel;
   const statusDetail = aiMoveFx
     ? `${aiMoveFx.kind === "visit" ? "Visitante en" : "Colocada en"} ${ATTRACTION_DEFS[aiMoveFx.attractionId].name}`
     : busy
     ? game.pendingAdvance
-      ? "Celebrando antes del siguiente turno"
+      ? isNight ? "Registrando la comprobación" : "Celebrando antes del siguiente turno"
       : "Tu compañero prepara su jugada"
     : selectedCardId
       ? exchangeMode
@@ -312,9 +318,9 @@ export function Park({ game }: { game: GameState }) {
   return (
     <div className="relative h-full min-h-0">
       <img
-        src="/images/park-cover.webp"
+        src={isNight ? "/images/poker-park-night-wallpaper.webp" : "/images/park-cover.webp"}
         alt=""
-        className="park-cover"
+        className={cn("park-cover", isNight && "park-cover-night")}
       />
       <div className="park-vignette" />
       <div className="park-grid">

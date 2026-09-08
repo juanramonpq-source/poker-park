@@ -1,4 +1,4 @@
-import { ArrowLeftRight, BookOpen, LogOut, MoreHorizontal, UserRound, Volume2, VolumeX } from "lucide-react";
+import { ArrowLeftRight, BookOpen, LogOut, MoreHorizontal, UserRound, Volume2, VolumeX, Wrench } from "lucide-react";
 import { useState } from "react";
 import { MAX_EXCHANGES } from "@/lib/game/types";
 import { legalExchanges } from "@/lib/game/engine";
@@ -30,6 +30,7 @@ export function Hud() {
   const exchangeDisabled = aforo || locked || mustPlaceSwap || !selectedCanExchange;
   const exchangeReady = Boolean(selectedCardId) && selectedCanExchange && !exchangeMode;
   const currentName = game.names[game.currentPlayer];
+  const isNight = game.challenge === "night";
 
   const openRules = () => {
     setMenuOpen(false);
@@ -50,9 +51,9 @@ export function Hud() {
     <header className="game-hud">
       <div className="hud-bar">
         <div className="player-chip" aria-live="polite">
-          <span className="player-avatar" aria-hidden><UserRound /></span>
+          <span className="player-avatar" aria-hidden>{isNight ? <Wrench /> : <UserRound />}</span>
           <span className="player-copy">
-            <small>{aiMoveFx ? "Última jugada" : aiThinking ? "Pensando" : "Turno"}</small>
+            <small>{aiMoveFx ? "Última revisión" : aiThinking ? "Comprobando" : isNight ? "Guardia" : "Turno"}</small>
             <strong>{aiMoveFx ? game.names[1] : currentName}</strong>
           </span>
         </div>
@@ -60,7 +61,7 @@ export function Hud() {
         <div className="hud-actions">
           <div className="deck-chip" aria-label={`${game.deck.length} cartas en el mazo`}>
             <span className="deck-stack" aria-hidden />
-            <span><small>Mazo</small><strong>{game.deck.length}</strong></span>
+            <span><small>{isNight ? "Parte" : "Mazo"}</small><strong>{game.deck.length}</strong></span>
           </div>
           <button
             type="button"

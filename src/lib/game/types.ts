@@ -17,12 +17,20 @@ export type AttractionId =
   | "restrooms";
 
 export type Mode = "hotseat" | "ai";
+export type GameChallenge = "classic" | "night";
 
 export type Screen = "title" | "playing" | "pass" | "end";
 
 export interface AttractionState {
   slots: (Card | null)[];
   visitors: Card[];
+}
+
+export interface NightShiftState {
+  unlocked: AttractionId[];
+  route: AttractionId[];
+  pendingUnlock: boolean;
+  emergencyUses: number;
 }
 
 export type ExchangeTarget =
@@ -32,6 +40,8 @@ export type ExchangeTarget =
 export interface GameState {
   version: 7;
   mode: Mode;
+  challenge?: GameChallenge;
+  night?: NightShiftState;
   names: [string, string];
   deck: Card[];
   hands: [Card[], Card[]];

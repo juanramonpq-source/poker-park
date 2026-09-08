@@ -8,18 +8,35 @@ import {
   completedAttractions,
   createGame,
   exchangeCard,
-  hasLegalAction,
   hasRequiredAction,
-  parkSolved,
   legalExchanges,
   legalPlacements,
   legalVisits,
+  nightEmergencyAvailable,
   passTurn,
   placeCard,
   placeVisitor,
+  prepareNightUnlock,
+  unlockNightAttraction,
 } from "@/lib/game/engine";
-import { clearGame, loadGame, loadSettings, saveGame, saveSettings } from "@/lib/game/persist";
-import type { AttractionId, Card, ExchangeTarget, GameState, Mode, Screen } from "@/lib/game/types";
+import {
+  clearGame,
+  loadGame,
+  loadSecrets,
+  loadSettings,
+  saveGame,
+  saveSettings,
+  unlockSecret,
+} from "@/lib/game/persist";
+import type {
+  AttractionId,
+  Card,
+  ExchangeTarget,
+  GameChallenge,
+  GameState,
+  Mode,
+  Screen,
+} from "@/lib/game/types";
 
 export type FxKind = "place" | "complete" | "exchange" | "end" | "deal";
 export type FxEvent = { n: number; kind: FxKind; attractionId: AttractionId | null };
@@ -39,6 +56,8 @@ interface GameStore {
   openAttraction: AttractionId | null;
   rulesOpen: boolean;
   muted: boolean;
+  nightTheme: boolean;
+  machineRoomUnlocked: boolean;
   aiThinking: boolean;
   fx: FxEvent | null;
   bloomId: AttractionId | null;
@@ -46,7 +65,7 @@ interface GameStore {
   aiMoveFx: AiMoveFx | null;
   visitorPromptHidden: boolean;
   hydrate: () => void;
-  start: (mode: Mode) => void;
+  start: (mode: Mode, challenge?: GameChallenge) => void;
   resume: () => void;
   goTitle: () => void;
   quitToTitle: () => void;
@@ -61,6 +80,9 @@ interface GameStore {
   hideVisitorPrompt: () => void;
   continueAfterPass: () => void;
   toggleMute: () => void;
+  toggleNightTheme: () => void;
+  unlockMachineRoom: () => void;
+  unlockNightSector: (id: AttractionId) => void;
   setRulesOpen: (open: boolean) => void;
   pulse: (kind: FxKind, attractionId?: AttractionId | null) => void;
 }
@@ -139,6 +161,12 @@ export const useGameStore = create<GameStore>((set, get) => {
           });
           return;
         }
+        if (current.night?.pendingUnlock) {
+          const waiting = prepareNightUnlock(current);
+          persist(waiting);
+          set({ game: waiting, aiThinking: false, openAttraction: null });
+          return;
+        }
         afterHuman(advanceTurn(current), fromHuman);
       }, CELEBRATE_MS);
       return;
@@ -187,6 +215,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       const current = get().game;
       if (!current || current.ended || current.currentPlayer !== 1) {
         set({ aiThinking: false });
+        return;
+      }
+      if (nightEmergencyAvailable(current)) {
+        set({ aiThinking: false, openAttraction: null });
         return;
       }
       const move = chooseAiMove(current);
@@ -251,6 +283,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     openAttraction: null,
     rulesOpen: false,
     muted: false,
+    nightTheme: false,
+    machineRoomUnlocked: false,
     aiThinking: false,
     fx: null,
     bloomId: null,
@@ -260,14 +294,17 @@ export const useGameStore = create<GameStore>((set, get) => {
     pulse,
     hydrate: () => {
       const settings = loadSettings();
+      const secrets = loadSecrets();
       audio.setMuted(settings.muted);
       const saved = loadGame();
       set((s) => ({
         muted: settings.muted,
+        nightTheme: settings.nightTheme,
+        machineRoomUnlocked: secrets.pentonuiSignal,
         game: s.screen === "title" ? saved : s.game ?? saved,
       }));
     },
-    start: (mode) => {
+    start: (mode, challenge = "classic") => {
       window.clearTimeout(aiRevealTimer);
       window.clearTimeout(aiRevealClearTimer);
       audio.unlockAudio();
@@ -276,7 +313,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       audio.playDeal();
       window.setTimeout(() => audio.playDeal(), 70);
       window.setTimeout(() => audio.playDeal(), 140);
-      const game = createGame(mode);
+      const game = createGame(mode, undefined, challenge);
       persist(game);
       pulse("deal");
       set({
@@ -428,9 +465,40 @@ export const useGameStore = create<GameStore>((set, get) => {
     toggleMute: () => {
       const muted = !get().muted;
       audio.setMuted(muted);
-      saveSettings({ version: 1, muted });
+      saveSettings({ version: 1, muted, nightTheme: get().nightTheme });
       set({ muted });
       if (!muted) audio.playUi();
+    },
+    toggleNightTheme: () => {
+      if (!loadSecrets().nightPerfect) return;
+      const nightTheme = !get().nightTheme;
+      saveSettings({ version: 1, muted: get().muted, nightTheme });
+      set({ nightTheme });
+      audio.playUi();
+    },
+    unlockMachineRoom: () => {
+      unlockSecret("pentonuiSignal");
+      set({ machineRoomUnlocked: true });
+      audio.playComplete("haunted");
+    },
+    unlockNightSector: (id) => {
+      const game = get().game;
+      if (!game?.night) return;
+      const emergency = nightEmergencyAvailable(game);
+      try {
+        const opened = unlockNightAttraction(game, id, emergency);
+        persist(opened);
+        audio.playComplete(id);
+        get().pulse("complete", id);
+        if (emergency) {
+          set({ game: opened, selectedCardId: null, exchangeMode: false, openAttraction: null });
+          if (opened.mode === "ai" && opened.currentPlayer === 1) queueAi();
+          return;
+        }
+        afterHuman(advanceTurn(opened), true);
+      } catch {
+        /* stale choice */
+      }
     },
     setRulesOpen: (open) => {
       audio.unlockAudio();

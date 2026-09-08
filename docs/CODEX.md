@@ -106,6 +106,8 @@ AttractionState { slots: (Card|null)[], visitors: Card[] }
 
 GameState.version = 7
   mode: hotseat | ai
+  challenge?: classic | night
+  night?: sectores con suministro, ruta pendiente, elección de apertura e incidencias
   names, deck, hands[2], entrance[2], entranceFaceDown[2]
   attractions, exchangesUsed (max 3), currentPlayer
   drawnThisTurn, consecutivePasses

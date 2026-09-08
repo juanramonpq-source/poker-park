@@ -90,3 +90,14 @@ Cuando ya no se puede ampliar ninguna atracción (o el parque está completo), l
 - 7 Fuegos sobre el parque
 
 No hay ganador. Solo el parque que habéis sido capaces de crear juntos.
+
+## Reto desbloqueable: La Noche de Guardia
+
+Al completar las 7 atracciones del parque clásico se desbloquea este segundo reto. Los jugadores pasan a ser el personal de mantenimiento del parque y mantienen sus manos independientes.
+
+- La partida empieza con Restaurante y Aseos disponibles; los otros cinco sectores están sin suministro.
+- Al completar una atracción, se elige entre dos sectores cuál recibe corriente a continuación.
+- Las cartas solo pueden colocarse o intercambiarse con atracciones que ya tengan suministro. Las reglas internas de las siete atracciones no cambian.
+- Si no queda ninguna colocación o intercambio obligatorio y aún existen sectores cerrados, el generador de emergencia permite abrir uno y continuar el mismo turno. Cada uso queda anotado como incidencia.
+- El final se presenta como informe de mantenimiento: atracciones revisadas, incidencias y autorización de apertura.
+- Completar las 7 revisiones concede la acreditación Guardianes del Alba y desbloquea las recompensas de La octava luz.

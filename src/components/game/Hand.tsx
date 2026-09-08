@@ -29,10 +29,11 @@ export function Hand() {
   const selectedHasMove =
     places.length + visits.length + exchanges.length > 0 || selectedCanExchange || !selectedCardId;
   const noMove = Boolean(selectedCardId) && !selectedHasMove && !locked;
+  const isNight = game.challenge === "night";
   const guideTitle = locked
     ? game.pendingAdvance
-      ? "¡Atracción conseguida!"
-      : "Espera a tu compañero"
+      ? isNight ? "¡Revisión superada!" : "¡Atracción conseguida!"
+      : isNight ? "Tu compañero comprueba el sector" : "Espera a tu compañero"
     : noMove
       ? "Esta carta no encaja ahora"
       : selectedCard
@@ -45,7 +46,7 @@ export function Hand() {
               : "Ahora elige una atracción"
         : exchangeMode
           ? "Elige la carta que quieres cambiar"
-          : "Elige una carta de tu mano";
+          : isNight ? "Elige una carta para la revisión" : "Elige una carta de tu mano";
   const guideDetail = selectedCard
     ? `Seleccionada: ${cardName(selectedCard)}`
     : `${hand.length} cartas disponibles`;

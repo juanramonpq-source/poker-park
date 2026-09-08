@@ -5,6 +5,7 @@ import { FxLayer } from "@/components/game/FxLayer";
 import { Hand } from "@/components/game/Hand";
 import { Hud } from "@/components/game/Hud";
 import { Park } from "@/components/game/Park";
+import { NightUnlockSheet } from "@/components/game/NightUnlockSheet";
 import { PassScreen } from "@/components/game/PassScreen";
 import { RulesSheet } from "@/components/game/RulesSheet";
 import { TitleScreen } from "@/components/game/TitleScreen";
@@ -20,6 +21,7 @@ function PlayingTable() {
         <Park game={game} />
       </div>
       <Hand />
+      <NightUnlockSheet />
       <BlockedSheet />
     </div>
   );
@@ -28,13 +30,18 @@ function PlayingTable() {
 export function GameApp() {
   const screen = useGameStore((s) => s.screen);
   const hydrate = useGameStore((s) => s.hydrate);
+  const game = useGameStore((s) => s.game);
+  const nightTheme = useGameStore((s) => s.nightTheme);
+  const machineRoomUnlocked = useGameStore((s) => s.machineRoomUnlocked);
 
   useEffect(() => {
     if (screen === "title") hydrate();
   }, [hydrate, screen]);
 
   return (
-    <>
+    <div
+      className={`${game?.challenge === "night" || nightTheme ? "night-theme" : ""} ${machineRoomUnlocked ? "machine-room-unlocked" : ""}`}
+    >
       <div id="park-stage">
         {screen === "title" ? <TitleScreen /> : null}
         {screen === "playing" ? <PlayingTable /> : null}
@@ -43,6 +50,6 @@ export function GameApp() {
       </div>
       <FxLayer />
       <RulesSheet />
-    </>
+    </div>
   );
 }

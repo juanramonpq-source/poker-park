@@ -214,7 +214,7 @@ export function PlayingCard({
   const classes = cn(
     "relative shrink-0 overflow-hidden border shadow-soft select-none",
     sizeMap[size],
-    hidden ? "border-border" : "bg-card-face border-suit-ink/10",
+    hidden ? "card-back border-border" : "bg-card-face border-suit-ink/10",
     selected && "card-picked z-10",
     legal && "ring-2 ring-good",
     dimmed && "opacity-60",

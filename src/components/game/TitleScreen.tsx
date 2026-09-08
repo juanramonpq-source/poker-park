@@ -1,8 +1,8 @@
-import { BookOpen, FerrisWheel, Sparkles, Users, UserRound, X } from "lucide-react";
-import { useState } from "react";
+import { BookOpen, FerrisWheel, MoonStar, Sparkles, Users, UserRound, Wrench, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { startTitleBed, unlockAudio } from "@/lib/game/audio";
-import { loadSecrets } from "@/lib/game/persist";
-import type { Mode } from "@/lib/game/types";
+import { loadSecrets, type Secrets } from "@/lib/game/persist";
+import type { GameChallenge, Mode } from "@/lib/game/types";
 import { Button } from "@/components/ui/button";
 import { useGameStore } from "@/store/game-store";
 
@@ -23,11 +23,17 @@ export function TitleScreen() {
   const resume = useGameStore((s) => s.resume);
   const game = useGameStore((s) => s.game);
   const setRulesOpen = useGameStore((s) => s.setRulesOpen);
+  const nightTheme = useGameStore((s) => s.nightTheme);
+  const toggleNightTheme = useGameStore((s) => s.toggleNightTheme);
   const canResume = Boolean(game && !game.ended);
-  const secrets = loadSecrets();
+  const [secrets, setSecrets] = useState<Secrets>({ perfect: false, lifetime: false, nightPerfect: false, pentonuiSignal: false });
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialChoiceOpen, setTutorialChoiceOpen] = useState(false);
+  const [nightModeOpen, setNightModeOpen] = useState(false);
   const [pendingMode, setPendingMode] = useState<Mode | null>(null);
+  const [pendingChallenge, setPendingChallenge] = useState<GameChallenge>("classic");
+
+  useEffect(() => setSecrets(loadSecrets()), []);
 
   const wake = () => {
     unlockAudio();
@@ -41,13 +47,14 @@ export function TitleScreen() {
     window.localStorage.setItem(TUTORIAL_SEEN_KEY, "true");
   };
 
-  const requestStart = (mode: Mode) => {
+  const requestStart = (mode: Mode, challenge: GameChallenge = "classic") => {
     wake();
     if (tutorialSeen()) {
-      start(mode);
+      start(mode, challenge);
       return;
     }
     setPendingMode(mode);
+    setPendingChallenge(challenge);
     setTutorialChoiceOpen(true);
   };
 
@@ -57,7 +64,7 @@ export function TitleScreen() {
     const mode = pendingMode;
     setPendingMode(null);
     setTutorialChoiceOpen(false);
-    start(mode);
+    start(mode, pendingChallenge);
   };
 
   const showTutorial = () => {
@@ -71,7 +78,7 @@ export function TitleScreen() {
     rememberTutorialChoice();
     const mode = pendingMode;
     setPendingMode(null);
-    start(mode);
+    start(mode, pendingChallenge);
   };
 
   return (
@@ -113,6 +120,12 @@ export function TitleScreen() {
             Un día de feria, cartas al sol y atracciones para montar en compañía.
           </p>
           <p className="title-detail">Cooperativo · 2 jugadores · Una baraja</p>
+          {secrets.nightPerfect ? (
+            <button type="button" className="title-night-toggle" onClick={toggleNightTheme}>
+              <MoonStar aria-hidden />
+              {nightTheme ? "Volver a la luz del día" : "Activar interfaz nocturna"}
+            </button>
+          ) : null}
         </div>
 
         <div className="title-panel stagger-in">
@@ -126,9 +139,18 @@ export function TitleScreen() {
               <UserRound className="size-4" strokeWidth={1.75} />
               Jugar con compañero
             </Button>
+            {secrets.perfect ? (
+              <button type="button" className="night-challenge-button" onClick={() => setNightModeOpen(true)}>
+                <span><MoonStar aria-hidden /></span>
+                <span><small>Reto desbloqueado</small><strong>La Noche de Guardia</strong></span>
+                <Wrench aria-hidden />
+              </button>
+            ) : (
+              <p className="night-challenge-hint">Completa las 7 atracciones para descubrir un nuevo turno.</p>
+            )}
             {canResume ? (
               <Button size="md" variant="ghost" className="w-full" onClick={resume}>
-                Continuar la jornada
+                {game?.challenge === "night" ? "Continuar la guardia" : "Continuar la jornada"}
               </Button>
             ) : null}
             <div className="title-secondary-actions">
@@ -144,6 +166,25 @@ export function TitleScreen() {
           </div>
         </div>
       </div>
+      {nightModeOpen ? (
+        <div className="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="night-mode-title">
+          <button className="tutorial-backdrop" type="button" aria-label="Cerrar reto nocturno" onClick={() => setNightModeOpen(false)} />
+          <section className="tutorial-card night-mode-card">
+            <div className="night-mode-icon"><MoonStar aria-hidden /></div>
+            <p className="tutorial-kicker">Turno especial · 00:07</p>
+            <h2 id="night-mode-title">La Noche de Guardia</h2>
+            <p className="tutorial-choice-copy">El parque ha cerrado. Ahora sois el personal de mantenimiento: empezáis con solo dos sectores encendidos y cada revisión devuelve la corriente a una nueva atracción.</p>
+            <div className="night-mode-rules">
+              <span><Wrench aria-hidden /> 2 atracciones abiertas</span>
+              <span><Sparkles aria-hidden /> Nuevos sectores al completar</span>
+            </div>
+            <div className="tutorial-choice-actions">
+              <Button size="lg" className="w-full" onClick={() => { setNightModeOpen(false); requestStart("hotseat", "night"); }}><Users /> Guardia en pareja</Button>
+              <Button size="lg" variant="secondary" className="w-full" onClick={() => { setNightModeOpen(false); requestStart("ai", "night"); }}><UserRound /> Guardia con compañero</Button>
+            </div>
+          </section>
+        </div>
+      ) : null}
       {tutorialChoiceOpen ? (
         <div className="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="tutorial-choice-title">
           <button className="tutorial-backdrop" type="button" aria-label="Cerrar pregunta de tutorial" onClick={() => setTutorialChoiceOpen(false)} />

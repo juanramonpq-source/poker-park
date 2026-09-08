@@ -10,6 +10,7 @@ import type {
   Card,
   DayRating,
   ExchangeTarget,
+  GameChallenge,
   GameState,
   Mode,
 } from "./types";
@@ -19,7 +20,20 @@ function clone<T>(value: T): T {
   return structuredClone(value);
 }
 
-export function createGame(mode: Mode, names?: [string, string]): GameState {
+function shuffledAttractions(ids: AttractionId[]): AttractionId[] {
+  const out = ids.slice();
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j]!, out[i]!];
+  }
+  return out;
+}
+
+export function createGame(
+  mode: Mode,
+  names?: [string, string],
+  challenge: GameChallenge = "classic",
+): GameState {
   const shuffled = shuffle(makeDeck());
   const entrance0 = shuffled.pop()!;
   const entrance1 = shuffled.pop()!;
@@ -36,6 +50,18 @@ export function createGame(mode: Mode, names?: [string, string]): GameState {
   const state: GameState = {
     version: 7,
     mode,
+    challenge,
+    night:
+      challenge === "night"
+        ? {
+            unlocked: ["restaurant", "restrooms"],
+            route: shuffledAttractions(
+              ATTRACTION_IDS.filter((id) => id !== "restaurant" && id !== "restrooms"),
+            ),
+            pendingUnlock: false,
+            emergencyUses: 0,
+          }
+        : undefined,
     names: names ?? defaultNames,
     deck: shuffled,
     hands: [hand0, hand1],
@@ -46,7 +72,10 @@ export function createGame(mode: Mode, names?: [string, string]): GameState {
     currentPlayer: 0,
     drawnThisTurn: false,
     consecutivePasses: 0,
-    lastMessage: "El parque abre. El sol está alto.",
+    lastMessage:
+      challenge === "night"
+        ? "Comienza la guardia. Dos sectores tienen corriente."
+        : "El parque abre. El sol está alto.",
     lastCompleted: null,
     swappedCardId: null,
     pendingAdvance: false,
@@ -84,9 +113,23 @@ export function remainingCards(state: GameState): Card[] {
   return [...state.hands[0], ...state.hands[1], ...state.deck];
 }
 
+export function isNightShift(state: GameState): boolean {
+  return state.challenge === "night" && Boolean(state.night);
+}
+
+export function isAttractionUnlocked(state: GameState, id: AttractionId): boolean {
+  return !isNightShift(state) || Boolean(state.night?.unlocked.includes(id));
+}
+
+export function nightUnlockChoices(state: GameState): AttractionId[] {
+  return state.night?.route.slice(0, 2) ?? [];
+}
+
 export function visitorPhase(state: GameState): boolean {
+  if (isNightShift(state) && (state.night?.route.length ?? 0) > 0) return false;
   const pool = remainingCards(state);
   for (const id of ATTRACTION_IDS) {
+    if (!isAttractionUnlocked(state, id)) continue;
     const attr = state.attractions[id];
     if (isAttractionComplete(id, attr.slots)) continue;
     for (const card of pool) {
@@ -106,6 +149,7 @@ export function legalPlacements(
   if (!card || state.ended) return [];
   const out: { attractionId: AttractionId; index: number }[] = [];
   for (const id of ATTRACTION_IDS) {
+    if (!isAttractionUnlocked(state, id)) continue;
     for (const index of legalSlotsForCard(id, state.attractions[id].slots, card)) {
       out.push({ attractionId: id, index });
     }
@@ -118,6 +162,7 @@ export function legalVisits(state: GameState, cardId: string): AttractionId[] {
   const card = state.hands[state.currentPlayer].find((c) => c.id === cardId);
   if (!card || !isFace(card) || state.ended) return [];
   return ATTRACTION_IDS.filter((id) =>
+    isAttractionUnlocked(state, id) &&
     isAttractionComplete(id, state.attractions[id].slots),
   );
 }
@@ -136,6 +181,7 @@ export function legalExchanges(state: GameState, cardId: string): ExchangeTarget
   });
 
   for (const id of ATTRACTION_IDS) {
+    if (!isAttractionUnlocked(state, id)) continue;
     const slots = state.attractions[id].slots;
     if (isAttractionComplete(id, slots)) continue;
     slots.forEach((parkCard, index) => {
@@ -161,7 +207,7 @@ export function hasLegalAction(state: GameState): boolean {
   return false;
 }
 
-export function hasRequiredAction(state: GameState): boolean {
+export function hasRequiredCardAction(state: GameState): boolean {
   if (state.ended || state.pendingAdvance) return false;
   const hand = state.hands[state.currentPlayer];
   for (const card of hand) {
@@ -169,6 +215,21 @@ export function hasRequiredAction(state: GameState): boolean {
     if (legalExchanges(state, card.id).length > 0) return true;
   }
   return false;
+}
+
+export function nightEmergencyAvailable(state: GameState): boolean {
+  return Boolean(
+    isNightShift(state) &&
+      !state.ended &&
+      !state.pendingAdvance &&
+      !state.night?.pendingUnlock &&
+      state.night?.route.length &&
+      !hasRequiredCardAction(state),
+  );
+}
+
+export function hasRequiredAction(state: GameState): boolean {
+  return hasRequiredCardAction(state) || nightEmergencyAvailable(state);
 }
 
 export function canVisitAnything(state: GameState): boolean {
@@ -190,7 +251,9 @@ export function closePark(state: GameState): GameState {
   next.pendingAdvance = false;
   next.lastCompleted = null;
   next.endReason = parkSolved(next) ? "empty" : "block";
-  next.lastMessage = "Fin de la jornada en el parque";
+  next.lastMessage = isNightShift(next)
+    ? "Fin del turno de guardia"
+    : "Fin de la jornada en el parque";
   return next;
 }
 
@@ -206,6 +269,7 @@ function finishAction(prev: GameState, next: GameState, message: string): GameSt
   next.lastCompleted = justDone ?? null;
   if (justDone) {
     next.lastMessage = `${ATTRACTION_DEFS[justDone].name}: ¡conseguido!`;
+    if (next.night && next.night.route.length > 0) next.night.pendingUnlock = true;
     next.pendingAdvance = true;
     return maybeEnd(next);
   }
@@ -214,6 +278,39 @@ function finishAction(prev: GameState, next: GameState, message: string): GameSt
   if (ended.ended) return ended;
   ended.currentPlayer = ended.currentPlayer === 0 ? 1 : 0;
   return beginTurn(ended);
+}
+
+export function prepareNightUnlock(state: GameState): GameState {
+  if (!state.night?.pendingUnlock) return state;
+  const next = clone(state);
+  next.pendingAdvance = false;
+  next.lastMessage = "Sector revisado. Elige dónde restablecer la corriente.";
+  return next;
+}
+
+export function unlockNightAttraction(
+  state: GameState,
+  attractionId: AttractionId,
+  emergency = false,
+): GameState {
+  if (!state.night || !nightUnlockChoices(state).includes(attractionId)) {
+    throw new Error("Ese sector todavía no está en el cuadro eléctrico");
+  }
+  if (emergency && !nightEmergencyAvailable(state)) {
+    throw new Error("El generador no es necesario");
+  }
+  if (!emergency && !state.night.pendingUnlock) {
+    throw new Error("No hay ningún sector pendiente de apertura");
+  }
+  const next = clone(state);
+  next.night!.route = next.night!.route.filter((id) => id !== attractionId);
+  next.night!.unlocked.push(attractionId);
+  next.night!.pendingUnlock = false;
+  if (emergency) next.night!.emergencyUses += 1;
+  next.lastMessage = emergency
+    ? `Generador activado: ${ATTRACTION_DEFS[attractionId].name} vuelve a tener corriente.`
+    : `${ATTRACTION_DEFS[attractionId].name} queda abierta para revisión.`;
+  return next;
 }
 
 export function advanceTurn(state: GameState): GameState {

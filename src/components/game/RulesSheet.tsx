@@ -31,6 +31,10 @@ const SECTIONS = [
     title: "El día",
     body: "1–2 atracciones, día improvisado. 3–5, día divertido. 6–7, día inolvidable. El parque queda tal como esté.",
   },
+  {
+    title: "La Noche de Guardia",
+    body: "Se desbloquea al completar las siete atracciones. Sois el personal de mantenimiento y empezáis con dos sectores encendidos. Cada atracción revisada permite dar corriente a otra. Si no existe ninguna maniobra obligatoria, el generador abre un sector y el mismo turno continúa. El informe final cuenta revisiones e incidencias.",
+  },
 ];
 
 export function RulesSheet() {

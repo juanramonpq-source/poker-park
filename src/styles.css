@@ -336,8 +336,11 @@
   position: fixed;
   z-index: 20;
   inset: 0;
+  width: 100vw;
+  height: 100dvh;
   display: grid;
   place-items: end center;
+  overflow-y: auto;
   padding: 1rem;
 }
 
@@ -1636,4 +1639,179 @@
   0% { transform: scale(0.55) rotate(-6deg); }
   55% { transform: scale(1.16) rotate(2deg); }
   100% { transform: scale(1) rotate(0deg); }
+}
+
+/* La Noche de Guardia: una identidad completa que conserva la legibilidad de las cartas. */
+.night-theme {
+  --color-bg: #07172c;
+  --color-surface: #102844;
+  --color-surface-2: #183b5d;
+  --color-fg: #f4f8ff;
+  --color-muted: #b8cbe0;
+  --color-faint: #7894b2;
+  --color-accent: #ffc857;
+  --color-accent-fg: #13243b;
+  --color-border: #2c5175;
+  --color-good: #5ee6b1;
+  --color-sky: #65c8ff;
+  --color-fair-blue: #65c8ff;
+  --color-fair-violet: #b89cff;
+  --color-fair-pink: #ff83bd;
+  --color-fair-orange: #ffc857;
+  --color-fair-teal: #5ee6b1;
+  --shadow-soft: 0 18px 42px -22px rgb(0 0 0 / 0.72);
+  --shadow-lifted: 0 28px 70px -28px rgb(0 0 0 / 0.9);
+  color: var(--color-fg);
+}
+
+.night-theme .title-cover { filter: brightness(0.55) saturate(1.18) hue-rotate(7deg); }
+.night-theme .title-vignette {
+  background:
+    radial-gradient(circle at 22% 14%, rgb(101 200 255 / 0.18), transparent 24%),
+    linear-gradient(180deg, rgb(3 14 33 / 0.18), rgb(3 14 33 / 0.48) 45%, rgb(3 14 33 / 0.96));
+}
+.night-theme .title-panel,
+.night-theme .game-hud,
+.night-theme .hand-panel { background: color-mix(in oklab, var(--color-surface) 92%, transparent); }
+.night-theme .park-vignette {
+  background:
+    radial-gradient(circle at 16% 18%, rgb(255 200 87 / 0.22) 0 3px, transparent 5px),
+    radial-gradient(circle at 84% 26%, rgb(101 200 255 / 0.2) 0 3px, transparent 5px),
+    linear-gradient(180deg, rgb(4 15 34 / 0.25), rgb(5 19 39 / 0.56) 58%, rgb(5 19 39 / 0.78));
+}
+.night-theme .park-cover-night { opacity: 0.58; filter: saturate(1.1) contrast(1.05); }
+.night-theme .park-tile,
+.night-theme .park-entrance {
+  background: linear-gradient(150deg, color-mix(in oklab, var(--tile-wash) 18%, var(--color-surface)), color-mix(in oklab, var(--color-surface) 94%, #06162b));
+  box-shadow: inset 0 1px rgb(255 255 255 / 0.06), var(--shadow-soft);
+}
+.night-theme .tile-progress { background: color-mix(in oklab, var(--tile-accent) 15%, var(--color-surface)); }
+.night-theme .map-pip { background: color-mix(in oklab, var(--tile-accent) 15%, var(--color-surface)); box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.35); }
+.night-theme .turn-step.is-busy { background: #284e72; }
+.night-theme .pass-vignette { background: linear-gradient(180deg, rgb(3 13 29 / 0.22), rgb(3 13 29 / 0.82)); }
+.night-theme .end-splash,
+.night-theme .end-tally,
+.night-theme .end-credits { background-image: radial-gradient(circle at 50% -10%, rgb(65 139 204 / 0.28), transparent 42%); }
+
+.title-night-toggle {
+  display: inline-flex;
+  min-height: 2.2rem;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+  border: 1px solid rgb(255 255 255 / 0.22);
+  border-radius: 999px;
+  background: rgb(5 20 42 / 0.44);
+  color: var(--color-ivory);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  backdrop-filter: blur(8px);
+}
+.title-night-toggle svg { width: 0.85rem; height: 0.85rem; }
+
+.night-challenge-button {
+  display: grid;
+  min-height: 3.7rem;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.65rem;
+  border: 1px solid #365f87;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(115deg, #0b2441, #153d62);
+  color: #f4f8ff;
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  box-shadow: inset 0 1px rgb(255 255 255 / 0.08), 0 12px 28px -20px #07172c;
+}
+.night-challenge-button > span:first-child { display: grid; width: 2.35rem; height: 2.35rem; place-items: center; border-radius: 50%; background: rgb(255 200 87 / 0.14); color: #ffc857; }
+.night-challenge-button svg { width: 1.05rem; height: 1.05rem; }
+.night-challenge-button > span:nth-child(2) { display: grid; }
+.night-challenge-button small { color: #91b8d9; font-size: 0.56rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.night-challenge-button strong { margin-top: 0.12rem; font-family: var(--font-display); font-size: 0.92rem; }
+.night-challenge-button > svg { color: #ffc857; }
+.night-challenge-hint { color: var(--color-faint); font-size: 0.62rem; line-height: 1.3; text-align: center; }
+
+.night-mode-card { overflow: hidden; background: linear-gradient(160deg, #102d4c, #07182e); color: #f4f8ff; border-color: #3d678e; }
+.night-mode-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle at 80% 0, rgb(101 200 255 / 0.22), transparent 34%); }
+.night-mode-card > * { position: relative; }
+.night-mode-icon { display: grid; width: 3rem; height: 3rem; place-items: center; margin-bottom: 0.8rem; border-radius: 50%; background: rgb(255 200 87 / 0.14); color: #ffc857; }
+.night-mode-icon svg { width: 1.4rem; height: 1.4rem; }
+.night-mode-card h2 { margin-top: 0.25rem; color: #fff; font-size: 2rem; }
+.night-mode-card .tutorial-kicker { color: #91b8d9; }
+.night-mode-card .tutorial-choice-copy { color: #bfd0e0; }
+.night-mode-rules { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.9rem; }
+.night-mode-rules span { display: inline-flex; align-items: center; gap: 0.3rem; border-radius: 999px; background: rgb(101 200 255 / 0.1); color: #cce8fa; padding: 0.35rem 0.55rem; font-size: 0.62rem; font-weight: 750; }
+.night-mode-rules svg { width: 0.75rem; height: 0.75rem; color: #ffc857; }
+
+.tile-locked { cursor: not-allowed; filter: grayscale(0.65) saturate(0.55); opacity: 0.52; }
+.tile-locked::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(135deg, transparent 0 8px, rgb(4 16 34 / 0.08) 8px 10px); pointer-events: none; }
+.tile-lock { position: absolute; z-index: 4; inset: 0; display: grid; place-content: center; justify-items: center; gap: 0.2rem; background: rgb(4 15 32 / 0.28); color: #dcecff; text-shadow: 0 1px 6px #000; }
+.tile-lock svg { width: 1.2rem; height: 1.2rem; }
+.tile-lock small { font-size: 0.5rem; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; }
+
+.night-unlock-layer { position: absolute; z-index: 45; inset: 0; display: grid; place-items: end center; overflow: hidden; background: rgb(2 10 24 / 0.76); padding: 0.75rem; backdrop-filter: blur(5px); }
+.night-unlock-sky { position: absolute; inset: 0; }
+.night-unlock-sky span { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #ffc857; box-shadow: 0 0 14px #ffc857; animation: night-pulse 1.8s ease-in-out infinite; }
+.night-unlock-sky span:nth-child(1) { top: 16%; left: 14%; }
+.night-unlock-sky span:nth-child(2) { top: 9%; left: 63%; animation-delay: .3s; }
+.night-unlock-sky span:nth-child(3) { top: 28%; left: 83%; animation-delay: .7s; }
+.night-unlock-sky span:nth-child(4) { top: 42%; left: 8%; animation-delay: 1s; }
+.night-unlock-sky span:nth-child(5) { top: 37%; left: 70%; animation-delay: 1.3s; }
+.night-unlock-card { position: relative; width: min(100%, 29rem); border: 1px solid #3c678e; border-radius: var(--radius-xl); background: linear-gradient(155deg, #123657, #07182e); color: #f4f8ff; box-shadow: 0 30px 80px -25px #000; padding: 1.2rem; }
+.night-unlock-emblem { display: grid; width: 3rem; height: 3rem; place-items: center; border-radius: 50%; background: rgb(255 200 87 / 0.14); color: #ffc857; }
+.night-unlock-emblem svg { width: 1.45rem; height: 1.45rem; }
+.night-unlock-kicker { margin-top: 0.8rem; color: #8fc5e8; font-size: 0.62rem; font-weight: 850; letter-spacing: 0.16em; text-transform: uppercase; }
+.night-unlock-card h2 { margin-top: 0.25rem; font-size: 1.7rem; line-height: 1.05; }
+.night-unlock-copy { margin-top: 0.55rem; color: #c1d5e5; font-size: 0.82rem; line-height: 1.45; }
+.night-sector-options { display: grid; gap: 0.55rem; margin-top: 1rem; }
+.night-sector-options button { display: grid; min-height: 4rem; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.7rem; border: 1px solid #31597d; border-radius: var(--radius-lg); background: rgb(101 200 255 / 0.07); padding: 0.55rem 0.65rem; text-align: left; transition: transform 150ms ease, background 150ms ease; }
+.night-sector-options button:active { transform: scale(0.98); }
+.night-sector-options button > svg { width: 1rem; color: #ffc857; }
+.night-sector-icon { display: grid; width: 2.3rem; height: 2.3rem; place-items: center; border-radius: var(--radius-md); background: rgb(255 200 87 / 0.12); color: #ffc857; }
+.night-sector-icon svg { width: 1.05rem; height: 1.05rem; }
+.night-sector-options button > span:nth-child(2) { display: grid; }
+.night-sector-options strong { font-size: 0.8rem; }
+.night-sector-options small { margin-top: 0.12rem; color: #91aeca; font-size: 0.6rem; }
+.night-incident-note { margin-top: 0.75rem; color: #7898b7; font-size: 0.62rem; text-align: center; }
+@keyframes night-pulse { 50% { opacity: 0.25; transform: scale(0.55); } }
+
+.night-reward-card { overflow: hidden; margin-top: 1rem; border: 1px solid #507da3; border-radius: var(--radius-xl); background: linear-gradient(145deg, #153b60, #081a31); color: #f4f8ff; padding: 1rem; box-shadow: var(--shadow-lifted); }
+.night-reward-card > div { display: flex; align-items: center; gap: 0.65rem; text-align: left; }
+.night-reward-card > div > svg { width: 2rem; height: 2rem; color: #ffc857; }
+.night-reward-card span { display: grid; }
+.night-reward-card small { color: #8fb6d3; font-size: 0.56rem; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.night-reward-card strong { font-family: var(--font-display); font-size: 1.15rem; }
+.night-reward-card > p { margin-top: 0.7rem; color: #bed2e2; font-size: 0.72rem; line-height: 1.4; }
+.night-reward-card > a,
+.night-reward-card > button { display: flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: 0.45rem; margin-top: 0.55rem; border-radius: var(--radius-md); font-size: 0.7rem; font-weight: 850; }
+.night-reward-card > a { background: #ffc857; color: #13243b; }
+.night-reward-card > button { border: 1px solid #47759a; background: rgb(255 255 255 / 0.06); color: #f4f8ff; }
+.night-reward-card svg { width: 0.95rem; height: 0.95rem; }
+
+.end-brand-button { width: 100%; border-radius: var(--radius-lg); padding: 0.4rem; }
+.end-brand-button:active { transform: scale(0.98); }
+.machine-room-secret { position: fixed; z-index: 80; inset: 0; display: grid; width: 100vw; height: 100dvh; place-items: center; overflow: hidden; background: radial-gradient(circle at 50% 45%, #123e68, #030b19 68%); padding: 1rem; }
+.machine-rings { position: absolute; width: min(130vw, 42rem); aspect-ratio: 1; }
+.machine-rings span { position: absolute; inset: 10%; border: 1px solid rgb(101 200 255 / 0.22); border-radius: 50%; animation: machine-turn 16s linear infinite; }
+.machine-rings span:nth-child(2) { inset: 24%; border-style: dashed; animation-direction: reverse; animation-duration: 11s; }
+.machine-rings span:nth-child(3) { inset: 38%; border-color: rgb(255 200 87 / 0.5); animation-duration: 7s; }
+.machine-secret-card { position: relative; width: min(100%, 25rem); border: 1px solid #49799f; border-radius: 2rem; background: rgb(7 24 46 / 0.88); color: #f4f8ff; box-shadow: 0 30px 100px #000; padding: 1.5rem; text-align: center; backdrop-filter: blur(18px); }
+.machine-secret-card > img { width: 5.25rem; height: 5.25rem; margin: 0 auto; filter: drop-shadow(0 0 24px rgb(101 200 255 / 0.65)); animation: machine-flower 4s ease-in-out infinite; }
+.machine-secret-card > p:first-of-type { margin-top: 0.85rem; color: #7fd5ff; font-size: 0.58rem; font-weight: 900; letter-spacing: .17em; text-transform: uppercase; }
+.machine-secret-card h2 { margin-top: 0.4rem; font-size: 2rem; line-height: 1.05; }
+.machine-secret-card blockquote { margin: 1rem 0; color: #c9dce9; font-family: var(--font-display); font-size: 1rem; font-style: italic; line-height: 1.45; }
+.machine-code { display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 999px; background: rgb(101 200 255 / 0.1); color: #7fd5ff; padding: 0.45rem 0.65rem; font-size: 0.6rem; font-weight: 850; letter-spacing: .08em; }
+.machine-code svg { width: .8rem; height: .8rem; }
+.machine-reward { display: flex; align-items: center; justify-content: center; gap: .4rem; margin: 1rem 0; color: #ffc857; font-size: .72rem; font-weight: 800; }
+.machine-reward svg { width: 1rem; height: 1rem; }
+@keyframes machine-turn { to { transform: rotate(360deg); } }
+@keyframes machine-flower { 50% { transform: scale(1.08) rotate(3deg); } }
+
+.machine-room-unlocked .card-back::after { content: ""; position: absolute; inset: 18%; border-radius: 50%; background: rgb(5 18 38 / 0.72) url('/brand/pentonui-games-icon.png') center / 80% no-repeat; box-shadow: 0 0 0 2px rgb(101 200 255 / .55), 0 0 16px rgb(101 200 255 / .6); pointer-events: none; }
+
+@media (max-height: 740px) {
+  .title-actions { gap: 0.45rem; margin-top: 0.65rem; }
+  .night-challenge-button { min-height: 3.15rem; }
+  .night-challenge-hint { display: none; }
 }

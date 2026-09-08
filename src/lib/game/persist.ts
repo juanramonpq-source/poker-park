@@ -8,9 +8,10 @@ const SECRETS_KEY = "poker-park.secrets.v1";
 export interface Settings {
   version: 1;
   muted: boolean;
+  nightTheme: boolean;
 }
 
-const defaultSettings: Settings = { version: 1, muted: false };
+const defaultSettings: Settings = { version: 1, muted: false, nightTheme: false };
 
 export function loadSettings(): Settings {
   try {
@@ -67,16 +68,30 @@ export function clearGame() {
 export interface Secrets {
   perfect: boolean;
   lifetime: boolean;
+  nightPerfect: boolean;
+  pentonuiSignal: boolean;
 }
+
+const defaultSecrets: Secrets = {
+  perfect: false,
+  lifetime: false,
+  nightPerfect: false,
+  pentonuiSignal: false,
+};
 
 export function loadSecrets(): Secrets {
   try {
     const raw = localStorage.getItem(SECRETS_KEY);
-    if (!raw) return { perfect: false, lifetime: false };
+    if (!raw) return { ...defaultSecrets };
     const parsed = JSON.parse(raw) as Partial<Secrets>;
-    return { perfect: Boolean(parsed.perfect), lifetime: Boolean(parsed.lifetime) };
+    return {
+      perfect: Boolean(parsed.perfect),
+      lifetime: Boolean(parsed.lifetime),
+      nightPerfect: Boolean(parsed.nightPerfect),
+      pentonuiSignal: Boolean(parsed.pentonuiSignal),
+    };
   } catch {
-    return { perfect: false, lifetime: false };
+    return { ...defaultSecrets };
   }
 }
 
