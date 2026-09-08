@@ -290,6 +290,54 @@
   text-transform: uppercase;
 }
 
+.title-lifetime-badge {
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.55rem;
+  overflow: hidden;
+  margin: 0.85rem auto 0;
+  border: 1px solid #ffe08a;
+  border-radius: 999px;
+  background:
+    linear-gradient(110deg, rgb(91 54 5 / .92), rgb(194 126 18 / .94) 48%, rgb(107 62 4 / .94));
+  color: #fff8d7;
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / .28),
+    0 0 0 3px rgb(255 207 78 / .12),
+    0 10px 28px -12px rgb(255 195 40 / .72);
+  padding: .38rem .62rem .38rem .4rem;
+  text-align: left;
+  text-shadow: 0 1px 5px rgb(65 35 0 / .55);
+  animation: lifetime-badge-glow 3.2s ease-in-out infinite;
+}
+.title-lifetime-badge::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 30%, rgb(255 255 255 / .3) 47%, transparent 64%);
+  content: "";
+  pointer-events: none;
+  transform: translateX(-120%);
+  animation: lifetime-badge-shine 4.8s ease-in-out infinite;
+}
+.title-lifetime-badge > span:nth-child(2) { display: grid; line-height: 1.05; }
+.title-lifetime-badge small { color: #ffe8a4; font-size: .48rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+.title-lifetime-badge strong { margin-top: .16rem; color: #fffbed; font-family: var(--font-display); font-size: .86rem; font-weight: 650; }
+.title-lifetime-seal { display: grid; width: 2rem; height: 2rem; place-items: center; border: 1px solid rgb(255 240 174 / .72); border-radius: 50%; background: radial-gradient(circle, #ffd45f, #a96508); color: #4d2b00; box-shadow: inset 0 1px 3px rgb(255 255 255 / .55); }
+.title-lifetime-seal svg { width: 1.12rem; height: 1.12rem; }
+.title-lifetime-badge > svg { width: .9rem; height: .9rem; color: #ffe27c; }
+
+@keyframes lifetime-badge-glow {
+  0%, 100% { box-shadow: inset 0 1px rgb(255 255 255 / .28), 0 0 0 3px rgb(255 207 78 / .1), 0 10px 28px -12px rgb(255 195 40 / .55); }
+  50% { box-shadow: inset 0 1px rgb(255 255 255 / .32), 0 0 0 5px rgb(255 207 78 / .16), 0 12px 32px -10px rgb(255 195 40 / .82); }
+}
+
+@keyframes lifetime-badge-shine {
+  0%, 58% { transform: translateX(-120%); }
+  78%, 100% { transform: translateX(120%); }
+}
+
 .title-actions {
   display: flex;
   flex-direction: column;

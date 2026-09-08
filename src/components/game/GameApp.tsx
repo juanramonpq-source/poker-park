@@ -40,7 +40,7 @@ export function GameApp() {
 
   return (
     <div
-      className={`${game?.challenge === "night" || nightTheme ? "night-theme" : ""} ${machineRoomUnlocked ? "machine-room-unlocked" : ""}`}
+      className={`${(screen !== "title" && game?.challenge === "night") || nightTheme ? "night-theme" : ""} ${machineRoomUnlocked ? "machine-room-unlocked" : ""}`}
     >
       <div id="park-stage">
         {screen === "title" ? <TitleScreen /> : null}

@@ -107,10 +107,8 @@ export function TitleScreen() {
       <div className="title-shell">
         <div className="title-hero">
           <div className="title-eyebrow">
-            <FerrisWheel className={secrets.lifetime || secrets.perfect ? "size-5 text-accent" : "size-5"} strokeWidth={1.5} />
-            <span>
-              {secrets.lifetime ? "Pase de por vida" : "Juego de cartas"}
-            </span>
+            <FerrisWheel className={secrets.perfect ? "size-5 text-accent" : "size-5"} strokeWidth={1.5} />
+            <span>Juego de cartas</span>
           </div>
 
           <h1 className="title-name">
@@ -120,6 +118,16 @@ export function TitleScreen() {
             Un día de feria, cartas al sol y atracciones para montar en compañía.
           </p>
           <p className="title-detail">Cooperativo · 2 jugadores · Una baraja</p>
+          {secrets.lifetime ? (
+            <div className="title-lifetime-badge" role="status" aria-label="Insignia conseguida: Pase de por vida">
+              <span className="title-lifetime-seal"><FerrisWheel aria-hidden /></span>
+              <span>
+                <small>Insignia conseguida</small>
+                <strong>Pase de por vida</strong>
+              </span>
+              <Sparkles aria-hidden />
+            </div>
+          ) : null}
           {secrets.nightPerfect ? (
             <button type="button" className="title-night-toggle" onClick={toggleNightTheme}>
               <MoonStar aria-hidden />
