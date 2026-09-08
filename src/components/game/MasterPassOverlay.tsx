@@ -20,6 +20,12 @@ import { cn } from "@/lib/utils";
 
 type MasterMode = Exclude<GameChallenge, "classic" | "night">;
 
+const FESTIVAL_BRIEFING = [
+  "La meta sigue siendo completar las 7 atracciones, con exactamente las mismas reglas que en una jornada normal.",
+  "Cada carta colocada legalmente en una atracción distinta de la anterior aumenta el combo: ×1, ×2, ×3…",
+  "Si repetís la misma atracción en dos colocaciones seguidas, el combo vuelve a ×1. Las bombillas indican el brillo conseguido; no cambian qué cartas son válidas.",
+];
+
 const MASTER_MODES: {
   id: MasterMode;
   title: string;
@@ -116,7 +122,16 @@ export function MasterPassOverlay({
         {selectedMode ? (
           <div className="master-start-panel stagger-in">
             <div><Sparkles aria-hidden /><span><small>Recompensa perfecta</small><strong>{selectedMode.reward}</strong></span></div>
-            <div>
+            {selectedMode.id === "festival" ? (
+              <section className="festival-briefing" aria-label="Cómo jugar al Festival de las Luces">
+                <p><strong>Objetivo del modo</strong> Completar el parque y, como reto adicional, mantener encendida la cadena de luces.</p>
+                <ol>
+                  {FESTIVAL_BRIEFING.map((rule, index) => <li key={rule}><span>{index + 1}</span>{rule}</li>)}
+                </ol>
+                <p className="festival-briefing-example"><strong>Ejemplo:</strong> Montaña Rusa → Túnel del Amor → Bosque da combo ×3 y 6 bombillas. Bosque otra vez reinicia el combo a ×1.</p>
+              </section>
+            ) : null}
+            <div className="master-start-actions">
               <Button size="lg" onClick={() => onStart("hotseat", selectedMode.id)}><Users /> En pareja</Button>
               <Button size="lg" variant="secondary" onClick={() => onStart("ai", selectedMode.id)}><UserRound /> Con compañero</Button>
             </div>

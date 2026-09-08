@@ -535,6 +535,141 @@
     linear-gradient(180deg, rgb(234 246 255 / 0.58), rgb(234 246 255 / 0.76) 58%, rgb(234 246 255 / 0.9));
 }
 
+/* Mascotas de Poker Park: hojas de cuatro fotogramas generadas para el juego. */
+.mascot-button {
+  position: relative;
+  display: grid;
+  width: 3.35rem;
+  height: 3.35rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  filter: drop-shadow(0 5px 5px rgb(8 24 40 / .3));
+  -webkit-tap-highlight-color: transparent;
+}
+.mascot-sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: 200% 200%;
+  image-rendering: pixelated;
+  animation: mascot-sprite-loop 1.15s steps(1, end) infinite;
+}
+.mascot-sprite-turtle { background-image: url('/mascots/turtle-sheet.png'); }
+.mascot-sprite-hedgehog { background-image: url('/mascots/hedgehog-sheet.png'); animation-duration: .92s; }
+.mascot-sprite-fish { background-image: url('/mascots/fish-sheet.png'); animation-duration: 1.28s; }
+.mascot-sprite.is-reacting { animation: mascot-sprite-loop .42s steps(1, end) 2, mascot-reaction .78s cubic-bezier(.22, 1, .36, 1) both; }
+
+.park-mascot-layer {
+  position: absolute;
+  z-index: 7;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.park-mascot {
+  position: absolute;
+  width: 3.1rem;
+  height: 3.1rem;
+  opacity: 0;
+  pointer-events: auto;
+  animation: mascot-visit 6.5s cubic-bezier(.22, 1, .36, 1) both;
+}
+.park-mascot-turtle { left: .15rem; bottom: .35rem; }
+.park-mascot-hedgehog { right: .1rem; bottom: 27%; }
+.park-mascot-fish { right: .2rem; top: 12%; animation-name: mascot-float-visit; }
+
+.mascot-click-fx {
+  position: absolute;
+  inset: 30%;
+  color: var(--color-accent);
+  pointer-events: none;
+}
+.mascot-click-fx i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: .35rem;
+  height: .35rem;
+  border: 2px solid currentcolor;
+  border-radius: 2px;
+  animation: mascot-spark .72s ease-out both;
+  --mascot-x: -1.3rem;
+  --mascot-y: -1.15rem;
+}
+.mascot-click-fx i:nth-child(2) { animation-delay: .06s; --mascot-x: 1.45rem; --mascot-y: -.6rem; }
+.mascot-click-fx i:nth-child(3) { animation-delay: .12s; --mascot-x: .3rem; --mascot-y: -1.75rem; }
+.mascot-click-fx-fish { color: var(--color-sky); }
+.mascot-click-fx-fish i { border-radius: 50%; }
+.mascot-click-fx-hedgehog { color: #ffd05b; }
+
+.mascot-parade {
+  display: grid;
+  justify-items: center;
+  gap: .15rem;
+  margin-top: .7rem;
+}
+.mascot-parade > div { display: flex; align-items: flex-end; justify-content: center; gap: .15rem; }
+.mascot-parade .mascot-button { width: 3.15rem; height: 3.15rem; }
+.mascot-parade-credits .mascot-button { width: 3.65rem; height: 3.65rem; }
+.mascot-parade p { color: var(--color-muted); font-size: .6rem; font-weight: 800; letter-spacing: .04em; }
+
+@keyframes mascot-sprite-loop {
+  0%, 24.99% { background-position: 0 0; }
+  25%, 49.99% { background-position: 100% 0; }
+  50%, 74.99% { background-position: 0 100%; }
+  75%, 100% { background-position: 100% 100%; }
+}
+@keyframes mascot-visit {
+  0% { opacity: 0; transform: translate3d(-45%, 18%, 0) scale(.72); }
+  9%, 82% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  100% { opacity: 0; transform: translate3d(-35%, 16%, 0) scale(.82); }
+}
+@keyframes mascot-float-visit {
+  0% { opacity: 0; transform: translate3d(48%, 25%, 0) scale(.72); }
+  10% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  42% { opacity: 1; transform: translate3d(-8%, -14%, 0) scale(1.04); }
+  80% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  100% { opacity: 0; transform: translate3d(55%, -18%, 0) scale(.8); }
+}
+@keyframes mascot-reaction {
+  0% { transform: scale(1); }
+  38% { transform: translateY(-18%) scale(1.22) rotate(-4deg); }
+  68% { transform: translateY(2%) scale(.94) rotate(3deg); }
+  100% { transform: scale(1); }
+}
+@keyframes mascot-spark {
+  0% { opacity: 0; transform: translate(0, 0) scale(.2) rotate(0); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--mascot-x), var(--mascot-y)) scale(.7) rotate(80deg); }
+}
+
+@media (max-width: 430px) {
+  .park-mascot { width: 2.8rem; height: 2.8rem; }
+  .park-mascot-turtle { left: -.15rem; }
+  .park-mascot-hedgehog { right: -.15rem; }
+  .park-mascot-fish { right: -.1rem; }
+}
+
+@media (max-height: 700px) {
+  .mascot-parade-credits { margin-top: .35rem; }
+  .mascot-parade-credits .mascot-button { width: 2.8rem; height: 2.8rem; }
+  .mascot-parade-credits p { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-sprite,
+  .mascot-sprite.is-reacting,
+  .park-mascot { animation: none; }
+  .park-mascot { opacity: 1; }
+  .mascot-click-fx { display: none; }
+}
+
 .turn-banner {
   border: 1px solid color-mix(in oklab, var(--color-surface) 78%, var(--color-border));
   border-radius: 999px;
@@ -2156,7 +2291,14 @@
 .master-start-panel span { display: grid; }
 .master-start-panel small { color: #a79abe; font-size: .48rem; font-weight: 900; text-transform: uppercase; }
 .master-start-panel strong { color: #fff; font-size: .72rem; }
-.master-start-panel > div:last-child { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .6rem; }
+.master-start-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .6rem; }
+.festival-briefing { margin-top: .65rem; border: 1px solid rgb(255 208 91 / .26); border-radius: .8rem; background: rgb(9 6 28 / .2); padding: .6rem; color: #e9ddec; }
+.festival-briefing > p { font-size: .61rem; line-height: 1.42; }
+.festival-briefing > p strong { color: #fff3b5; }
+.festival-briefing ol { display: grid; gap: .35rem; margin-top: .5rem; }
+.festival-briefing li { display: grid; grid-template-columns: 1.05rem 1fr; gap: .35rem; align-items: start; font-size: .57rem; line-height: 1.35; }
+.festival-briefing li > span { display: grid; width: 1.05rem; height: 1.05rem; place-items: center; border-radius: 999px; background: #ffcf4f; color: #3b1839; font-size: .52rem; font-weight: 900; }
+.festival-briefing-example { margin-top: .5rem; color: #cdbfdd; }
 .master-select-hint { margin-top: .65rem; color: #8e82a5; font-size: .6rem; text-align: center; }
 
 .master-pass-button { display: grid; min-height: 3.5rem; grid-template-columns: auto 1fr auto; align-items: center; gap: .6rem; border: 1px solid #b9842c; border-radius: var(--radius-lg); background: linear-gradient(115deg, #311b52, #6d3c68); color: #fff8e9; padding: .5rem .7rem; text-align: left; }

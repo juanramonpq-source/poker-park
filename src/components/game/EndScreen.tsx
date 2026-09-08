@@ -14,6 +14,7 @@ import { loadSecrets, masterTrialsComplete, unlockSecret, type Secrets } from "@
 import { CHALLENGE_NAMES } from "@/lib/game/challenges";
 import type { GameChallenge } from "@/lib/game/types";
 import { Button } from "@/components/ui/button";
+import { MascotParade } from "@/components/game/ParkMascots";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 
@@ -186,6 +187,7 @@ export function EndScreen() {
         <div className="stagger-in relative z-10 max-w-sm">
           <p className="font-display text-3xl font-medium tracking-tight">Fin</p>
           <p className="mt-2 text-lg text-muted">{isNight ? "El parque puede dormir tranquilo." : challenge === "impossible" && perfect ? "Habéis llegado al final verdadero." : "Gracias por jugar."}</p>
+          <MascotParade place="credits" />
           <button type="button" className="end-brand end-brand-button" onClick={onBrandTap} aria-label="Pentonúi Games">
             <img src="/brand/pentonui-games-logo.webp" alt="Pentonúi Games" />
             <p>Creado por Pentonúi Games</p>
@@ -231,6 +233,8 @@ export function EndScreen() {
           <p key={pop} className="count-pop font-display text-7xl font-medium leading-none tracking-tight text-accent">{shown}<span className="ml-1 text-2xl text-muted">/ 7</span></p>
           <p className="mt-2 font-display text-xl text-fg">{currentTitle}</p>
         </button>
+
+        <MascotParade place="tally" />
 
         <ol className="mt-4 space-y-1.5">
           {scale.map((title, count) => (

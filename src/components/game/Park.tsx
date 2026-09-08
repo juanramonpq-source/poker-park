@@ -17,6 +17,7 @@ import type { AttractionId, Card, GameState } from "@/lib/game/types";
 import { AttractionSheet, ICONS } from "@/components/game/AttractionBoard";
 import { RideFinale } from "@/components/game/RideFinale";
 import { PlayingCard } from "@/components/game/PlayingCard";
+import { ParkMascots } from "@/components/game/ParkMascots";
 import { cn } from "@/lib/utils";
 import { attractionIsHot, useGameStore, useLegalForSelected } from "@/store/game-store";
 
@@ -344,7 +345,7 @@ export function Park({ game }: { game: GameState }) {
           </span>
           <span className="turn-copy"><strong>{statusTitle}</strong><small>{statusDetail}</small></span>
           {challenge === "festival" ? (
-            <span className="mode-meter festival-meter"><Lightbulb aria-hidden /><span><small>Combo</small><strong>×{game.festival?.combo ?? 0}</strong></span></span>
+            <span className="mode-meter festival-meter"><Lightbulb aria-hidden /><span><small>Meta: 7 · bonus</small><strong>×{game.festival?.combo ?? 0} · {game.festival?.bulbs ?? 0} bombillas</strong></span></span>
           ) : challenge === "mirror" ? (
             <span className="mode-meter mirror-meter"><FlipHorizontal2 aria-hidden /><span><small>Plano</small><strong>Espejo</strong></span></span>
           ) : challenge === "storm" ? (
@@ -362,6 +363,7 @@ export function Park({ game }: { game: GameState }) {
         <MapTile id="restrooms" game={game} />
         <EntranceTile game={game} />
       </div>
+      <ParkMascots />
       {openAttraction ? <AttractionSheet id={openAttraction} game={game} /> : null}
     </div>
   );

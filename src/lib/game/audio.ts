@@ -628,6 +628,32 @@ export function playUi() {
   burst(0.05, 0.05, sfxBus, 2400, 0.8);
 }
 
+export function playMascot(kind: "turtle" | "hedgehog" | "fish") {
+  unlockAudio();
+  if (!sfxBus) return;
+  const t = now();
+  if (kind === "turtle") {
+    tone(392, 0.18, "triangle", 0.075, sfxBus, 0.008, -4, t);
+    tone(523.25, 0.2, "sine", 0.065, sfxBus, 0.012, 2, t + 0.1);
+    tone(659.25, 0.3, "triangle", 0.045, sfxBus, 0.018, 0, t + 0.2);
+  } else if (kind === "hedgehog") {
+    burst(0.055, 0.055, sfxBus, 2600, 1.3, t);
+    tone(880, 0.09, "square", 0.035, sfxBus, 0.003, -7, t);
+    tone(1174.66, 0.12, "triangle", 0.055, sfxBus, 0.004, 5, t + 0.075);
+    tone(987.77, 0.18, "sine", 0.045, sfxBus, 0.006, 0, t + 0.16);
+  } else {
+    burst(0.08, 0.045, sfxBus, 760, 2.2, t);
+    tone(329.63, 0.13, "sine", 0.06, sfxBus, 0.004, 0, t);
+    tone(493.88, 0.16, "sine", 0.055, sfxBus, 0.006, 3, t + 0.08);
+    tone(783.99, 0.22, "sine", 0.038, sfxBus, 0.008, -2, t + 0.17);
+  }
+  try {
+    navigator.vibrate?.(kind === "hedgehog" ? [7, 18, 7] : 8);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function playDeal() {
   if (!sfxBus) return;
   const j = 0.88 + Math.random() * 0.24;
