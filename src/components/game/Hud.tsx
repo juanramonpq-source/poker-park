@@ -1,4 +1,4 @@
-import { ArrowLeftRight, BookOpen, LogOut, MoreHorizontal, UserRound, Volume2, VolumeX, Wrench } from "lucide-react";
+import { ArrowLeftRight, BookOpen, Flag, LogOut, MoreHorizontal, UserRound, Volume2, VolumeX, Wrench } from "lucide-react";
 import { useState } from "react";
 import { MAX_EXCHANGES } from "@/lib/game/types";
 import { legalExchanges } from "@/lib/game/engine";
@@ -12,12 +12,14 @@ export function Hud() {
   const toggleMute = useGameStore((s) => s.toggleMute);
   const setRulesOpen = useGameStore((s) => s.setRulesOpen);
   const goTitle = useGameStore((s) => s.goTitle);
+  const closePark = useGameStore((s) => s.closePark);
   const exchangeMode = useGameStore((s) => s.exchangeMode);
   const selectedCardId = useGameStore((s) => s.selectedCardId);
   const toggleExchange = useGameStore((s) => s.toggleExchange);
   const aiThinking = useGameStore((s) => s.aiThinking);
   const aiMoveFx = useGameStore((s) => s.aiMoveFx);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
 
   if (!game) return null;
   const locked = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance;
@@ -45,6 +47,16 @@ export function Hud() {
   const exitGame = () => {
     setMenuOpen(false);
     goTitle();
+  };
+
+  const requestClose = () => {
+    setMenuOpen(false);
+    setCloseConfirmOpen(true);
+  };
+
+  const confirmClose = () => {
+    setCloseConfirmOpen(false);
+    closePark();
   };
 
   return (
@@ -91,6 +103,15 @@ export function Hud() {
             <span>{aforo ? "Sin cambios" : mustPlaceSwap ? "Colócala" : exchangeMode ? "Cancelar" : "Cambiar"}</span>
             {!aforo ? <strong>{remaining}</strong> : null}
           </button>
+          <button
+            type="button"
+            className="close-park-action"
+            onClick={requestClose}
+            aria-label={isNight ? "Cerrar el turno y ver el recuento" : "Cerrar el parque y ver el recuento"}
+          >
+            <Flag aria-hidden />
+            <span>Cerrar</span>
+          </button>
           <Button
             size="icon"
             variant="ghost"
@@ -116,12 +137,30 @@ export function Hud() {
               {muted ? <VolumeX aria-hidden /> : <Volume2 aria-hidden />}
               <span><strong>{muted ? "Activar sonido" : "Silenciar"}</strong><small>Música y efectos</small></span>
             </button>
+            <button type="button" role="menuitem" onClick={requestClose}>
+              <Flag aria-hidden />
+              <span><strong>{isNight ? "Cerrar el turno" : "Cerrar el parque"}</strong><small>Terminar y ver el recuento</small></span>
+            </button>
             <button type="button" role="menuitem" onClick={exitGame}>
               <LogOut aria-hidden />
               <span><strong>Volver al inicio</strong><small>La partida queda guardada</small></span>
             </button>
           </div>
         </>
+      ) : null}
+      {closeConfirmOpen ? (
+        <div className="close-park-dialog-layer" role="dialog" aria-modal="true" aria-labelledby="close-park-title">
+          <div className="close-park-dialog">
+            <span className="close-park-emblem" aria-hidden><Flag /></span>
+            <p>{isNight ? "Fin de la guardia" : "Última llamada"}</p>
+            <h2 id="close-park-title">{isNight ? "¿Cerrar el turno ahora?" : "¿Cerrar el parque ahora?"}</h2>
+            <small>Pasarás al recuento con las atracciones completadas hasta este momento.</small>
+            <div>
+              <Button variant="secondary" onClick={() => setCloseConfirmOpen(false)}>Seguir jugando</Button>
+              <Button onClick={confirmClose}>{isNight ? "Cerrar turno" : "Cerrar parque"}</Button>
+            </div>
+          </div>
+        </div>
       ) : null}
     </header>
   );

@@ -2,7 +2,6 @@ import { cardName, isFace } from "@/lib/game/deck";
 import { canVisitAnything, legalExchanges } from "@/lib/game/engine";
 import { Check, X } from "lucide-react";
 import { PlayingCard } from "@/components/game/PlayingCard";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useGameStore, useLegalForSelected } from "@/store/game-store";
 
@@ -15,7 +14,6 @@ export function Hand() {
   const aiThinking = useGameStore((s) => s.aiThinking);
   const aiMoveFx = useGameStore((s) => s.aiMoveFx);
   const visitorPromptHidden = useGameStore((s) => s.visitorPromptHidden);
-  const closePark = useGameStore((s) => s.closePark);
   const { places, visits, exchanges } = useLegalForSelected();
 
   if (!game) return null;
@@ -67,11 +65,6 @@ export function Hand() {
               <X aria-hidden />
               <span>Quitar</span>
             </button>
-          ) : null}
-          {visitorPromptHidden && !locked ? (
-            <Button size="sm" variant="secondary" onClick={closePark}>
-              Cerrar el parque
-            </Button>
           ) : null}
         </div>
         <div className="hand-cards" role="group" aria-label={`Tu mano: ${hand.length} cartas`}>

@@ -308,7 +308,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       window.clearTimeout(aiRevealTimer);
       window.clearTimeout(aiRevealClearTimer);
       audio.unlockAudio();
-      audio.startParkBed();
+      if (challenge === "night") audio.startNightBed();
+      else audio.startParkBed();
       audio.playStart();
       audio.playDeal();
       window.setTimeout(() => audio.playDeal(), 70);
@@ -331,7 +332,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       const saved = get().game ?? loadGame();
       if (!saved) return;
       audio.unlockAudio();
-      audio.startParkBed();
+      if (saved.challenge === "night") audio.startNightBed();
+      else audio.startParkBed();
       set({
         game: saved,
         screen: saved.ended ? "end" : "playing",
@@ -448,9 +450,13 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
     closePark: () => {
       const { game } = get();
-      if (!game || get().aiThinking) return;
-      if (hasRequiredAction(game)) return;
+      if (!game || game.ended) return;
+      window.clearTimeout(aiTimer);
+      window.clearTimeout(aiRevealTimer);
+      window.clearTimeout(aiRevealClearTimer);
+      window.clearTimeout(advanceTimer);
       const next = closePark(game);
+      set({ aiThinking: false, aiMoveFx: null, swapFx: null, bloomId: null });
       juice(game, next, get().pulse);
       afterHuman(next);
     },

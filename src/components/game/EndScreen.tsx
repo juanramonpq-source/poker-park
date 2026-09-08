@@ -1,4 +1,4 @@
-import { Download, MoonStar, Radio, ShieldCheck, Sparkles } from "lucide-react";
+import { Download, FerrisWheel, MoonStar, Radio, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   completedAttractions,
@@ -9,7 +9,7 @@ import {
   type DayBadge,
 } from "@/lib/game/engine";
 import { ATTRACTION_DEFS } from "@/lib/game/attractions";
-import { playParty, playRollCrash, playRollFill, playRollTick } from "@/lib/game/audio";
+import { playLifetimeUnlock, playParty, playRollCrash, playRollFill, playRollTick } from "@/lib/game/audio";
 import { loadSecrets, unlockSecret } from "@/lib/game/persist";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -57,6 +57,7 @@ export function EndScreen() {
   const [taps, setTaps] = useState(0);
   const [brandTaps, setBrandTaps] = useState(0);
   const [machineRoomOpen, setMachineRoomOpen] = useState(false);
+  const [lifetimeReveal, setLifetimeReveal] = useState(false);
   const [lifetime, setLifetime] = useState(() => loadSecrets().lifetime);
   const [nightReward, setNightReward] = useState(() => loadSecrets().nightPerfect);
   const done = game ? completedAttractions(game) : [];
@@ -112,6 +113,9 @@ export function EndScreen() {
     if (next >= 7 && !lifetime) {
       unlockSecret("lifetime");
       setLifetime(true);
+      setLifetimeReveal(true);
+      playLifetimeUnlock();
+      window.setTimeout(() => setLifetimeReveal(false), 3200);
     }
   };
 
@@ -174,6 +178,15 @@ export function EndScreen() {
   return (
     <main className="end-tally relative min-h-dvh overflow-y-auto bg-bg pb-10 text-fg">
       {perfect && resolved ? <div className="fireworks" aria-hidden /> : null}
+      {lifetimeReveal ? (
+        <div className="lifetime-unlock-fx" role="status" aria-live="assertive">
+          <div className="lifetime-unlock-rings" aria-hidden><span /><span /><span /></div>
+          <FerrisWheel aria-hidden />
+          <small>Acceso secreto concedido</small>
+          <strong>Pase de por vida</strong>
+          <p>La noria ya recuerda vuestro nombre.</p>
+        </div>
+      ) : null}
       <div className="relative mx-auto max-w-md px-5 pt-[max(2.5rem,env(safe-area-inset-top))]">
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted">{isNight ? "Informe de mantenimiento" : "Recuento del día"}</p>
         <button type="button" onClick={onTapScale} className="mt-3 w-full text-left">

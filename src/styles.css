@@ -625,6 +625,50 @@
 .hud-menu-trigger { width: 2.75rem; height: 2.75rem; color: var(--color-muted); }
 .hud-menu-trigger svg { width: 1.2rem; height: 1.2rem; }
 
+.close-park-action {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  border: 1px solid color-mix(in oklab, var(--color-accent) 42%, var(--color-border));
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--color-accent) 9%, var(--color-surface));
+  color: var(--color-muted);
+  padding: 0 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 850;
+}
+.close-park-action svg { width: 1rem; height: 1rem; color: var(--color-accent); }
+.close-park-action:active { transform: scale(.97); }
+
+.close-park-dialog-layer {
+  position: fixed;
+  z-index: 70;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(10 27 43 / .64);
+  padding: 1rem;
+  backdrop-filter: blur(8px);
+}
+.close-park-dialog {
+  width: min(100%, 25rem);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lifted);
+  padding: 1.25rem;
+  text-align: center;
+  animation: menu-in var(--motion-fast) var(--ease-smooth) both;
+}
+.close-park-emblem { display: grid; width: 3rem; height: 3rem; place-items: center; margin: 0 auto .7rem; border-radius: 50%; background: color-mix(in oklab, var(--color-accent) 13%, var(--color-bg)); color: var(--color-accent); }
+.close-park-emblem svg { width: 1.25rem; height: 1.25rem; }
+.close-park-dialog > p { color: var(--color-accent); font-size: .62rem; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
+.close-park-dialog h2 { margin-top: .25rem; color: var(--color-fg); font-family: var(--font-display); font-size: 1.55rem; }
+.close-park-dialog > small { display: block; margin-top: .55rem; color: var(--color-muted); font-size: .76rem; line-height: 1.45; }
+.close-park-dialog > div { display: grid; grid-template-columns: 1fr 1fr; gap: .55rem; margin-top: 1.1rem; }
+
 .hud-menu-backdrop {
   position: fixed;
   z-index: 30;
@@ -963,7 +1007,41 @@
   .deck-chip .deck-stack { display: none; }
   .exchange-action { min-width: 5.1rem; padding-inline: 0.45rem; }
   .player-copy strong { max-width: 4.1rem; }
+  .close-park-action span { display: none; }
+  .close-park-action { width: 2.75rem; padding: 0; }
   .tile-label p { font-size: 0.7rem; }
+}
+
+.lifetime-unlock-fx {
+  position: fixed;
+  z-index: 75;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 46%, rgb(255 225 122 / .38), rgb(16 38 59 / .9) 58%, rgb(7 20 35 / .97));
+  color: #fff8ec;
+  text-align: center;
+  pointer-events: none;
+  animation: lifetime-scene 3.2s ease both;
+}
+.lifetime-unlock-fx > svg { width: 5rem; height: 5rem; color: #ffe17a; filter: drop-shadow(0 0 22px rgb(255 225 122 / .72)); animation: lifetime-wheel 2.4s cubic-bezier(.22,1,.36,1) both; }
+.lifetime-unlock-fx small { margin-top: 1rem; color: #ffe17a; font-size: .62rem; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
+.lifetime-unlock-fx strong { margin-top: .3rem; font-family: var(--font-display); font-size: clamp(2rem, 9vw, 3.7rem); font-weight: 600; }
+.lifetime-unlock-fx p { margin-top: .35rem; color: rgb(255 248 236 / .78); font-size: .78rem; }
+.lifetime-unlock-rings span { position: absolute; left: 50%; top: 42%; width: 7rem; height: 7rem; border: 1px solid rgb(255 225 122 / .55); border-radius: 50%; animation: lifetime-ring 1.5s ease-out infinite; transform: translate(-50%, -50%); }
+.lifetime-unlock-rings span:nth-child(2) { animation-delay: .3s; }
+.lifetime-unlock-rings span:nth-child(3) { animation-delay: .6s; }
+@keyframes lifetime-scene { 0% { opacity: 0; } 12%, 78% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes lifetime-wheel { from { opacity: 0; transform: scale(.45) rotate(-120deg); } 45%, 100% { opacity: 1; transform: scale(1) rotate(0); } }
+@keyframes lifetime-ring { from { opacity: .8; transform: translate(-50%, -50%) scale(.4); } to { opacity: 0; transform: translate(-50%, -50%) scale(5.5); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .lifetime-unlock-fx,
+  .lifetime-unlock-fx > svg,
+  .lifetime-unlock-rings span { animation: none; }
 }
 
 @keyframes cover-arrive {

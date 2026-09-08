@@ -1,4 +1,4 @@
-type MusicMode = "off" | "title" | "park";
+type MusicMode = "off" | "title" | "park" | "night";
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -20,6 +20,7 @@ const C3 = 130.81,
   F3 = 174.61,
   G3 = 196.0,
   A3 = 220.0,
+  BB3 = 233.08,
   B3 = 246.94,
   C4 = 261.63,
   D4 = 293.66,
@@ -35,7 +36,8 @@ const C3 = 130.81,
   G5 = 783.99,
   A5 = 880.0,
   B5 = 987.77,
-  C6 = 1046.5;
+  C6 = 1046.5,
+  D6 = 1174.66;
 
 type Step = {
   m: number;
@@ -50,6 +52,8 @@ const CH_F: [number, number, number] = [F3, A3, C4];
 const CH_AM: [number, number, number] = [A3, C4, E4];
 const CH_EM: [number, number, number] = [E3, G3, B3];
 const CH_DM: [number, number, number] = [D3, F3, A3];
+const CH_BB: [number, number, number] = [BB3, D4, F4];
+const CH_GM: [number, number, number] = [G3, BB3, D4];
 const CH_C_TITLE: [number, number, number] = [C4, E4, G4];
 const CH_G_TITLE: [number, number, number] = [G3, B3, D4];
 const CH_F_TITLE: [number, number, number] = [F3, A3, C4];
@@ -134,6 +138,43 @@ const TITLE_SCORE: Step[] = [
   s(D5, 3, G3, CH_G_TITLE), s(G4, 3),
   s(A4, 4, A3, CH_AM_TITLE), s(C5, 2),
   s(E5, 4, F3, CH_F_TITLE), s(0, 2),
+];
+
+// "Ronda de las 00:07": tres pasajes largos para que la guardia respire y no
+// se perciba como un bucle corto. Los silencios forman parte de la melodía.
+const NIGHT_SCORE: Step[] = [
+  // A · Las luces se apagan
+  s(D5, 3, D3, CH_DM), s(0, 1), s(F5, 2), s(A5, 2),
+  s(G5, 3, BB3, CH_BB), s(F5, 1), s(D5, 2), s(0, 2),
+  s(C5, 2, F3, CH_F), s(D5, 2), s(F5, 3), s(E5, 1),
+  s(D5, 4, C3, CH_C), s(0, 2),
+
+  s(A4, 2, D3, CH_DM), s(D5, 2), s(F5, 3), s(A5, 1),
+  s(G5, 2, G3, CH_GM), s(D5, 2), s(BB3 * 2, 3), s(0, 1),
+  s(C5, 2, C3, CH_C), s(E5, 2), s(G5, 2), s(E5, 2),
+  s(D5, 5, D3, CH_DM), s(0, 3),
+
+  // B · Ronda entre atracciones
+  s(F5, 2, BB3, CH_BB), s(A5, 2), s(C6, 3), s(A5, 1),
+  s(G5, 3, F3, CH_F), s(E5, 1), s(F5, 2), s(0, 2),
+  s(E5, 2, C3, CH_C), s(G5, 2), s(B5, 3), s(G5, 1),
+  s(A5, 4, A3, CH_AM), s(0, 2), s(E5, 2),
+
+  s(D5, 2, G3, CH_GM), s(F5, 2), s(G5, 3), s(BB3 * 2, 1),
+  s(A4, 2, D3, CH_DM), s(D5, 2), s(A5, 2), s(F5, 2),
+  s(E5, 3, C3, CH_C), s(D5, 1), s(C5, 2), s(G4, 2),
+  s(A4, 5, A3, CH_AM), s(0, 3),
+
+  // C · Primera luz del amanecer
+  s(D5, 2, D3, CH_DM), s(F5, 2), s(A5, 2), s(C6, 2),
+  s(B5, 3, G3, CH_GM), s(A5, 1), s(G5, 2), s(D5, 2),
+  s(F5, 3, BB3, CH_BB), s(A5, 1), s(C6, 2), s(A5, 2),
+  s(G5, 4, C3, CH_C), s(0, 2), s(E5, 2),
+
+  s(F5, 2, F3, CH_F), s(E5, 2), s(D5, 3), s(A4, 1),
+  s(C5, 2, C3, CH_C), s(E5, 2), s(G5, 3), s(E5, 1),
+  s(D5, 3, D3, CH_DM), s(A4, 1), s(C5, 2), s(F5, 2),
+  s(D5, 6, D3, CH_DM), s(0, 4),
 ];
 
 function now() {
@@ -278,6 +319,12 @@ function startPads(mode: MusicMode) {
           { freq: E4, type: "sine" as const, peak: 0.016 },
           { freq: G4, type: "triangle" as const, peak: 0.008 },
         ]
+      : mode === "night"
+        ? [
+            { freq: D3, type: "sine" as const, peak: 0.026 },
+            { freq: A3, type: "sine" as const, peak: 0.014 },
+            { freq: F3, type: "triangle" as const, peak: 0.008 },
+          ]
       : [
           { freq: C3, type: "sine" as const, peak: 0.03 },
           { freq: E3, type: "sine" as const, peak: 0.02 },
@@ -540,6 +587,27 @@ export function playParty() {
   burst(0.2, 0.1, dest, 2800, 0.9, t + 0.7);
 }
 
+export function playLifetimeUnlock() {
+  if (!sfxBus) return;
+  const dest = sfxBus;
+  duck(0.18, 1.55);
+  const t = now();
+  const fanfare = [D5, F5, A5, C6, D6, A5, D6];
+  fanfare.forEach((freq, i) => {
+    const at = t + i * 0.12;
+    tone(freq, i === fanfare.length - 1 ? 1.15 : 0.42, "sine", 0.12, dest, 0.018, 0, at);
+    tone(freq * 2, 0.3, "triangle", 0.035, dest, 0.025, i % 2 === 0 ? -4 : 4, at + 0.025);
+  });
+  tone(D3, 1.45, "sine", 0.12, dest, 0.04, 0, t);
+  burst(0.24, 0.11, dest, 2100, 0.55, t + 0.34);
+  burst(0.42, 0.08, dest, 3400, 0.7, t + 0.72);
+  try {
+    navigator.vibrate?.([18, 45, 18, 45, 42]);
+  } catch {
+    /* ignore */
+  }
+}
+
 export function playPass() {
   if (!sfxBus) return;
   tone(330, 0.2, "sine", 0.07, sfxBus, 0.02);
@@ -551,19 +619,21 @@ function scheduleStep(time: number, step: Step, beat: number, index: number, mod
   const dur = Math.max(0.18, step.beats * beat * 0.92);
   if (step.chord) glidePads(time, step.chord);
   if (step.bass) {
-    tone(step.bass, beat * 1.35, "sine", mode === "title" ? 0.014 : 0.038, musicBus, 0.04, 0, time);
-    tone(step.bass * 2, beat * 0.9, "triangle", 0.012, musicBus, 0.06, 0, time);
+    const bassPeak = mode === "title" ? 0.014 : mode === "night" ? 0.022 : 0.038;
+    tone(step.bass, beat * (mode === "night" ? 2.2 : 1.35), "sine", bassPeak, musicBus, 0.08, 0, time);
+    tone(step.bass * 2, beat * 0.9, "triangle", mode === "night" ? 0.006 : 0.012, musicBus, 0.1, 0, time);
   }
   if (step.m) {
-    const peak = mode === "title" ? 0.022 : 0.048;
-    tone(step.m, dur, "sine", peak, musicBus, 0.06, 0, time);
-    tone(step.m * 2, dur * 0.7, "triangle", peak * 0.28, musicBus, 0.1, 4, time);
+    const peak = mode === "title" ? 0.022 : mode === "night" ? 0.032 : 0.048;
+    tone(step.m, dur, "sine", peak, musicBus, mode === "night" ? 0.14 : 0.06, 0, time);
+    tone(step.m * 2, dur * 0.7, "triangle", peak * (mode === "night" ? 0.18 : 0.28), musicBus, 0.1, mode === "night" ? -3 : 4, time);
     if (step.beats >= 2) {
-      tone(step.m * 1.5, dur * 0.45, "sine", peak * 0.16, musicBus, 0.12, 0, time);
+      tone(step.m * 1.5, dur * 0.45, "sine", peak * (mode === "night" ? 0.09 : 0.16), musicBus, 0.12, 0, time);
     }
     // Brillo de feria: un contrapunto ligero y original, distinto en cada escena.
-    const shimmer = mode === "title" ? 0.01 : 0.016;
-    tone(step.m * (mode === "title" ? 2 : 3), Math.min(dur * 0.42, 0.26), "triangle", shimmer, musicBus, 0.012, 0, time + beat * 0.28);
+    const shimmer = mode === "title" ? 0.01 : mode === "night" ? 0.008 : 0.016;
+    const shimmerOctave = mode === "night" ? (Math.floor(index / NIGHT_SCORE.length) % 2 === 0 ? 2 : 3) : mode === "title" ? 2 : 3;
+    tone(step.m * shimmerOctave, Math.min(dur * 0.42, 0.32), "triangle", shimmer, musicBus, 0.02, 0, time + beat * 0.32);
   }
   if (mode === "park" && index % 2 === 0) {
     burst(0.035, 0.018, musicBus, index % 4 === 0 ? 220 : 620, 0.85, time);
@@ -571,12 +641,19 @@ function scheduleStep(time: number, step: Step, beat: number, index: number, mod
   if (mode === "park" && index % 48 === 24) {
     sweepWhoosh(time);
   }
+  if (mode === "night" && index % 12 === 6) {
+    const chime = index % 24 === 6 ? D6 : A5;
+    tone(chime, beat * 2.4, "sine", 0.009, musicBus, 0.18, index % 3 === 0 ? -5 : 5, time + beat * 0.45);
+  }
+  if (mode === "night" && index % 32 === 16) {
+    burst(0.18, 0.006, musicBus, 2800, 0.4, time);
+  }
 }
 
 function musicTick() {
   if (!ctx || muted || musicMode === "off") return;
-  const score = musicMode === "title" ? TITLE_SCORE : PARK_SCORE;
-  const beat = musicMode === "title" ? 0.86 : 0.56;
+  const score = musicMode === "title" ? TITLE_SCORE : musicMode === "night" ? NIGHT_SCORE : PARK_SCORE;
+  const beat = musicMode === "title" ? 0.86 : musicMode === "night" ? 0.74 : 0.56;
   const horizon = ctx.currentTime + 2.4;
   while (nextNote < horizon) {
     const step = score[noteIndex % score.length]!;
@@ -593,7 +670,7 @@ function startMode(mode: MusicMode) {
   musicMode = mode;
   noteIndex = 0;
   nextNote = ctx.currentTime + 0.12;
-  const target = mode === "title" ? 0.2 : 0.34;
+  const target = mode === "title" ? 0.2 : mode === "night" ? 0.25 : 0.34;
   musicBus.gain.setTargetAtTime(target, ctx.currentTime, 0.08);
   startPads(mode);
   if (mode === "park") startCrowd();
@@ -610,6 +687,12 @@ export function startTitleBed() {
 export function startParkBed() {
   unlockAudio();
   startMode("park");
+}
+
+export function startNightBed() {
+  unlockAudio();
+  if (musicMode === "night") return;
+  startMode("night");
 }
 
 export function stopParkBed() {
