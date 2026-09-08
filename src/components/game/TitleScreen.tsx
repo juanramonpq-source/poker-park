@@ -110,7 +110,7 @@ export function TitleScreen() {
             Poker Park
           </h1>
           <p className="title-description">
-            Un día de feria, cartas al sol y atracciones que se montan juntas.
+            Un día de feria, cartas al sol y atracciones para montar en compañía.
           </p>
           <p className="title-detail">Cooperativo · 2 jugadores · Una baraja</p>
         </div>
