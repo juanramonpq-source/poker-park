@@ -1,10 +1,19 @@
-import { BookOpen, FerrisWheel, MoonStar, Sparkles, Users, UserRound, Wrench, X } from "lucide-react";
+import { BookOpen, Crown, FerrisWheel, MoonStar, Palette, Sparkles, Users, UserRound, Wrench, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { startTitleBed, unlockAudio } from "@/lib/game/audio";
-import { loadSecrets, type Secrets } from "@/lib/game/persist";
+import { playLifetimeUnlock, startChallengeBed, startTitleBed, unlockAudio } from "@/lib/game/audio";
+import {
+  loadSecrets,
+  resetPokerParkProgress,
+  unlockAllSecrets,
+  type Secrets,
+} from "@/lib/game/persist";
 import type { GameChallenge, Mode } from "@/lib/game/types";
 import { Button } from "@/components/ui/button";
 import { useGameStore } from "@/store/game-store";
+import { MasterPassOverlay } from "@/components/game/MasterPassOverlay";
+import { DeveloperMenu } from "@/components/game/DeveloperMenu";
+import { MasterGallery } from "@/components/game/MasterGallery";
+import { CHALLENGE_BACKGROUNDS } from "@/lib/game/challenges";
 
 function Motes() {
   return (
@@ -25,11 +34,29 @@ export function TitleScreen() {
   const setRulesOpen = useGameStore((s) => s.setRulesOpen);
   const nightTheme = useGameStore((s) => s.nightTheme);
   const toggleNightTheme = useGameStore((s) => s.toggleNightTheme);
+  const hydrate = useGameStore((s) => s.hydrate);
+  const showcaseTheme = useGameStore((s) => s.showcaseTheme);
+  const setShowcaseTheme = useGameStore((s) => s.setShowcaseTheme);
+  const cardBack = useGameStore((s) => s.cardBack);
+  const setCardBack = useGameStore((s) => s.setCardBack);
   const canResume = Boolean(game && !game.ended);
-  const [secrets, setSecrets] = useState<Secrets>({ perfect: false, lifetime: false, nightPerfect: false, pentonuiSignal: false });
+  const [secrets, setSecrets] = useState<Secrets>({
+    perfect: false,
+    lifetime: false,
+    nightPerfect: false,
+    pentonuiSignal: false,
+    festivalPerfect: false,
+    mirrorPerfect: false,
+    stormPerfect: false,
+    impossiblePerfect: false,
+  });
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialChoiceOpen, setTutorialChoiceOpen] = useState(false);
   const [nightModeOpen, setNightModeOpen] = useState(false);
+  const [masterPassOpen, setMasterPassOpen] = useState(false);
+  const [developerOpen, setDeveloperOpen] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [studioTaps, setStudioTaps] = useState(0);
   const [pendingMode, setPendingMode] = useState<Mode | null>(null);
   const [pendingChallenge, setPendingChallenge] = useState<GameChallenge>("classic");
 
@@ -37,7 +64,8 @@ export function TitleScreen() {
 
   const wake = () => {
     unlockAudio();
-    startTitleBed();
+    if (showcaseTheme === "classic") startTitleBed();
+    else startChallengeBed(showcaseTheme);
   };
 
   const tutorialSeen = () =>
@@ -81,28 +109,63 @@ export function TitleScreen() {
     start(mode, pendingChallenge);
   };
 
+  const tapStudio = () => {
+    const next = studioTaps + 1;
+    if (next >= 5) {
+      setStudioTaps(0);
+      setDeveloperOpen(true);
+      playLifetimeUnlock();
+      return;
+    }
+    setStudioTaps(next);
+  };
+
+  const unlockEverything = () => {
+    const next = unlockAllSecrets();
+    setSecrets(next);
+    hydrate();
+    playLifetimeUnlock();
+  };
+
+  const resetEverything = () => {
+    resetPokerParkProgress();
+    window.location.reload();
+  };
+
+  const startMasterMode = (mode: Mode, challenge: GameChallenge) => {
+    setMasterPassOpen(false);
+    requestStart(mode, challenge);
+  };
+
+  const cover = showcaseTheme === "classic"
+    ? (secrets.impossiblePerfect ? "/images/park-impossible.webp" : "/images/park-cover.webp")
+    : CHALLENGE_BACKGROUNDS[showcaseTheme];
+  const desktopCover = showcaseTheme === "classic" && !secrets.impossiblePerfect
+    ? "/images/park-cover-desktop.webp"
+    : cover;
+
   return (
     <main
       className="title-screen fixed inset-0 h-dvh overflow-hidden bg-bg text-fg"
       onPointerDown={wake}
     >
       <picture className="title-cover-picture" aria-hidden="true">
-        <source media="(min-width: 768px)" srcSet="/images/park-cover-desktop.webp" />
+        <source media="(min-width: 768px)" srcSet={desktopCover} />
         <img
-          src="/images/park-cover.webp"
+          src={cover}
           alt=""
           className="title-cover"
         />
       </picture>
       <div className="title-vignette" />
       <Motes />
-      <div className="title-studio-badge" aria-label="Poker Park por Pentonúi Games">
+      <button type="button" className="title-studio-badge" aria-label="Poker Park por Pentonúi Games" onClick={tapStudio}>
         <img src="/brand/pentonui-games-icon.png" alt="" />
         <span>
           <small>Una producción de</small>
           <strong>Pentonúi Games</strong>
         </span>
-      </div>
+      </button>
 
       <div className="title-shell">
         <div className="title-hero">
@@ -156,6 +219,18 @@ export function TitleScreen() {
             ) : (
               <p className="night-challenge-hint">Completa las 7 atracciones para descubrir un nuevo turno.</p>
             )}
+            {secrets.nightPerfect ? (
+              <button type="button" className="master-pass-button" onClick={() => setMasterPassOpen(true)}>
+                <span><Crown aria-hidden /></span>
+                <span><small>Mapa secreto descubierto</small><strong>Pase Maestro</strong></span>
+                <Sparkles aria-hidden />
+              </button>
+            ) : null}
+            {secrets.impossiblePerfect ? (
+              <button type="button" className="master-gallery-button" onClick={() => setGalleryOpen(true)}>
+                <Palette aria-hidden /> Galería Maestro
+              </button>
+            ) : null}
             {canResume ? (
               <Button size="md" variant="ghost" className="w-full" onClick={resume}>
                 {game?.challenge === "night" ? "Continuar la guardia" : "Continuar la jornada"}
@@ -192,6 +267,21 @@ export function TitleScreen() {
             </div>
           </section>
         </div>
+      ) : null}
+      {masterPassOpen ? (
+        <MasterPassOverlay secrets={secrets} onClose={() => setMasterPassOpen(false)} onStart={startMasterMode} />
+      ) : null}
+      {developerOpen ? (
+        <DeveloperMenu onClose={() => setDeveloperOpen(false)} onUnlockAll={unlockEverything} onReset={resetEverything} />
+      ) : null}
+      {galleryOpen ? (
+        <MasterGallery
+          theme={showcaseTheme}
+          cardBack={cardBack}
+          onTheme={setShowcaseTheme}
+          onCardBack={setCardBack}
+          onClose={() => setGalleryOpen(false)}
+        />
       ) : null}
       {tutorialChoiceOpen ? (
         <div className="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="tutorial-choice-title">

@@ -1,4 +1,4 @@
-import { Download, FerrisWheel, MoonStar, Radio, ShieldCheck, Sparkles } from "lucide-react";
+import { CloudLightning, Crown, Download, FerrisWheel, FlipHorizontal2, Lightbulb, MoonStar, Radio, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   completedAttractions,
@@ -10,7 +10,9 @@ import {
 } from "@/lib/game/engine";
 import { ATTRACTION_DEFS } from "@/lib/game/attractions";
 import { playLifetimeUnlock, playParty, playRollCrash, playRollFill, playRollTick } from "@/lib/game/audio";
-import { loadSecrets, unlockSecret } from "@/lib/game/persist";
+import { loadSecrets, masterTrialsComplete, unlockSecret, type Secrets } from "@/lib/game/persist";
+import { CHALLENGE_NAMES } from "@/lib/game/challenges";
+import type { GameChallenge } from "@/lib/game/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
@@ -19,6 +21,38 @@ const NIGHT_SCALE = [
   "Sin corriente", "Primera comprobación", "Sector asegurado", "Guardia en marcha",
   "Turno estable", "Parque bajo control", "Apertura casi lista", "Apertura autorizada",
 ];
+
+const MASTER_SCALES: Partial<Record<GameChallenge, string[]>> = {
+  festival: ["Luces apagadas", "Primera bombilla", "Guirnalda encendida", "Plaza brillante", "Noche luminosa", "Festival radiante", "Cielo de color", "Todas las luces"],
+  mirror: ["Reflejo vacío", "Primer destello", "Dos orillas", "Simetría en marcha", "Mapa duplicado", "Lago de plata", "Reflejo perfecto", "Parque infinito"],
+  storm: ["Parque mojado", "Primer refugio", "Chubasco superado", "Ronda bajo la lluvia", "Cielo abierto", "Luces entre nubes", "Último relámpago", "Después de la tormenta"],
+  impossible: ["Las 00:13", "Primera señal", "El mapa despierta", "Tres reglas, un parque", "La hora secreta", "Casi imposible", "Amanece", "El parque os recuerda"],
+};
+
+const MASTER_REWARDS: Partial<Record<GameChallenge, { title: string; body: string }>> = {
+  festival: { title: "Fuegos de Feria", body: "Habéis mantenido encendida cada luz. Un nuevo reverso luminoso queda añadido a vuestra colección." },
+  mirror: { title: "Plata de Luna", body: "Habéis leído el parque desde el otro lado. La insignia espejo ya brilla en vuestro Pase Maestro." },
+  storm: { title: "Nube Dorada", body: "Ni una tormenta pudo cerrar la jornada. El reverso de lluvia queda desbloqueado." },
+  impossible: { title: "Guardianes de Poker Park", body: "La hora imposible ha terminado. Habéis encontrado el final verdadero del parque." },
+};
+
+function challengeSecretKey(challenge: GameChallenge): keyof Secrets {
+  if (challenge === "night") return "nightPerfect";
+  if (challenge === "festival") return "festivalPerfect";
+  if (challenge === "mirror") return "mirrorPerfect";
+  if (challenge === "storm") return "stormPerfect";
+  if (challenge === "impossible") return "impossiblePerfect";
+  return "perfect";
+}
+
+function masterCopy(challenge: GameChallenge, count: number) {
+  if (count === 7) return MASTER_REWARDS[challenge] ?? ratingCopy("perfect");
+  const name = CHALLENGE_NAMES[challenge];
+  if (count >= 5) return { title: "Casi extraordinario", body: `${name} estuvo a punto de revelar todos sus secretos.` };
+  if (count >= 3) return { title: "El mapa se transforma", body: `Ya habéis descubierto una parte importante de ${name}.` };
+  if (count >= 1) return { title: "Primera sorpresa", body: "Una atracción basta para demostrar que este parque no era lo que parecía." };
+  return { title: "La puerta sigue ahí", body: "El modo secreto espera otra jornada. Ahora ya conocéis la entrada." };
+}
 
 function nightCopy(count: number) {
   if (count === 7) return {
@@ -60,13 +94,16 @@ export function EndScreen() {
   const [lifetimeReveal, setLifetimeReveal] = useState(false);
   const [lifetime, setLifetime] = useState(() => loadSecrets().lifetime);
   const [nightReward, setNightReward] = useState(() => loadSecrets().nightPerfect);
+  const [secrets, setSecrets] = useState(() => loadSecrets());
   const done = game ? completedAttractions(game) : [];
+  const challenge = game?.challenge ?? "classic";
   const isNight = game?.challenge === "night";
+  const isMasterMode = challenge === "festival" || challenge === "mirror" || challenge === "storm" || challenge === "impossible";
   const rating = dayRating(done.length);
-  const copy = isNight ? nightCopy(done.length) : ratingCopy(rating);
+  const copy = isNight ? nightCopy(done.length) : isMasterMode ? masterCopy(challenge, done.length) : ratingCopy(rating);
   const badges = game ? (isNight ? maintenanceBadges(done.length, game.night?.emergencyUses ?? 0) : dayBadges(game)) : [];
   const perfect = rating === "perfect";
-  const scale = isNight ? NIGHT_SCALE : RATING_SCALE.map((row) => row.title);
+  const scale = isNight ? NIGHT_SCALE : MASTER_SCALES[challenge] ?? RATING_SCALE.map((row) => row.title);
 
   useEffect(() => {
     const t = window.setTimeout(() => setStep("tally"), 1600);
@@ -92,7 +129,8 @@ export function EndScreen() {
         playRollCrash(done.length);
         setResolved(true);
         if (perfect) {
-          unlockSecret(isNight ? "nightPerfect" : "perfect");
+          const nextSecrets = unlockSecret(challengeSecretKey(challenge));
+          setSecrets(nextSecrets);
           if (isNight) setNightReward(true);
           playParty();
           pulse("end");
@@ -102,7 +140,7 @@ export function EndScreen() {
     };
     timers.push(window.setTimeout(tick, done.length === 0 ? 640 : 680));
     return () => timers.forEach((id) => window.clearTimeout(id));
-  }, [step, done.length, perfect, isNight, pulse]);
+  }, [step, done.length, perfect, isNight, challenge, pulse]);
 
   if (!game) return null;
 
@@ -134,8 +172,8 @@ export function EndScreen() {
     return (
       <main className="end-splash grid min-h-dvh place-items-center bg-bg px-6 text-center text-fg">
         <div className="stagger-in">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{isNight ? "Parte 00:07" : "Poker Park"}</p>
-          <h1 className="mt-3 font-display text-4xl font-medium tracking-tight">{isNight ? "Fin del turno de guardia" : "Fin de la jornada en el parque"}</h1>
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent">{isNight ? "Parte 00:07" : isMasterMode ? CHALLENGE_NAMES[challenge] : "Poker Park"}</p>
+          <h1 className="mt-3 font-display text-4xl font-medium tracking-tight">{isNight ? "Fin del turno de guardia" : challenge === "impossible" ? "La hora imposible se detiene" : isMasterMode ? "Fin del reto secreto" : "Fin de la jornada en el parque"}</h1>
         </div>
       </main>
     );
@@ -147,7 +185,7 @@ export function EndScreen() {
         {perfect ? <div className="fireworks" aria-hidden /> : null}
         <div className="stagger-in relative z-10 max-w-sm">
           <p className="font-display text-3xl font-medium tracking-tight">Fin</p>
-          <p className="mt-2 text-lg text-muted">{isNight ? "El parque puede dormir tranquilo." : "Gracias por jugar."}</p>
+          <p className="mt-2 text-lg text-muted">{isNight ? "El parque puede dormir tranquilo." : challenge === "impossible" && perfect ? "Habéis llegado al final verdadero." : "Gracias por jugar."}</p>
           <button type="button" className="end-brand end-brand-button" onClick={onBrandTap} aria-label="Pentonúi Games">
             <img src="/brand/pentonui-games-logo.webp" alt="Pentonúi Games" />
             <p>Creado por Pentonúi Games</p>
@@ -188,7 +226,7 @@ export function EndScreen() {
         </div>
       ) : null}
       <div className="relative mx-auto max-w-md px-5 pt-[max(2.5rem,env(safe-area-inset-top))]">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted">{isNight ? "Informe de mantenimiento" : "Recuento del día"}</p>
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted">{isNight ? "Informe de mantenimiento" : isMasterMode ? CHALLENGE_NAMES[challenge] : "Recuento del día"}</p>
         <button type="button" onClick={onTapScale} className="mt-3 w-full text-left">
           <p key={pop} className="count-pop font-display text-7xl font-medium leading-none tracking-tight text-accent">{shown}<span className="ml-1 text-2xl text-muted">/ 7</span></p>
           <p className="mt-2 font-display text-xl text-fg">{currentTitle}</p>
@@ -197,7 +235,7 @@ export function EndScreen() {
         <ol className="mt-4 space-y-1.5">
           {scale.map((title, count) => (
             <li key={count} className={cn("flex items-center justify-between rounded-lg px-2.5 py-1.5 text-[12px] transition-colors duration-200", count === shown ? "scale-[1.02] bg-accent text-accent-fg" : count < shown ? "bg-good/15 text-good" : "bg-surface text-faint")}>
-              <span>{count} {isNight ? "revisiones" : "vueltas"}</span><span className="font-medium">{title}</span>
+              <span>{count} {isNight ? "revisiones" : isMasterMode ? "señales" : "vueltas"}</span><span className="font-medium">{title}</span>
             </li>
           ))}
         </ol>
@@ -217,7 +255,22 @@ export function EndScreen() {
                 <a href="/images/poker-park-night-wallpaper.webp" download="Poker-Park-Guardianes-del-Alba.webp"><Download aria-hidden /> Descargar fondo para móvil</a>
                 <button type="button" onClick={toggleNightTheme}><MoonStar aria-hidden /> {nightTheme ? "Desactivar interfaz nocturna" : "Activar interfaz nocturna"}</button>
               </section>
-            ) : !isNight ? (lifetime ? <p className="mt-4 text-center text-[12px] text-accent">Secreto: pase de por vida. La noria no se olvida de vosotros.</p> : <p className="mt-4 text-center text-[10px] text-faint">Pista secreta: toca siete veces el número del recuento.</p>) : null}
+            ) : isMasterMode && perfect ? (
+              <section className={cn("master-reward-card", challenge === "impossible" && "is-true-ending")}>
+                <div className="master-reward-heading">
+                  {challenge === "festival" ? <Lightbulb /> : challenge === "mirror" ? <FlipHorizontal2 /> : challenge === "storm" ? <CloudLightning /> : <Crown />}
+                  <span><small>{challenge === "impossible" ? "Final verdadero" : "Recompensa del Pase Maestro"}</small><strong>{MASTER_REWARDS[challenge]?.title}</strong></span>
+                </div>
+                <p>{MASTER_REWARDS[challenge]?.body}</p>
+                {challenge !== "impossible" && masterTrialsComplete(secrets) ? <div className="impossible-reveal"><Sparkles /> La entrada Poker Park 00:13 acaba de aparecer.</div> : null}
+                {challenge === "impossible" ? (
+                  <div className="true-ending-downloads">
+                    <a href="/images/park-impossible.webp" download="Poker-Park-0013.webp"><Download /> Fondo del parque imposible</a>
+                    <a href="/rewards/pase-maestro.svg" download="Certificado-Pase-Maestro.svg"><ShieldCheck /> Certificado Pase Maestro</a>
+                  </div>
+                ) : null}
+              </section>
+            ) : !isNight && !isMasterMode ? (lifetime ? <p className="mt-4 text-center text-[12px] text-accent">Secreto: pase de por vida. La noria no se olvida de vosotros.</p> : <p className="mt-4 text-center text-[10px] text-faint">Pista secreta: toca siete veces el número del recuento.</p>) : null}
             <Button size="lg" className="mt-6 w-full" onClick={() => setStep("credits")}>Ver créditos</Button>
           </div>
         ) : <p className="mt-8 text-center text-sm text-muted">{isNight ? "Sellando el parte…" : "Redoble…"}</p>}

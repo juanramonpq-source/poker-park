@@ -5,6 +5,11 @@ import {
   legalSlotsForCard,
 } from "./attractions";
 import { cardName, isFace, makeDeck, shuffle } from "./deck";
+import {
+  advanceStorm,
+  recordFestivalPlacement,
+  stormClosedAttraction,
+} from "./challenges";
 import type {
   AttractionId,
   Card,
@@ -62,6 +67,12 @@ export function createGame(
             emergencyUses: 0,
           }
         : undefined,
+    festival: challenge === "festival" || challenge === "impossible"
+      ? { combo: 0, bestCombo: 0, bulbs: 0, lastAttractionId: null }
+      : undefined,
+    storm: challenge === "storm" || challenge === "impossible"
+      ? { forecast: shuffledAttractions(ATTRACTION_IDS), index: 0 }
+      : undefined,
     names: names ?? defaultNames,
     deck: shuffled,
     hands: [hand0, hand1],
@@ -75,7 +86,15 @@ export function createGame(
     lastMessage:
       challenge === "night"
         ? "Comienza la guardia. Dos sectores tienen corriente."
-        : "El parque abre. El sol está alto.",
+        : challenge === "festival"
+          ? "Festival de las Luces: alternad atracciones para encadenar bombillas."
+          : challenge === "mirror"
+            ? "El parque se refleja. Los recorridos empiezan al otro lado."
+            : challenge === "storm"
+              ? "Se acerca tormenta. Consultad el pronóstico antes de jugar."
+              : challenge === "impossible"
+                ? "Son las 00:13. Todas las reglas secretas están activas."
+                : "El parque abre. El sol está alto.",
     lastCompleted: null,
     swappedCardId: null,
     pendingAdvance: false,
@@ -121,6 +140,10 @@ export function isAttractionUnlocked(state: GameState, id: AttractionId): boolea
   return !isNightShift(state) || Boolean(state.night?.unlocked.includes(id));
 }
 
+export function isAttractionStormClosed(state: GameState, id: AttractionId): boolean {
+  return stormClosedAttraction(state) === id;
+}
+
 export function nightUnlockChoices(state: GameState): AttractionId[] {
   return state.night?.route.slice(0, 2) ?? [];
 }
@@ -130,6 +153,7 @@ export function visitorPhase(state: GameState): boolean {
   const pool = remainingCards(state);
   for (const id of ATTRACTION_IDS) {
     if (!isAttractionUnlocked(state, id)) continue;
+    if (isAttractionStormClosed(state, id)) continue;
     const attr = state.attractions[id];
     if (isAttractionComplete(id, attr.slots)) continue;
     for (const card of pool) {
@@ -150,6 +174,7 @@ export function legalPlacements(
   const out: { attractionId: AttractionId; index: number }[] = [];
   for (const id of ATTRACTION_IDS) {
     if (!isAttractionUnlocked(state, id)) continue;
+    if (isAttractionStormClosed(state, id)) continue;
     for (const index of legalSlotsForCard(id, state.attractions[id].slots, card)) {
       out.push({ attractionId: id, index });
     }
@@ -163,6 +188,7 @@ export function legalVisits(state: GameState, cardId: string): AttractionId[] {
   if (!card || !isFace(card) || state.ended) return [];
   return ATTRACTION_IDS.filter((id) =>
     isAttractionUnlocked(state, id) &&
+    !isAttractionStormClosed(state, id) &&
     isAttractionComplete(id, state.attractions[id].slots),
   );
 }
@@ -182,6 +208,7 @@ export function legalExchanges(state: GameState, cardId: string): ExchangeTarget
 
   for (const id of ATTRACTION_IDS) {
     if (!isAttractionUnlocked(state, id)) continue;
+    if (isAttractionStormClosed(state, id)) continue;
     const slots = state.attractions[id].slots;
     if (isAttractionComplete(id, slots)) continue;
     slots.forEach((parkCard, index) => {
@@ -261,6 +288,7 @@ function finishAction(prev: GameState, next: GameState, message: string): GameSt
   next.lastMessage = message;
   next.consecutivePasses = 0;
   next.drawnThisTurn = false;
+  advanceStorm(next);
   const justDone = ATTRACTION_IDS.find(
     (id) =>
       isAttractionComplete(id, next.attractions[id].slots) &&
@@ -355,6 +383,7 @@ export function placeCard(
   const next = clone(state);
   const card = removeFromHand(next, cardId);
   next.attractions[attractionId].slots[index] = card;
+  recordFestivalPlacement(next, attractionId);
   return finishAction(
     state,
     next,
@@ -429,6 +458,7 @@ export function passTurn(state: GameState, force = false): GameState {
     throw new Error("Todavía puedes jugar");
   }
   const next = clone(state);
+  advanceStorm(next);
   next.consecutivePasses += 1;
   next.drawnThisTurn = false;
   next.lastMessage = `${next.names[next.currentPlayer]} no puede colocar.`;

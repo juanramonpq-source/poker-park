@@ -1,4 +1,4 @@
-import type { GameState } from "./types";
+import type { GameChallenge, GameState } from "./types";
 
 const SAVE_KEY = "poker-park.save.v7";
 const SETTINGS_KEY = "poker-park.settings.v1";
@@ -9,9 +9,17 @@ export interface Settings {
   version: 1;
   muted: boolean;
   nightTheme: boolean;
+  showcaseTheme: GameChallenge;
+  cardBack: "classic" | "mechanical" | "festival" | "storm" | "impossible";
 }
 
-const defaultSettings: Settings = { version: 1, muted: false, nightTheme: false };
+const defaultSettings: Settings = {
+  version: 1,
+  muted: false,
+  nightTheme: false,
+  showcaseTheme: "classic",
+  cardBack: "classic",
+};
 
 export function loadSettings(): Settings {
   try {
@@ -70,6 +78,10 @@ export interface Secrets {
   lifetime: boolean;
   nightPerfect: boolean;
   pentonuiSignal: boolean;
+  festivalPerfect: boolean;
+  mirrorPerfect: boolean;
+  stormPerfect: boolean;
+  impossiblePerfect: boolean;
 }
 
 const defaultSecrets: Secrets = {
@@ -77,6 +89,10 @@ const defaultSecrets: Secrets = {
   lifetime: false,
   nightPerfect: false,
   pentonuiSignal: false,
+  festivalPerfect: false,
+  mirrorPerfect: false,
+  stormPerfect: false,
+  impossiblePerfect: false,
 };
 
 export function loadSecrets(): Secrets {
@@ -89,6 +105,10 @@ export function loadSecrets(): Secrets {
       lifetime: Boolean(parsed.lifetime),
       nightPerfect: Boolean(parsed.nightPerfect),
       pentonuiSignal: Boolean(parsed.pentonuiSignal),
+      festivalPerfect: Boolean(parsed.festivalPerfect),
+      mirrorPerfect: Boolean(parsed.mirrorPerfect),
+      stormPerfect: Boolean(parsed.stormPerfect),
+      impossiblePerfect: Boolean(parsed.impossiblePerfect),
     };
   } catch {
     return { ...defaultSecrets };
@@ -107,4 +127,28 @@ export function unlockSecret(key: keyof Secrets) {
   const next = { ...loadSecrets(), [key]: true };
   saveSecrets(next);
   return next;
+}
+
+export function masterTrialsComplete(secrets: Secrets) {
+  return secrets.festivalPerfect && secrets.mirrorPerfect && secrets.stormPerfect;
+}
+
+export function unlockAllSecrets() {
+  const next: Secrets = Object.fromEntries(
+    Object.keys(defaultSecrets).map((key) => [key, true]),
+  ) as unknown as Secrets;
+  saveSecrets(next);
+  return next;
+}
+
+export function resetPokerParkProgress() {
+  try {
+    localStorage.removeItem(SAVE_KEY);
+    localStorage.removeItem(SECRETS_KEY);
+    localStorage.removeItem(SETTINGS_KEY);
+    localStorage.removeItem("poker-park-tutorial-seen");
+  } catch {
+    /* private mode */
+  }
+  return { ...defaultSecrets };
 }

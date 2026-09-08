@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { isAttractionValid, legalSlotsForCard } from "./attractions.ts";
-import type { Card, Rank, Suit } from "./types.ts";
+import { advanceStorm, recordFestivalPlacement, stormClosedAttraction } from "./challenges.ts";
+import type { Card, GameState, Rank, Suit } from "./types.ts";
 
 function card(suit: Suit, rank: Rank): Card {
   return { id: `${suit}-${rank}`, suit, rank };
@@ -154,5 +155,49 @@ describe("figuras", () => {
     ];
     assert.deepEqual(legalSlotsForCard("chairs", ready, card("hearts", 11)), [0, 1, 2, 3]);
     assert.deepEqual(legalSlotsForCard("chairs", ready, card("spades", 13)), [0, 1, 2, 3]);
+  });
+});
+
+describe("retos del Pase Maestro", () => {
+  it("el Festival premia alternar atracciones y reinicia el combo si se repite", () => {
+    const game = {
+      challenge: "festival",
+      festival: { combo: 0, bestCombo: 0, bulbs: 0, lastAttractionId: null },
+    } as GameState;
+    recordFestivalPlacement(game, "coaster");
+    recordFestivalPlacement(game, "love");
+    recordFestivalPlacement(game, "forest");
+    assert.equal(game.festival?.combo, 3);
+    assert.equal(game.festival?.bestCombo, 3);
+    assert.equal(game.festival?.bulbs, 6);
+
+    recordFestivalPlacement(game, "forest");
+    assert.equal(game.festival?.combo, 1);
+    assert.equal(game.festival?.bestCombo, 3);
+    assert.equal(game.festival?.bulbs, 7);
+  });
+
+  it("la tormenta cierra exactamente la atracción prevista y avanza el pronóstico", () => {
+    const game = {
+      challenge: "storm",
+      storm: { forecast: ["restaurant", "forest", "coaster", "love", "chairs", "haunted", "restrooms"], index: 0 },
+    } as GameState;
+
+    assert.equal(stormClosedAttraction(game), "restaurant");
+    advanceStorm(game);
+    assert.equal(stormClosedAttraction(game), "forest");
+  });
+
+  it("Poker Park 00:13 combina festival, espejo y tormenta", () => {
+    const game = {
+      challenge: "impossible",
+      festival: { combo: 0, bestCombo: 0, bulbs: 0, lastAttractionId: null },
+      storm: { forecast: ["haunted"], index: 0 },
+    } as GameState;
+    assert.ok(game.festival);
+    assert.ok(game.storm?.forecast.length);
+    recordFestivalPlacement(game, "coaster");
+    assert.equal(game.festival?.bulbs, 1);
+    assert.ok(stormClosedAttraction(game));
   });
 });

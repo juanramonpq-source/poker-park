@@ -37,6 +37,7 @@ import type {
   Mode,
   Screen,
 } from "@/lib/game/types";
+import type { Settings } from "@/lib/game/persist";
 
 export type FxKind = "place" | "complete" | "exchange" | "end" | "deal";
 export type FxEvent = { n: number; kind: FxKind; attractionId: AttractionId | null };
@@ -58,6 +59,8 @@ interface GameStore {
   muted: boolean;
   nightTheme: boolean;
   machineRoomUnlocked: boolean;
+  showcaseTheme: GameChallenge;
+  cardBack: Settings["cardBack"];
   aiThinking: boolean;
   fx: FxEvent | null;
   bloomId: AttractionId | null;
@@ -81,6 +84,8 @@ interface GameStore {
   continueAfterPass: () => void;
   toggleMute: () => void;
   toggleNightTheme: () => void;
+  setShowcaseTheme: (theme: GameChallenge) => void;
+  setCardBack: (cardBack: Settings["cardBack"]) => void;
   unlockMachineRoom: () => void;
   unlockNightSector: (id: AttractionId) => void;
   setRulesOpen: (open: boolean) => void;
@@ -285,6 +290,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     muted: false,
     nightTheme: false,
     machineRoomUnlocked: false,
+    showcaseTheme: "classic",
+    cardBack: "classic",
     aiThinking: false,
     fx: null,
     bloomId: null,
@@ -301,6 +308,8 @@ export const useGameStore = create<GameStore>((set, get) => {
         muted: settings.muted,
         nightTheme: settings.nightTheme,
         machineRoomUnlocked: secrets.pentonuiSignal,
+        showcaseTheme: settings.showcaseTheme,
+        cardBack: settings.cardBack,
         game: s.screen === "title" ? saved : s.game ?? saved,
       }));
     },
@@ -308,8 +317,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       window.clearTimeout(aiRevealTimer);
       window.clearTimeout(aiRevealClearTimer);
       audio.unlockAudio();
-      if (challenge === "night") audio.startNightBed();
-      else audio.startParkBed();
+      audio.startChallengeBed(challenge);
       audio.playStart();
       audio.playDeal();
       window.setTimeout(() => audio.playDeal(), 70);
@@ -332,8 +340,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const saved = get().game ?? loadGame();
       if (!saved) return;
       audio.unlockAudio();
-      if (saved.challenge === "night") audio.startNightBed();
-      else audio.startParkBed();
+      audio.startChallengeBed(saved.challenge ?? "classic");
       set({
         game: saved,
         screen: saved.ended ? "end" : "playing",
@@ -345,7 +352,9 @@ export const useGameStore = create<GameStore>((set, get) => {
       window.clearTimeout(aiTimer);
       window.clearTimeout(aiRevealTimer);
       window.clearTimeout(aiRevealClearTimer);
-      audio.startTitleBed();
+      const theme = loadSettings().showcaseTheme;
+      if (theme === "classic") audio.startTitleBed();
+      else audio.startChallengeBed(theme);
       set({
         screen: "title",
         aiThinking: false,
@@ -360,7 +369,9 @@ export const useGameStore = create<GameStore>((set, get) => {
       window.clearTimeout(aiRevealTimer);
       window.clearTimeout(aiRevealClearTimer);
       clearGame();
-      audio.startTitleBed();
+      const theme = loadSettings().showcaseTheme;
+      if (theme === "classic") audio.startTitleBed();
+      else audio.startChallengeBed(theme);
       set({
         screen: "title",
         game: null,
@@ -471,15 +482,27 @@ export const useGameStore = create<GameStore>((set, get) => {
     toggleMute: () => {
       const muted = !get().muted;
       audio.setMuted(muted);
-      saveSettings({ version: 1, muted, nightTheme: get().nightTheme });
+      saveSettings({ ...loadSettings(), muted });
       set({ muted });
       if (!muted) audio.playUi();
     },
     toggleNightTheme: () => {
       if (!loadSecrets().nightPerfect) return;
       const nightTheme = !get().nightTheme;
-      saveSettings({ version: 1, muted: get().muted, nightTheme });
+      saveSettings({ ...loadSettings(), nightTheme });
       set({ nightTheme });
+      audio.playUi();
+    },
+    setShowcaseTheme: (showcaseTheme) => {
+      saveSettings({ ...loadSettings(), showcaseTheme });
+      set({ showcaseTheme });
+      if (showcaseTheme === "classic") audio.startTitleBed();
+      else audio.startChallengeBed(showcaseTheme);
+      audio.playUi();
+    },
+    setCardBack: (cardBack) => {
+      saveSettings({ ...loadSettings(), cardBack });
+      set({ cardBack });
       audio.playUi();
     },
     unlockMachineRoom: () => {

@@ -17,7 +17,7 @@ export type AttractionId =
   | "restrooms";
 
 export type Mode = "hotseat" | "ai";
-export type GameChallenge = "classic" | "night";
+export type GameChallenge = "classic" | "night" | "festival" | "mirror" | "storm" | "impossible";
 
 export type Screen = "title" | "playing" | "pass" | "end";
 
@@ -33,6 +33,18 @@ export interface NightShiftState {
   emergencyUses: number;
 }
 
+export interface FestivalState {
+  combo: number;
+  bestCombo: number;
+  bulbs: number;
+  lastAttractionId: AttractionId | null;
+}
+
+export interface StormState {
+  forecast: AttractionId[];
+  index: number;
+}
+
 export type ExchangeTarget =
   | { kind: "entrance"; index: 0 | 1 }
   | { kind: "slot"; attractionId: AttractionId; index: number };
@@ -42,6 +54,8 @@ export interface GameState {
   mode: Mode;
   challenge?: GameChallenge;
   night?: NightShiftState;
+  festival?: FestivalState;
+  storm?: StormState;
   names: [string, string];
   deck: Card[];
   hands: [Card[], Card[]];

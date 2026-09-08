@@ -1,4 +1,6 @@
-type MusicMode = "off" | "title" | "park" | "night";
+import type { GameChallenge } from "./types";
+
+type MusicMode = "off" | "title" | "park" | "night" | "festival" | "mirror" | "storm" | "impossible";
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
@@ -37,7 +39,9 @@ const C3 = 130.81,
   A5 = 880.0,
   B5 = 987.77,
   C6 = 1046.5,
-  D6 = 1174.66;
+  D6 = 1174.66,
+  E6 = 1318.51,
+  F6 = 1396.91;
 
 type Step = {
   m: number;
@@ -175,6 +179,52 @@ const NIGHT_SCORE: Step[] = [
   s(C5, 2, C3, CH_C), s(E5, 2), s(G5, 3), s(E5, 1),
   s(D5, 3, D3, CH_DM), s(A4, 1), s(C5, 2), s(F5, 2),
   s(D5, 6, D3, CH_DM), s(0, 4),
+];
+
+// Cada reto tiene un motivo propio. Son composiciones procedurales originales:
+// no descargan audio ni dependen de licencias externas.
+const FESTIVAL_SCORE: Step[] = [
+  s(C5, 1, C3, CH_C), s(E5, 1), s(G5, 1), s(C6, 1),
+  s(A5, 1, F3, CH_F), s(G5, 1), s(E5, 1), s(C5, 1),
+  s(D5, 1, G3, CH_G), s(G5, 1), s(B5, 1), s(D6, 1),
+  s(C6, 2, C3, CH_C), s(G5, 1), s(E5, 1),
+  s(A5, 1, A3, CH_AM), s(C6, 1), s(E6, 1), s(C6, 1),
+  s(F5, 1, F3, CH_F), s(A5, 1), s(C6, 1), s(A5, 1),
+  s(G5, 1, G3, CH_G), s(B5, 1), s(D6, 1), s(B5, 1),
+  s(C6, 3, C3, CH_C), s(0, 1),
+];
+
+const MIRROR_SCORE: Step[] = [
+  s(A5, 2, A3, CH_AM), s(E5, 1), s(C5, 1),
+  s(B4, 2, E3, CH_EM), s(E5, 1), s(G5, 1),
+  s(F5, 2, F3, CH_F), s(C5, 1), s(A4, 1),
+  s(D5, 3, D3, CH_DM), s(0, 1),
+  s(D5, 2, D3, CH_DM), s(A4, 1), s(F5, 1),
+  s(G5, 2, E3, CH_EM), s(E5, 1), s(B4, 1),
+  s(C5, 2, A3, CH_AM), s(E5, 1), s(A5, 1),
+  s(A4, 3, A3, CH_AM), s(0, 1),
+];
+
+const STORM_SCORE: Step[] = [
+  s(D5, 2, D3, CH_DM), s(0, 1), s(A4, 1),
+  s(F5, 2, BB3, CH_BB), s(E5, 1), s(D5, 1),
+  s(C5, 2, C3, CH_C), s(G4, 1), s(C5, 1),
+  s(A4, 3, A3, CH_AM), s(0, 1),
+  s(F5, 1, F3, CH_F), s(G5, 1), s(A5, 2),
+  s(E5, 2, E3, CH_EM), s(D5, 1), s(B4, 1),
+  s(C5, 2, C3, CH_C), s(E5, 1), s(G5, 1),
+  s(D5, 3, D3, CH_DM), s(0, 1),
+];
+
+const IMPOSSIBLE_SCORE: Step[] = [
+  s(D5, 1, D3, CH_DM), s(F5, 1), s(A5, 1), s(D6, 1),
+  s(C6, 2, BB3, CH_BB), s(A5, 1), s(F5, 1),
+  s(E5, 1, C3, CH_C), s(G5, 1), s(B5, 1), s(E6, 1),
+  s(D6, 2, G3, CH_GM), s(A5, 1), s(D5, 1),
+  s(F5, 1, F3, CH_F), s(A5, 1), s(C6, 1), s(F6, 1),
+  s(E6, 2, A3, CH_AM), s(C6, 1), s(A5, 1),
+  s(B5, 1, E3, CH_EM), s(G5, 1), s(E5, 1), s(B4, 1),
+  s(D5, 4, D3, CH_DM), s(0, 2),
 ];
 
 function now() {
@@ -319,11 +369,17 @@ function startPads(mode: MusicMode) {
           { freq: E4, type: "sine" as const, peak: 0.016 },
           { freq: G4, type: "triangle" as const, peak: 0.008 },
         ]
-      : mode === "night"
+      : mode === "night" || mode === "storm" || mode === "impossible"
         ? [
             { freq: D3, type: "sine" as const, peak: 0.026 },
             { freq: A3, type: "sine" as const, peak: 0.014 },
             { freq: F3, type: "triangle" as const, peak: 0.008 },
+          ]
+      : mode === "mirror"
+        ? [
+            { freq: A3, type: "sine" as const, peak: 0.024 },
+            { freq: E4, type: "sine" as const, peak: 0.012 },
+            { freq: C4, type: "triangle" as const, peak: 0.007 },
           ]
       : [
           { freq: C3, type: "sine" as const, peak: 0.03 },
@@ -619,19 +675,21 @@ function scheduleStep(time: number, step: Step, beat: number, index: number, mod
   const dur = Math.max(0.18, step.beats * beat * 0.92);
   if (step.chord) glidePads(time, step.chord);
   if (step.bass) {
-    const bassPeak = mode === "title" ? 0.014 : mode === "night" ? 0.022 : 0.038;
-    tone(step.bass, beat * (mode === "night" ? 2.2 : 1.35), "sine", bassPeak, musicBus, 0.08, 0, time);
-    tone(step.bass * 2, beat * 0.9, "triangle", mode === "night" ? 0.006 : 0.012, musicBus, 0.1, 0, time);
+    const calmMode = mode === "night" || mode === "mirror" || mode === "storm";
+    const bassPeak = mode === "title" ? 0.014 : calmMode ? 0.022 : mode === "impossible" ? 0.032 : 0.038;
+    tone(step.bass, beat * (calmMode ? 2.2 : 1.35), "sine", bassPeak, musicBus, 0.08, 0, time);
+    tone(step.bass * 2, beat * 0.9, "triangle", calmMode ? 0.006 : 0.012, musicBus, 0.1, 0, time);
   }
   if (step.m) {
-    const peak = mode === "title" ? 0.022 : mode === "night" ? 0.032 : 0.048;
-    tone(step.m, dur, "sine", peak, musicBus, mode === "night" ? 0.14 : 0.06, 0, time);
-    tone(step.m * 2, dur * 0.7, "triangle", peak * (mode === "night" ? 0.18 : 0.28), musicBus, 0.1, mode === "night" ? -3 : 4, time);
+    const calmMode = mode === "night" || mode === "mirror" || mode === "storm";
+    const peak = mode === "title" ? 0.022 : calmMode ? 0.032 : mode === "impossible" ? 0.042 : 0.048;
+    tone(step.m, dur, "sine", peak, musicBus, calmMode ? 0.14 : 0.06, 0, time);
+    tone(step.m * 2, dur * 0.7, "triangle", peak * (calmMode ? 0.18 : 0.28), musicBus, 0.1, calmMode ? -3 : 4, time);
     if (step.beats >= 2) {
       tone(step.m * 1.5, dur * 0.45, "sine", peak * (mode === "night" ? 0.09 : 0.16), musicBus, 0.12, 0, time);
     }
     // Brillo de feria: un contrapunto ligero y original, distinto en cada escena.
-    const shimmer = mode === "title" ? 0.01 : mode === "night" ? 0.008 : 0.016;
+    const shimmer = mode === "title" ? 0.01 : calmMode ? 0.008 : 0.016;
     const shimmerOctave = mode === "night" ? (Math.floor(index / NIGHT_SCORE.length) % 2 === 0 ? 2 : 3) : mode === "title" ? 2 : 3;
     tone(step.m * shimmerOctave, Math.min(dur * 0.42, 0.32), "triangle", shimmer, musicBus, 0.02, 0, time + beat * 0.32);
   }
@@ -648,12 +706,46 @@ function scheduleStep(time: number, step: Step, beat: number, index: number, mod
   if (mode === "night" && index % 32 === 16) {
     burst(0.18, 0.006, musicBus, 2800, 0.4, time);
   }
+  if (mode === "festival" && index % 4 === 0) {
+    burst(0.04, 0.022, musicBus, 2300, 0.9, time);
+    tone(index % 8 === 0 ? C6 : G5, 0.18, "triangle", 0.012, musicBus, 0.01, 0, time + beat * 0.5);
+  }
+  if ((mode === "storm" || mode === "impossible") && index % 12 === 8) {
+    burst(0.5, mode === "impossible" ? 0.018 : 0.012, musicBus, 150, 0.35, time);
+  }
+  if (mode === "mirror" && index % 8 === 4 && step.m) {
+    tone(step.m / 2, dur * 0.8, "sine", 0.01, musicBus, 0.16, -7, time + beat * 0.35);
+  }
 }
 
 function musicTick() {
   if (!ctx || muted || musicMode === "off") return;
-  const score = musicMode === "title" ? TITLE_SCORE : musicMode === "night" ? NIGHT_SCORE : PARK_SCORE;
-  const beat = musicMode === "title" ? 0.86 : musicMode === "night" ? 0.74 : 0.56;
+  const score = musicMode === "title"
+    ? TITLE_SCORE
+    : musicMode === "night"
+      ? NIGHT_SCORE
+      : musicMode === "festival"
+        ? FESTIVAL_SCORE
+        : musicMode === "mirror"
+          ? MIRROR_SCORE
+          : musicMode === "storm"
+            ? STORM_SCORE
+            : musicMode === "impossible"
+              ? IMPOSSIBLE_SCORE
+              : PARK_SCORE;
+  const beat = musicMode === "title"
+    ? 0.86
+    : musicMode === "night"
+      ? 0.74
+      : musicMode === "festival"
+        ? 0.42
+        : musicMode === "mirror"
+          ? 0.68
+          : musicMode === "storm"
+            ? 0.62
+            : musicMode === "impossible"
+              ? 0.48
+              : 0.56;
   const horizon = ctx.currentTime + 2.4;
   while (nextNote < horizon) {
     const step = score[noteIndex % score.length]!;
@@ -670,7 +762,7 @@ function startMode(mode: MusicMode) {
   musicMode = mode;
   noteIndex = 0;
   nextNote = ctx.currentTime + 0.12;
-  const target = mode === "title" ? 0.2 : mode === "night" ? 0.25 : 0.34;
+  const target = mode === "title" ? 0.2 : mode === "night" || mode === "mirror" || mode === "storm" ? 0.25 : mode === "impossible" ? 0.3 : 0.34;
   musicBus.gain.setTargetAtTime(target, ctx.currentTime, 0.08);
   startPads(mode);
   if (mode === "park") startCrowd();
@@ -693,6 +785,13 @@ export function startNightBed() {
   unlockAudio();
   if (musicMode === "night") return;
   startMode("night");
+}
+
+export function startChallengeBed(challenge: GameChallenge = "classic") {
+  unlockAudio();
+  const mode: MusicMode = challenge === "classic" ? "park" : challenge;
+  if (musicMode === mode) return;
+  startMode(mode);
 }
 
 export function stopParkBed() {

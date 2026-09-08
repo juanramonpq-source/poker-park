@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000" role="img" aria-labelledby="title desc">
+  <title id="title">Certificado Pase Maestro de Poker Park</title>
+  <desc id="desc">Certificado de Guardianes de Poker Park, creado por Pentonúi Games.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="25%" r="85%">
+      <stop offset="0" stop-color="#30215a"/>
+      <stop offset="0.55" stop-color="#151333"/>
+      <stop offset="1" stop-color="#07091f"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" x2="1">
+      <stop stop-color="#9b6413"/><stop offset="0.5" stop-color="#ffe79a"/><stop offset="1" stop-color="#a56b16"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="14" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#bg)"/>
+  <circle cx="800" cy="350" r="280" fill="none" stroke="#6ad8f0" stroke-opacity=".1" stroke-width="2"/>
+  <circle cx="800" cy="350" r="210" fill="none" stroke="#ffd366" stroke-opacity=".16" stroke-width="3" stroke-dasharray="8 18"/>
+  <g fill="none" stroke="url(#gold)">
+    <rect x="42" y="42" width="1516" height="916" rx="30" stroke-width="5"/>
+    <rect x="62" y="62" width="1476" height="876" rx="22" stroke-width="1" opacity=".65"/>
+  </g>
+  <g transform="translate(800 310)" filter="url(#glow)" fill="none" stroke="#ffd363" stroke-width="12">
+    <circle r="142"/><circle r="22" fill="#ffd363"/>
+    <path d="M0-142V-22M100-100L16-16M142 0H22M100 100L16 16M0 142V22M-100 100L-16 16M-142 0H-22M-100-100L-16-16"/>
+    <path d="M-76 122L0-22 76 122M-102 122H102"/>
+  </g>
+  <text x="800" y="540" fill="#a9dff2" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="8" text-anchor="middle">POKER PARK · 00:13</text>
+  <text x="800" y="635" fill="#fff8e9" font-family="Georgia, serif" font-size="74" font-style="italic" text-anchor="middle">Pase Maestro</text>
+  <text x="800" y="705" fill="#ffd66f" font-family="Arial, sans-serif" font-size="30" font-weight="700" letter-spacing="4" text-anchor="middle">GUARDIANES DEL PARQUE</text>
+  <path d="M390 755H1210" stroke="url(#gold)" stroke-width="2"/>
+  <text x="800" y="820" fill="#c9bfd8" font-family="Arial, sans-serif" font-size="25" text-anchor="middle">Por completar la jornada, la guardia y todos los parques secretos.</text>
+  <text x="800" y="885" fill="#ffffff" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="2" text-anchor="middle">CREADO POR PENTONÚI GAMES</text>
+</svg>

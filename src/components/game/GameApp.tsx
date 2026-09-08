@@ -10,6 +10,7 @@ import { PassScreen } from "@/components/game/PassScreen";
 import { RulesSheet } from "@/components/game/RulesSheet";
 import { TitleScreen } from "@/components/game/TitleScreen";
 import { useGameStore } from "@/store/game-store";
+import { challengeClass } from "@/lib/game/challenges";
 
 function PlayingTable() {
   const game = useGameStore((s) => s.game);
@@ -33,6 +34,9 @@ export function GameApp() {
   const game = useGameStore((s) => s.game);
   const nightTheme = useGameStore((s) => s.nightTheme);
   const machineRoomUnlocked = useGameStore((s) => s.machineRoomUnlocked);
+  const showcaseTheme = useGameStore((s) => s.showcaseTheme);
+  const cardBack = useGameStore((s) => s.cardBack);
+  const activeChallenge = screen === "title" ? showcaseTheme : game?.challenge;
 
   useEffect(() => {
     if (screen === "title") hydrate();
@@ -40,7 +44,7 @@ export function GameApp() {
 
   return (
     <div
-      className={`${(screen !== "title" && game?.challenge === "night") || nightTheme ? "night-theme" : ""} ${machineRoomUnlocked ? "machine-room-unlocked" : ""}`}
+      className={`${(screen !== "title" && game?.challenge === "night") || nightTheme || (screen === "title" && showcaseTheme !== "classic") ? "night-theme" : ""} ${challengeClass(activeChallenge)} card-back-${cardBack} ${machineRoomUnlocked ? "machine-room-unlocked" : ""}`}
     >
       <div id="park-stage">
         {screen === "title" ? <TitleScreen /> : null}

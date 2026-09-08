@@ -4,9 +4,15 @@ import {
   filledCount,
   isAttractionComplete,
 } from "@/lib/game/attractions";
-import { ArrowLeftRight, Check, LockKeyhole, MousePointer2 } from "lucide-react";
+import { ArrowLeftRight, Check, CloudLightning, Crown, FlipHorizontal2, Lightbulb, LockKeyhole, MousePointer2 } from "lucide-react";
 import { cardName, isRed } from "@/lib/game/deck";
-import { isAttractionUnlocked, legalExchanges } from "@/lib/game/engine";
+import { isAttractionStormClosed, isAttractionUnlocked, legalExchanges } from "@/lib/game/engine";
+import {
+  CHALLENGE_BACKGROUNDS,
+  hasMirrorRules,
+  nextStormAttraction,
+  stormClosedAttraction,
+} from "@/lib/game/challenges";
 import type { AttractionId, Card, GameState } from "@/lib/game/types";
 import { AttractionSheet, ICONS } from "@/components/game/AttractionBoard";
 import { RideFinale } from "@/components/game/RideFinale";
@@ -149,6 +155,7 @@ function MapTile({
   const attr = game.attractions[id];
   const complete = isAttractionComplete(id, attr.slots);
   const locked = !isAttractionUnlocked(game, id);
+  const stormClosed = isAttractionStormClosed(game, id);
   const selectedCardId = useGameStore((s) => s.selectedCardId);
   const exchangeMode = useGameStore((s) => s.exchangeMode);
   const openPark = useGameStore((s) => s.openPark);
@@ -173,7 +180,7 @@ function MapTile({
         if (canVisit) visit(id);
         else openPark(id);
       }}
-      disabled={locked}
+      disabled={locked || stormClosed}
       className={cn(
         "park-tile relative flex h-full min-h-0 flex-col overflow-hidden border text-left shadow-soft",
         TILE_THEME[id],
@@ -183,9 +190,10 @@ function MapTile({
         bloomId === id && "attraction-bloom",
         showingAiMove && "tile-ai-move",
         locked && "tile-locked",
+        stormClosed && "tile-storm-closed",
         className,
       )}
-      aria-label={`${def.name}, ${locked ? "sin suministro" : complete ? "conseguido" : attractionProgress(id, attr.slots)}${hot || canVisit ? ", disponible para la carta elegida" : ""}`}
+      aria-label={`${def.name}, ${locked ? "sin suministro" : stormClosed ? "cerrada por lluvia este turno" : complete ? "conseguido" : attractionProgress(id, attr.slots)}${hot || canVisit ? ", disponible para la carta elegida" : ""}`}
       data-attraction-id={id}
     >
       <div className="tile-topline">
@@ -207,10 +215,11 @@ function MapTile({
       <div className="tile-label">
         <p>{def.name}</p>
         <span className={cn(complete && "text-good", (hot || canVisit) && "text-good")}>
-          {locked ? "Sin suministro" : complete ? "Revisada" : hot || canVisit ? "Disponible" : "Ver esquema"}
+          {locked ? "Sin suministro" : stormClosed ? "Cerrada por lluvia" : complete ? "Revisada" : hot || canVisit ? "Disponible" : "Ver esquema"}
         </span>
       </div>
       {locked ? <span className="tile-lock"><LockKeyhole aria-hidden /><small>Sector cerrado</small></span> : null}
+      {stormClosed ? <span className="tile-lock storm-lock"><CloudLightning aria-hidden /><small>Este turno</small></span> : null}
       {celebrating ? <RideFinale id={id} /> : null}
       {complete && !celebrating ? (
         <span className="tile-won-stamp"><span className="tile-won-label">Conseguido</span></span>
@@ -283,6 +292,9 @@ export function Park({ game }: { game: GameState }) {
       : `Turno de ${name}`;
   const busy = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance;
   const isNight = game.challenge === "night";
+  const challenge = game.challenge ?? "classic";
+  const stormNow = stormClosedAttraction(game);
+  const stormNext = nextStormAttraction(game);
   const step = selectedCardId ? 2 : 1;
   const statusTitle = aiMoveFx
     ? `${game.names[1]} jugó ${cardName(aiMoveFx.card)}`
@@ -316,9 +328,9 @@ export function Park({ game }: { game: GameState }) {
         : "Después te mostraremos dónde puede colocarse";
 
   return (
-    <div className="relative h-full min-h-0">
+    <div className={cn("relative h-full min-h-0", hasMirrorRules(game) && "mirror-board")}>
       <img
-        src={isNight ? "/images/poker-park-night-wallpaper.webp" : "/images/park-cover.webp"}
+        src={CHALLENGE_BACKGROUNDS[challenge]}
         alt=""
         className={cn("park-cover", isNight && "park-cover-night")}
       />
@@ -329,6 +341,15 @@ export function Park({ game }: { game: GameState }) {
             {busy ? <MousePointer2 aria-hidden /> : step}
           </span>
           <span className="turn-copy"><strong>{statusTitle}</strong><small>{statusDetail}</small></span>
+          {challenge === "festival" ? (
+            <span className="mode-meter festival-meter"><Lightbulb aria-hidden /><span><small>Combo</small><strong>×{game.festival?.combo ?? 0}</strong></span></span>
+          ) : challenge === "mirror" ? (
+            <span className="mode-meter mirror-meter"><FlipHorizontal2 aria-hidden /><span><small>Plano</small><strong>Espejo</strong></span></span>
+          ) : challenge === "storm" ? (
+            <span className="mode-meter storm-meter"><CloudLightning aria-hidden /><span><small>Ahora · después</small><strong>{stormNow ? ATTRACTION_DEFS[stormNow].name : "Despejado"} → {stormNext ? ATTRACTION_DEFS[stormNext].name : "despejado"}</strong></span></span>
+          ) : challenge === "impossible" ? (
+            <span className="mode-meter impossible-meter"><Crown aria-hidden /><span><small>00:13 · combo ×{game.festival?.combo ?? 0}</small><strong>{stormNow ? ATTRACTION_DEFS[stormNow].name : "Despejado"} → {stormNext ? ATTRACTION_DEFS[stormNext].name : "despejado"}</strong></span></span>
+          ) : null}
         </div>
         <MapTile id="coaster" game={game} className="col-span-2" />
         <MapTile id="haunted" game={game} />
