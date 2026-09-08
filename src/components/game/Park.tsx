@@ -266,6 +266,12 @@ export function Park({ game }: { game: GameState }) {
   const selectedCardId = useGameStore((s) => s.selectedCardId);
   const exchangeMode = useGameStore((s) => s.exchangeMode);
   const name = game.names[game.currentPlayer];
+  const turnLabel =
+    game.mode === "ai"
+      ? game.currentPlayer === 0
+        ? "Tu turno"
+        : "Turno del compañero"
+      : `Turno de ${name}`;
   const busy = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance;
   const step = selectedCardId ? 2 : 1;
   const statusTitle = aiMoveFx
@@ -280,7 +286,7 @@ export function Park({ game }: { game: GameState }) {
           : "Elige una carta de tu mano"
         : selectedCardId
           ? "Toca una atracción iluminada"
-          : `Turno de ${name}`;
+          : turnLabel;
   const statusDetail = aiMoveFx
     ? `${aiMoveFx.kind === "visit" ? "Visitante en" : "Colocada en"} ${ATTRACTION_DEFS[aiMoveFx.attractionId].name}`
     : busy
