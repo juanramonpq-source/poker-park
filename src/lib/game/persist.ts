@@ -10,7 +10,7 @@ export interface Settings {
   muted: boolean;
   nightTheme: boolean;
   showcaseTheme: GameChallenge;
-  cardBack: "classic" | "mechanical" | "festival" | "storm" | "impossible";
+  cardBack: "classic" | "mechanical" | "festival" | "storm" | "impossible" | "dual";
 }
 
 const defaultSettings: Settings = {

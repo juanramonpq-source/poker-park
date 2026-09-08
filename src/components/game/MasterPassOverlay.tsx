@@ -61,7 +61,7 @@ const MASTER_MODES: {
     title: "Poker Park 00:13",
     kicker: "El parque imposible",
     rule: "Espejo, tormenta y combos de luz en una única jornada final.",
-    reward: "Final verdadero y Galería Maestro",
+    reward: "Final verdadero, Reverso DUAL y Galería Maestro",
     icon: Crown,
     secretKey: "impossiblePerfect",
   },

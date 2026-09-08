@@ -33,7 +33,7 @@ const MASTER_REWARDS: Partial<Record<GameChallenge, { title: string; body: strin
   festival: { title: "Fuegos de Feria", body: "Habéis mantenido encendida cada luz. Un nuevo reverso luminoso queda añadido a vuestra colección." },
   mirror: { title: "Plata de Luna", body: "Habéis leído el parque desde el otro lado. La insignia espejo ya brilla en vuestro Pase Maestro." },
   storm: { title: "Nube Dorada", body: "Ni una tormenta pudo cerrar la jornada. El reverso de lluvia queda desbloqueado." },
-  impossible: { title: "Guardianes de Poker Park", body: "La hora imposible ha terminado. Habéis encontrado el final verdadero del parque." },
+  impossible: { title: "Guardianes de Poker Park", body: "La hora imposible ha terminado. Habéis encontrado el final verdadero y el Reverso DUAL queda en vuestra colección." },
 };
 
 function challengeSecretKey(challenge: GameChallenge): keyof Secrets {
@@ -265,6 +265,7 @@ export function EndScreen() {
                 {challenge !== "impossible" && masterTrialsComplete(secrets) ? <div className="impossible-reveal"><Sparkles /> La entrada Poker Park 00:13 acaba de aparecer.</div> : null}
                 {challenge === "impossible" ? (
                   <div className="true-ending-downloads">
+                    <div className="impossible-reveal"><Sparkles /> Reverso DUAL desbloqueado en la Galería Maestro</div>
                     <a href="/images/park-impossible.webp" download="Poker-Park-0013.webp"><Download /> Fondo del parque imposible</a>
                     <a href="/rewards/pase-maestro.svg" download="Certificado-Pase-Maestro.svg"><ShieldCheck /> Certificado Pase Maestro</a>
                   </div>

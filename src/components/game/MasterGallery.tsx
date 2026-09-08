@@ -31,6 +31,7 @@ const BACKS: { id: Settings["cardBack"]; name: string; note: string }[] = [
   { id: "festival", name: "Fuegos de feria", note: "Festival de las Luces" },
   { id: "storm", name: "Nube dorada", note: "Día de Tormenta" },
   { id: "impossible", name: "Guardián 00:13", note: "Final verdadero" },
+  { id: "dual", name: "Reverso DUAL", note: "Todo el parque completado" },
 ];
 
 export function MasterGallery({

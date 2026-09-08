@@ -2209,11 +2209,15 @@
 .gallery-back-festival .gallery-card-preview { background: radial-gradient(circle at 50% 28%, #fff 0 4%, transparent 5%), radial-gradient(circle, #ffce55 0 9%, #b42f76 10% 25%, #38184f 26%); }
 .gallery-back-storm .gallery-card-preview { background: radial-gradient(circle at 50% 64%, #ffd15b 0 10%, transparent 11%), linear-gradient(145deg, #184958, #071a2b); }
 .gallery-back-impossible .gallery-card-preview { background: conic-gradient(from 15deg, #ffd15b, #6847a0, #54cce8, #171331, #ffd15b); }
+.gallery-back-dual .gallery-card-preview { background: #fff url('/images/card-back-dual.png') center / cover no-repeat; }
+.gallery-back-dual .gallery-card-preview i { display: none; }
 
 .card-back-festival .card-back { background-image: radial-gradient(circle at 50% 28%, #fff 0 3%, transparent 4%), radial-gradient(circle, #ffcf55 0 10%, #b63278 11% 24%, #321544 25%) !important; }
 .card-back-storm .card-back { background-image: radial-gradient(circle at 50% 64%, #ffd15b 0 9%, transparent 10%), linear-gradient(145deg, #1f5663, #071b2b) !important; }
 .card-back-impossible .card-back { background-image: conic-gradient(from 15deg, #ffd15b, #6847a0, #54cce8, #171331, #ffd15b) !important; }
 .card-back-mechanical .card-back::after { content: ""; position: absolute; inset: 18%; border-radius: 50%; background: rgb(5 18 38 / .72) url('/brand/pentonui-games-icon.png') center / 80% no-repeat; box-shadow: 0 0 0 2px rgb(101 200 255 / .55), 0 0 16px rgb(101 200 255 / .6); pointer-events: none; }
+.card-back-dual .card-back { background-color: #fff !important; background-image: url('/images/card-back-dual.png') !important; }
+.card-back-dual .card-back::after { display: none !important; }
 
 .master-reward-card { margin-top: 1rem; border: 1px solid #765d93; border-radius: 1.25rem; background: linear-gradient(145deg, #271e4a, #10122c); color: #fff8e9; padding: .9rem; box-shadow: var(--shadow-lifted); }
 .master-reward-heading { display: flex; align-items: center; gap: .6rem; }
@@ -2226,6 +2230,7 @@
 .impossible-reveal svg { width: .8rem; }
 .master-reward-card.is-true-ending { border-color: #d4aa49; background: radial-gradient(circle at 80% 0, rgb(255 208 91 / .18), transparent 35%), linear-gradient(145deg, #292052, #0b0d27); }
 .true-ending-downloads { display: grid; gap: .45rem; margin-top: .7rem; }
+.true-ending-downloads .impossible-reveal { margin-top: 0; }
 .true-ending-downloads a { display: flex; min-height: 2.7rem; align-items: center; justify-content: center; gap: .4rem; border-radius: .75rem; background: #ffd05b; color: #241632; font-size: .66rem; font-weight: 900; }
 .true-ending-downloads a:last-child { border: 1px solid #725e92; background: rgb(255 255 255 / .05); color: #fff; }
 .true-ending-downloads svg { width: .85rem; }
