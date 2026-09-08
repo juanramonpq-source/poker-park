@@ -1,10 +1,11 @@
 import { BookOpen, Crown, FerrisWheel, MoonStar, Palette, Sparkles, Users, UserRound, Wrench, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { playLifetimeUnlock, startChallengeBed, startTitleBed, unlockAudio } from "@/lib/game/audio";
+import { playLifetimeUnlock, playUi, startChallengeBed, startTitleBed, unlockAudio } from "@/lib/game/audio";
 import {
+  clearGame,
   loadSecrets,
   resetPokerParkProgress,
-  unlockAllSecrets,
+  saveSecrets,
   type Secrets,
 } from "@/lib/game/persist";
 import type { GameChallenge, Mode } from "@/lib/game/types";
@@ -56,11 +57,15 @@ export function TitleScreen() {
   const [masterPassOpen, setMasterPassOpen] = useState(false);
   const [developerOpen, setDeveloperOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [tutorialComplete, setTutorialComplete] = useState(false);
   const [studioTaps, setStudioTaps] = useState(0);
   const [pendingMode, setPendingMode] = useState<Mode | null>(null);
   const [pendingChallenge, setPendingChallenge] = useState<GameChallenge>("classic");
 
-  useEffect(() => setSecrets(loadSecrets()), []);
+  useEffect(() => {
+    setSecrets(loadSecrets());
+    setTutorialComplete(window.localStorage.getItem(TUTORIAL_SEEN_KEY) === "true");
+  }, []);
 
   const wake = () => {
     unlockAudio();
@@ -73,6 +78,7 @@ export function TitleScreen() {
 
   const rememberTutorialChoice = () => {
     window.localStorage.setItem(TUTORIAL_SEEN_KEY, "true");
+    setTutorialComplete(true);
   };
 
   const requestStart = (mode: Mode, challenge: GameChallenge = "classic") => {
@@ -120,11 +126,30 @@ export function TitleScreen() {
     setStudioTaps(next);
   };
 
-  const unlockEverything = () => {
-    const next = unlockAllSecrets();
+  const applyDeveloperSecrets = (next: Secrets) => {
+    saveSecrets(next);
     setSecrets(next);
     hydrate();
-    playLifetimeUnlock();
+    playUi();
+  };
+
+  const setDeveloperTutorialSeen = (seen: boolean) => {
+    if (seen) window.localStorage.setItem(TUTORIAL_SEEN_KEY, "true");
+    else window.localStorage.removeItem(TUTORIAL_SEEN_KEY);
+    setTutorialComplete(seen);
+    playUi();
+  };
+
+  const clearSavedRun = () => {
+    clearGame();
+    hydrate();
+    playUi();
+  };
+
+  const startDeveloperMode = (challenge: GameChallenge) => {
+    setDeveloperOpen(false);
+    wake();
+    start("ai", challenge);
   };
 
   const resetEverything = () => {
@@ -272,7 +297,19 @@ export function TitleScreen() {
         <MasterPassOverlay secrets={secrets} onClose={() => setMasterPassOpen(false)} onStart={startMasterMode} />
       ) : null}
       {developerOpen ? (
-        <DeveloperMenu onClose={() => setDeveloperOpen(false)} onUnlockAll={unlockEverything} onReset={resetEverything} />
+        <DeveloperMenu
+          secrets={secrets}
+          tutorialSeen={tutorialComplete}
+          hasSavedGame={canResume}
+          onClose={() => setDeveloperOpen(false)}
+          onApplySecrets={applyDeveloperSecrets}
+          onTutorialSeen={setDeveloperTutorialSeen}
+          onClearSavedGame={clearSavedRun}
+          onOpenMasterPass={() => { setDeveloperOpen(false); setMasterPassOpen(true); }}
+          onOpenGallery={() => { setDeveloperOpen(false); setGalleryOpen(true); }}
+          onStartMode={startDeveloperMode}
+          onReset={resetEverything}
+        />
       ) : null}
       {galleryOpen ? (
         <MasterGallery

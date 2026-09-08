@@ -2337,20 +2337,95 @@
 
 /* Herramientas secretas de prueba. */
 .developer-layer { z-index: 95; place-items: center; }
-.developer-card { width: min(100%, 28rem); border-color: #397d77; background: linear-gradient(155deg, #113833, #071e25); }
-.developer-actions { display: grid; gap: .55rem; margin-top: .9rem; }
-.developer-actions > button { display: grid; min-height: 4.5rem; grid-template-columns: auto 1fr auto; align-items: center; gap: .65rem; border: 1px solid #35685f; border-radius: 1rem; background: rgb(100 235 194 / .06); padding: .6rem; text-align: left; }
-.developer-actions > button > span:first-child { display: grid; width: 2.5rem; height: 2.5rem; place-items: center; border-radius: .8rem; background: rgb(100 235 194 / .1); color: #79eac7; }
-.developer-actions svg { width: 1rem; height: 1rem; color: #79eac7; }
-.developer-actions > button > span:nth-child(2) { display: grid; }
-.developer-actions strong { color: #f5fffb; font-size: .78rem; }
-.developer-actions small { margin-top: .18rem; color: #a7c8c1; font-size: .59rem; line-height: 1.35; }
-.developer-actions > button.is-danger { border-color: #81524c; background: rgb(255 121 102 / .06); }
-.developer-actions > button.is-danger > span:first-child,
-.developer-actions > button.is-danger svg { color: #ff9e8c; }
+.developer-card { width: min(100%, 36rem); border-color: #397d77; background: linear-gradient(155deg, #113833, #071e25); overscroll-behavior: contain; }
+.developer-status { display: flex; min-height: 3rem; align-items: center; justify-content: space-between; gap: .6rem; margin-top: .8rem; border: 1px solid #35685f; border-radius: .9rem; background: rgb(100 235 194 / .07); padding: .55rem .7rem; }
+.developer-status > span:first-child { display: grid; }
+.developer-status strong { color: #79eac7; font-size: .56rem; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+.developer-status small { margin-top: .12rem; color: #f5fffb; font-size: .72rem; font-weight: 800; }
+.developer-status > span:last-child { border-radius: 999px; background: rgb(121 234 199 / .12); color: #b9eee0; padding: .32rem .48rem; font-size: .56rem; font-weight: 850; white-space: nowrap; }
+.developer-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: .3rem; margin-top: .65rem; border-radius: .85rem; background: rgb(1 12 16 / .34); padding: .25rem; }
+.developer-tabs button { display: flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: .3rem; border-radius: .65rem; color: #8fb9af; font-size: .6rem; font-weight: 850; transition: background 160ms ease, color 160ms ease; }
+.developer-tabs button.is-active { background: #28564e; color: #f5fffb; box-shadow: 0 6px 16px rgb(0 0 0 / .18); }
+.developer-tabs svg { width: .85rem; height: .85rem; }
+
+.developer-progress-list,
+.developer-switch-list { display: grid; gap: .42rem; margin-top: .7rem; }
+.developer-progress-list > p,
+.developer-switch-list > p { color: #9fc4bb; font-size: .61rem; line-height: 1.4; }
+.developer-progress-list > button,
+.developer-switch-list > button { display: grid; min-height: 4.15rem; grid-template-columns: auto 1fr auto; align-items: center; gap: .6rem; border: 1px solid #2d5953; border-radius: .9rem; background: rgb(100 235 194 / .035); padding: .52rem .58rem; text-align: left; transition: border-color 160ms ease, background 160ms ease, transform 160ms ease; }
+.developer-progress-list > button:active,
+.developer-switch-list > button:active { transform: scale(.988); }
+.developer-progress-list > button.is-active,
+.developer-switch-list > button.is-active { border-color: #79eac7; background: rgb(100 235 194 / .1); box-shadow: inset 3px 0 #79eac7; }
+.developer-step-icon,
+.developer-switch-list > button > span:first-child { display: grid; width: 2.35rem; height: 2.35rem; place-items: center; border-radius: .72rem; background: rgb(100 235 194 / .09); color: #79eac7; }
+.developer-progress-list > button > span:nth-child(2),
+.developer-switch-list > button > span:nth-child(2) { display: grid; min-width: 0; }
+.developer-progress-list small { color: #79eac7; font-size: .47rem; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+.developer-progress-list strong,
+.developer-switch-list strong { margin-top: .08rem; color: #f5fffb; font-size: .72rem; }
+.developer-progress-list em,
+.developer-switch-list small { margin-top: .14rem; color: #9fc4bb; font-size: .56rem; font-style: normal; line-height: 1.3; }
+.developer-progress-list svg,
+.developer-switch-list svg { width: .95rem; height: .95rem; color: #79eac7; }
+.developer-progress-list > button > svg { width: .78rem; color: #668f87; }
+.developer-progress-list > button.is-active > svg { color: #79eac7; }
+.developer-switch-list i,
+.developer-device-actions i { position: relative; width: 2rem; height: 1.12rem; border-radius: 999px; background: #31534f; transition: background 160ms ease; }
+.developer-switch-list i > span,
+.developer-device-actions i > span { position: absolute; left: .16rem; top: .16rem; width: .8rem; height: .8rem; border-radius: 50%; background: #a8c2bc; transition: transform 160ms ease, background 160ms ease; }
+.developer-switch-list button.is-active i,
+.developer-device-actions button.is-active i { background: #327d6b; }
+.developer-switch-list button.is-active i > span,
+.developer-device-actions button.is-active i > span { background: #d8fff3; transform: translateX(.88rem); }
+
+.developer-tools { display: grid; gap: .75rem; margin-top: .75rem; }
+.developer-tools > section { border: 1px solid #2d5953; border-radius: 1rem; background: rgb(100 235 194 / .035); padding: .65rem; }
+.developer-tools h3 { display: flex; align-items: center; gap: .35rem; color: #f5fffb; font-size: .7rem; }
+.developer-tools h3 svg { width: .9rem; height: .9rem; color: #79eac7; }
+.developer-tools section > p { margin-top: .25rem; color: #9fc4bb; font-size: .56rem; line-height: 1.35; }
+.developer-mode-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: .38rem; margin-top: .55rem; }
+.developer-mode-grid button { display: flex; min-height: 2.85rem; align-items: center; gap: .38rem; border: 1px solid #35685f; border-radius: .7rem; background: rgb(1 12 16 / .2); color: #eafff9; padding: .42rem .5rem; font-size: .6rem; font-weight: 800; text-align: left; }
+.developer-mode-grid svg { width: .82rem; height: .82rem; flex: 0 0 auto; color: #79eac7; }
+.developer-screen-links,
+.developer-device-actions,
+.developer-global-actions { display: grid; gap: .42rem; margin-top: .5rem; }
+.developer-screen-links button,
+.developer-device-actions button,
+.developer-global-actions button { display: grid; min-height: 3.7rem; grid-template-columns: auto 1fr auto; align-items: center; gap: .55rem; border: 1px solid #35685f; border-radius: .8rem; background: rgb(1 12 16 / .2); padding: .5rem; text-align: left; }
+.developer-screen-links button > span,
+.developer-device-actions button > span,
+.developer-global-actions button > span { display: grid; }
+.developer-screen-links svg,
+.developer-device-actions svg,
+.developer-global-actions svg { width: .9rem; height: .9rem; color: #79eac7; }
+.developer-screen-links strong,
+.developer-device-actions strong,
+.developer-global-actions strong { color: #f5fffb; font-size: .65rem; }
+.developer-screen-links small,
+.developer-device-actions small,
+.developer-global-actions small { margin-top: .12rem; color: #9fc4bb; font-size: .53rem; line-height: 1.3; }
+.developer-device-actions button:disabled { opacity: .48; cursor: not-allowed; }
+.developer-danger-zone { border-color: #704943 !important; background: rgb(255 121 102 / .035) !important; }
+.developer-global-actions button.is-danger { border-color: #81524c; background: rgb(255 121 102 / .06); }
+.developer-global-actions button.is-danger svg { color: #ff9e8c; }
 .developer-confirm { margin-top: .65rem; border: 1px solid #80564f; border-radius: 1rem; background: rgb(255 121 102 / .08); padding: .65rem; }
 .developer-confirm p { color: #ffd3cb; font-size: .72rem; font-weight: 800; }
 .developer-confirm > div { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .55rem; }
+
+@media (min-width: 680px) {
+  .developer-progress-list { grid-template-columns: 1fr 1fr; }
+  .developer-progress-list > p { grid-column: 1 / -1; }
+}
+
+@media (max-height: 700px) {
+  .developer-card { border-radius: 1.2rem; padding: .75rem; }
+  .developer-card h2 { font-size: 1.2rem; }
+  .developer-status { min-height: 2.6rem; margin-top: .55rem; }
+  .developer-tabs { margin-top: .45rem; }
+  .developer-tabs button { min-height: 2.4rem; }
+}
 
 /* Galería permanente y reversos ganados. */
 .master-gallery-card h3 { display: flex; align-items: center; gap: .35rem; margin-top: 1rem; color: #fff; font-size: .78rem; }
