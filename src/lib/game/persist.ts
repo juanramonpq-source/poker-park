@@ -47,6 +47,10 @@ export function loadGame(): GameState | null {
     const parsed = JSON.parse(raw) as GameState;
     if (parsed.version !== SAVE_VERSION) return null;
     if (parsed.ended) return null;
+    if (parsed.challenge === "night" && parsed.night && !Array.isArray(parsed.night.aceRack)) {
+      parsed.night.aceRack = parsed.deck.filter((card) => card.rank === 1);
+      parsed.deck = parsed.deck.filter((card) => card.rank !== 1);
+    }
     return parsed;
   } catch {
     return null;

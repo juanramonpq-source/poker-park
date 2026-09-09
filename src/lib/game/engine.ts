@@ -3,24 +3,25 @@ import {
   emptyAttraction,
   isAttractionComplete,
   legalSlotsForCard,
-} from "./attractions";
-import { cardName, isFace, makeDeck, shuffle } from "./deck";
+} from "./attractions.ts";
+import { cardName, isAce, isFace, makeDeck, shuffle } from "./deck.ts";
 import {
   advanceStorm,
   hasMirrorRules,
   recordFestivalPlacement,
   stormClosedAttraction,
-} from "./challenges";
+} from "./challenges.ts";
 import type {
   AttractionId,
   Card,
   DayRating,
   ExchangeTarget,
   GameChallenge,
+  GameDifficulty,
   GameState,
   Mode,
-} from "./types";
-import { ATTRACTION_IDS, MAX_EXCHANGES } from "./types";
+} from "./types.ts";
+import { ATTRACTION_IDS } from "./types.ts";
 
 function clone<T>(value: T): T {
   return structuredClone(value);
@@ -39,8 +40,15 @@ export function createGame(
   mode: Mode,
   names?: [string, string],
   challenge: GameChallenge = "classic",
+  difficulty: GameDifficulty = "standard",
 ): GameState {
-  const shuffled = shuffle(makeDeck());
+  const fullDeck = shuffle(makeDeck());
+  const aceRack = challenge === "night"
+    ? fullDeck
+        .filter(isAce)
+        .sort((a, b) => ["hearts", "spades", "diamonds", "clubs"].indexOf(a.suit) - ["hearts", "spades", "diamonds", "clubs"].indexOf(b.suit))
+    : [];
+  const shuffled = challenge === "night" ? fullDeck.filter((card) => !isAce(card)) : fullDeck;
   const entrance0 = shuffled.pop()!;
   const entrance1 = shuffled.pop()!;
   const hand0: Card[] = [shuffled.pop()!, shuffled.pop()!, shuffled.pop()!];
@@ -56,16 +64,20 @@ export function createGame(
   const state: GameState = {
     version: 7,
     mode,
+    difficulty,
     challenge,
     night:
       challenge === "night"
         ? {
             unlocked: ["restaurant", "restrooms"],
-            route: shuffledAttractions(
-              ATTRACTION_IDS.filter((id) => id !== "restaurant" && id !== "restrooms"),
-            ),
+            route: [
+              "coaster",
+              "forest",
+              ...shuffledAttractions(["love", "haunted", "chairs"]),
+            ],
             pendingUnlock: false,
             emergencyUses: 0,
+            aceRack,
           }
         : undefined,
     festival: challenge === "festival" || challenge === "impossible"
@@ -130,7 +142,7 @@ function removeFromHand(state: GameState, cardId: string): Card {
 }
 
 export function remainingCards(state: GameState): Card[] {
-  return [...state.hands[0], ...state.hands[1], ...state.deck];
+  return [...state.hands[0], ...state.hands[1], ...state.deck, ...(state.night?.aceRack ?? [])];
 }
 
 export function isNightShift(state: GameState): boolean {
@@ -143,6 +155,27 @@ export function isAttractionUnlocked(state: GameState, id: AttractionId): boolea
 
 export function isAttractionStormClosed(state: GameState, id: AttractionId): boolean {
   return stormClosedAttraction(state) === id;
+}
+
+export function exchangeLimit(state: Pick<GameState, "challenge" | "difficulty">): number {
+  switch (state.challenge ?? "classic") {
+    case "night":
+      return 5;
+    case "festival":
+      return 4;
+    case "mirror":
+    case "storm":
+      return 5;
+    case "impossible":
+      return 6;
+    case "classic":
+    default:
+      return state.difficulty === "easy" ? 4 : 3;
+  }
+}
+
+export function passLimit(state: Pick<GameState, "challenge">): number {
+  return state.challenge === "storm" || state.challenge === "impossible" ? 4 : 2;
 }
 
 export function nightUnlockChoices(state: GameState): AttractionId[] {
@@ -166,12 +199,11 @@ export function visitorPhase(state: GameState): boolean {
   );
 }
 
-export function legalPlacements(
+function placementOptionsForCard(
   state: GameState,
-  cardId: string,
+  card: Card,
 ): { attractionId: AttractionId; index: number }[] {
-  const card = state.hands[state.currentPlayer].find((c) => c.id === cardId);
-  if (!card || state.ended) return [];
+  if (state.ended) return [];
   const out: { attractionId: AttractionId; index: number }[] = [];
   for (const id of ATTRACTION_IDS) {
     if (!isAttractionUnlocked(state, id)) continue;
@@ -181,6 +213,14 @@ export function legalPlacements(
     }
   }
   return out;
+}
+
+export function legalPlacements(
+  state: GameState,
+  cardId: string,
+): { attractionId: AttractionId; index: number }[] {
+  const card = state.hands[state.currentPlayer].find((c) => c.id === cardId);
+  return card ? placementOptionsForCard(state, card) : [];
 }
 
 export function legalVisits(state: GameState, cardId: string): AttractionId[] {
@@ -195,7 +235,7 @@ export function legalVisits(state: GameState, cardId: string): AttractionId[] {
 }
 
 export function legalExchanges(state: GameState, cardId: string): ExchangeTarget[] {
-  if (state.ended || state.exchangesUsed >= MAX_EXCHANGES) return [];
+  if (state.ended || state.exchangesUsed >= exchangeLimit(state) || state.swappedCardId) return [];
   const card = state.hands[state.currentPlayer].find((c) => c.id === cardId);
   if (!card) return [];
   const targets: ExchangeTarget[] = [];
@@ -221,6 +261,14 @@ export function legalExchanges(state: GameState, cardId: string): ExchangeTarget
       }
     });
   }
+
+  if (isNightShift(state) && isFace(card)) {
+    for (const ace of state.night?.aceRack ?? []) {
+      if (placementOptionsForCard(state, ace).length > 0) {
+        targets.push({ kind: "ace-rack", cardId: ace.id });
+      }
+    }
+  }
   return targets;
 }
 
@@ -245,6 +293,13 @@ export function hasRequiredCardAction(state: GameState): boolean {
   return false;
 }
 
+export function hasDirectPlacement(state: GameState): boolean {
+  if (state.ended || state.pendingAdvance) return false;
+  return state.hands[state.currentPlayer].some(
+    (card) => legalPlacements(state, card.id).length > 0,
+  );
+}
+
 export function nightEmergencyAvailable(state: GameState): boolean {
   return Boolean(
     isNightShift(state) &&
@@ -252,7 +307,7 @@ export function nightEmergencyAvailable(state: GameState): boolean {
       !state.pendingAdvance &&
       !state.night?.pendingUnlock &&
       state.night?.route.length &&
-      !hasRequiredCardAction(state),
+      !hasDirectPlacement(state),
   );
 }
 
@@ -354,14 +409,14 @@ export function advanceTurn(state: GameState): GameState {
 
 function maybeEnd(state: GameState): GameState {
   const cardsLeft =
-    state.deck.length + state.hands[0].length + state.hands[1].length;
+    state.deck.length + state.hands[0].length + state.hands[1].length + (state.night?.aceRack?.length ?? 0);
   if (cardsLeft === 0) {
     state.ended = true;
     state.endReason = "empty";
     state.lastMessage = "Se acaba el día.";
     return state;
   }
-  if (state.consecutivePasses >= 2) {
+  if (state.consecutivePasses >= passLimit(state)) {
     state.ended = true;
     state.endReason = "block";
     state.lastMessage = "El parque se queda como está.";
@@ -420,6 +475,7 @@ export function exchangeCard(state: GameState, cardId: string, target: ExchangeT
     if (t.kind === "slot" && target.kind === "slot") {
       return t.attractionId === target.attractionId && t.index === target.index;
     }
+    if (t.kind === "ace-rack" && target.kind === "ace-rack") return t.cardId === target.cardId;
     return false;
   });
   if (!ok) throw new Error("Ese intercambio no mantiene la estructura");
@@ -433,23 +489,32 @@ export function exchangeCard(state: GameState, cardId: string, target: ExchangeT
   if (target.kind === "entrance") {
     taken = next.entrance[target.index];
     next.entrance[target.index] = handCard;
-  } else {
+  } else if (target.kind === "slot") {
     taken = next.attractions[target.attractionId].slots[target.index]!;
     next.attractions[target.attractionId].slots[target.index] = handCard;
+  } else {
+    const rack = next.night?.aceRack ?? [];
+    const rackIndex = rack.findIndex((card) => card.id === target.cardId);
+    if (rackIndex < 0) throw new Error("Ese as ya no está en el llavero");
+    [taken] = rack.splice(rackIndex, 1);
+    next.deck = shuffle([...next.deck, handCard]);
   }
   hand[handIndex] = taken;
   next.exchangesUsed += 1;
   next.swappedCardId = taken.id;
   next.consecutivePasses = 0;
-  if (next.exchangesUsed >= 2) next.entranceFaceDown[0] = true;
-  if (next.exchangesUsed >= 3) next.entranceFaceDown[1] = true;
+  const limit = exchangeLimit(next);
+  if (next.exchangesUsed >= limit - 1) next.entranceFaceDown[0] = true;
+  if (next.exchangesUsed >= limit) next.entranceFaceDown[1] = true;
   const aforo =
-    next.exchangesUsed >= 3
+    next.exchangesUsed >= limit
       ? " Aforo completo."
-      : next.exchangesUsed === 2
+      : next.exchangesUsed === limit - 1
         ? " La primera entrada se cierra."
         : "";
-  next.lastMessage = `Intercambio ${next.exchangesUsed}/${MAX_EXCHANGES}.${aforo} Coloca la carta nueva.`;
+  next.lastMessage = target.kind === "ace-rack"
+    ? `Llavero de Ases ${next.exchangesUsed}/${limit}.${aforo} Coloca ahora el as recibido.`
+    : `Intercambio ${next.exchangesUsed}/${limit}.${aforo} Coloca la carta nueva.`;
   return next;
 }
 
@@ -580,8 +645,8 @@ export function dayBadges(state: GameState): DayBadge[] {
     badges.push({ id: "stay", name: "Una más", hint: "Alguien se quedó cuando cerraba.", secret: true });
   if (state.exchangesUsed === 0 && n >= 3)
     badges.push({ id: "flow", name: "Sin colas", hint: "Ni un solo intercambio.", secret: true });
-  if (state.exchangesUsed >= 3 && n >= 4)
-    badges.push({ id: "aforo", name: "Maestros del aforo", hint: "Los tres cambios, bien gastados.", secret: true });
+  if (state.exchangesUsed >= exchangeLimit(state) && n >= 4)
+    badges.push({ id: "aforo", name: "Maestros del aforo", hint: "Todos los cambios, bien gastados.", secret: true });
   if (n === 0)
     badges.push({ id: "rain", name: "Entrada mojada", hint: "El parque sigue ahí mañana.", secret: true });
   return badges;

@@ -1,6 +1,6 @@
-import { isAttractionComplete, legalSlotsForCard } from "./attractions";
-import { isAce, isFace } from "./deck";
-import { hasMirrorRules } from "./challenges";
+import { isAttractionComplete, legalSlotsForCard } from "./attractions.ts";
+import { isAce, isFace } from "./deck.ts";
+import { hasMirrorRules } from "./challenges.ts";
 import {
   hasLegalAction,
   hasRequiredAction,
@@ -8,9 +8,9 @@ import {
   legalPlacements,
   legalVisits,
   remainingCards,
-} from "./engine";
-import type { AttractionId, Card, ExchangeTarget, GameState } from "./types";
-import { ATTRACTION_IDS } from "./types";
+} from "./engine.ts";
+import type { AttractionId, Card, ExchangeTarget, GameState } from "./types.ts";
+import { ATTRACTION_IDS } from "./types.ts";
 
 export type AiMove =
   | { type: "place"; cardId: string; attractionId: AttractionId; index: number }
@@ -63,7 +63,7 @@ function scorePlace(
     if (remainingFaces <= facesStillNeeded(state) + 1) score -= 55;
   }
 
-  if (attractionId === "coaster") score += 18;
+  if (attractionId === "coaster") score += state.challenge === "night" ? 82 : 18;
   if (attractionId === "restaurant") score += 4;
   if (attractionId === "love" && card.suit === "hearts") score += 10;
   if (attractionId === "forest") score += 8;
@@ -78,7 +78,7 @@ function scorePlace(
 }
 
 export function chooseAiMove(state: GameState): AiMove {
-  if (!hasRequiredAction(state)) return { type: "close" };
+  if (!hasRequiredAction(state)) return { type: "pass" };
   if (!hasLegalAction(state)) return { type: "pass" };
 
   let bestScore = -Infinity;
@@ -125,6 +125,8 @@ export function chooseAiMove(state: GameState): AiMove {
           slots[target.index] = card;
           if (isAttractionComplete(target.attractionId, slots, hasMirrorRules(state))) score += 160;
           if (previous && uniqueNeed(card) === target.attractionId) score += 40;
+        } else if (target.kind === "ace-rack") {
+          score += 300;
         }
         consider(score, { type: "exchange", cardId: card.id, target });
       }

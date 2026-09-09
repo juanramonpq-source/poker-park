@@ -1,7 +1,6 @@
 import { ArrowLeftRight, BookOpen, Flag, LogOut, MoreHorizontal, UserRound, Volume2, VolumeX, Wrench } from "lucide-react";
 import { useState } from "react";
-import { MAX_EXCHANGES } from "@/lib/game/types";
-import { legalExchanges } from "@/lib/game/engine";
+import { exchangeLimit, legalExchanges } from "@/lib/game/engine";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,7 @@ export function Hud() {
 
   if (!game) return null;
   const locked = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance;
-  const remaining = MAX_EXCHANGES - game.exchangesUsed;
+  const remaining = exchangeLimit(game) - game.exchangesUsed;
   const aforo = remaining <= 0;
   const selectedCanExchange = selectedCardId
     ? legalExchanges(game, selectedCardId).length > 0
@@ -31,7 +30,9 @@ export function Hud() {
   const mustPlaceSwap = Boolean(game.swappedCardId);
   const exchangeDisabled = aforo || locked || mustPlaceSwap || !selectedCanExchange;
   const exchangeReady = Boolean(selectedCardId) && selectedCanExchange && !exchangeMode;
-  const currentName = game.names[game.currentPlayer];
+  const currentName = game.mode === "ai" && game.currentPlayer === 0
+    ? "Tu turno"
+    : game.names[game.currentPlayer];
   const isNight = game.challenge === "night";
 
   const openRules = () => {
@@ -65,7 +66,7 @@ export function Hud() {
         <div className="player-chip" aria-live="polite">
           <span className="player-avatar" aria-hidden>{isNight ? <Wrench /> : <UserRound />}</span>
           <span className="player-copy">
-            <small>{aiMoveFx ? "Última revisión" : aiThinking ? "Comprobando" : isNight ? "Guardia" : "Turno"}</small>
+            <small>{aiMoveFx ? "Última revisión" : aiThinking ? "Comprobando" : game.mode === "ai" && game.currentPlayer === 0 ? "Ahora" : isNight ? "Guardia" : "Turno"}</small>
             <strong>{aiMoveFx ? game.names[1] : currentName}</strong>
           </span>
         </div>

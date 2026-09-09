@@ -7,6 +7,7 @@ import {
   closePark,
   completedAttractions,
   createGame,
+  exchangeLimit,
   exchangeCard,
   hasRequiredAction,
   legalExchanges,
@@ -33,6 +34,7 @@ import type {
   Card,
   ExchangeTarget,
   GameChallenge,
+  GameDifficulty,
   GameState,
   Mode,
   Screen,
@@ -69,8 +71,9 @@ interface GameStore {
   visitorPromptHidden: boolean;
   mapIntroOpen: boolean;
   mapOutroOpen: boolean;
+  nightEmergencyDeferred: boolean;
   hydrate: () => void;
-  start: (mode: Mode, challenge?: GameChallenge) => void;
+  start: (mode: Mode, challenge?: GameChallenge, difficulty?: GameDifficulty) => void;
   resume: () => void;
   goTitle: () => void;
   quitToTitle: () => void;
@@ -92,6 +95,7 @@ interface GameStore {
   setCardBack: (cardBack: Settings["cardBack"]) => void;
   unlockMachineRoom: () => void;
   unlockNightSector: (id: AttractionId) => void;
+  deferNightEmergency: () => void;
   setRulesOpen: (open: boolean) => void;
   pulse: (kind: FxKind, attractionId?: AttractionId | null) => void;
 }
@@ -157,6 +161,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       visitorPromptHidden: false,
       mapIntroOpen: false,
       mapOutroOpen: true,
+      nightEmergencyDeferred: false,
     });
   };
 
@@ -169,6 +174,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         exchangeMode: false,
         aiThinking: false,
         visitorPromptHidden: false,
+        nightEmergencyDeferred: false,
       });
       window.clearTimeout(advanceTimer);
       advanceTimer = window.setTimeout(() => {
@@ -211,6 +217,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       openAttraction: fromHuman ? null : get().openAttraction,
       aiThinking: false,
       visitorPromptHidden: false,
+      nightEmergencyDeferred: false,
     });
     if (next.currentPlayer === 1 && next.mode === "ai") {
       queueAi();
@@ -226,7 +233,10 @@ export const useGameStore = create<GameStore>((set, get) => {
         set({ aiThinking: false });
         return;
       }
-      if (nightEmergencyAvailable(current)) {
+      const aiCanExchange = current.hands[current.currentPlayer].some(
+        (card) => legalExchanges(current, card.id).length > 0,
+      );
+      if (nightEmergencyAvailable(current) && !aiCanExchange) {
         set({ aiThinking: false, openAttraction: null });
         return;
       }
@@ -304,6 +314,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     visitorPromptHidden: false,
     mapIntroOpen: false,
     mapOutroOpen: false,
+    nightEmergencyDeferred: false,
     pulse,
     hydrate: () => {
       const settings = loadSettings();
@@ -319,7 +330,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         game: s.screen === "title" ? saved : s.game ?? saved,
       }));
     },
-    start: (mode, challenge = "classic") => {
+    start: (mode, challenge = "classic", difficulty = "standard") => {
       window.clearTimeout(aiRevealTimer);
       window.clearTimeout(aiRevealClearTimer);
       audio.unlockAudio();
@@ -329,7 +340,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       audio.playDeal();
       window.setTimeout(() => audio.playDeal(), 70);
       window.setTimeout(() => audio.playDeal(), 140);
-      const game = createGame(mode, undefined, challenge);
+      const game = createGame(mode, undefined, challenge, difficulty);
       persist(game);
       pulse("deal");
       set({
@@ -343,6 +354,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         visitorPromptHidden: false,
         mapIntroOpen: true,
         mapOutroOpen: false,
+        nightEmergencyDeferred: false,
       });
     },
     resume: () => {
@@ -356,6 +368,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         openAttraction: null,
         mapIntroOpen: false,
         mapOutroOpen: false,
+        nightEmergencyDeferred: false,
       });
       if (saved.mode === "ai" && saved.currentPlayer === 1 && !saved.ended) queueAi();
     },
@@ -375,6 +388,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         openAttraction: null,
         mapIntroOpen: false,
         mapOutroOpen: false,
+        nightEmergencyDeferred: false,
       });
     },
     quitToTitle: () => {
@@ -395,6 +409,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         aiMoveFx: null,
         mapIntroOpen: false,
         mapOutroOpen: false,
+        nightEmergencyDeferred: false,
       });
     },
     selectCard: (id) => {
@@ -408,9 +423,12 @@ export const useGameStore = create<GameStore>((set, get) => {
     },
     toggleExchange: () => {
       const { game, exchangeMode } = get();
-      if (!game || game.exchangesUsed >= 3 || game.swappedCardId) return;
+      if (!game || game.exchangesUsed >= exchangeLimit(game) || game.swappedCardId) return;
       audio.playUi();
-      set({ exchangeMode: !exchangeMode });
+      set({
+        exchangeMode: !exchangeMode,
+        nightEmergencyDeferred: exchangeMode ? false : get().nightEmergencyDeferred,
+      });
     },
     openPark: (id) => {
       audio.playUi();
@@ -560,6 +578,16 @@ export const useGameStore = create<GameStore>((set, get) => {
       } catch {
         /* stale choice */
       }
+    },
+    deferNightEmergency: () => {
+      const game = get().game;
+      if (!game || !nightEmergencyAvailable(game)) return;
+      const canExchange = game.hands[game.currentPlayer].some(
+        (card) => legalExchanges(game, card.id).length > 0,
+      );
+      if (!canExchange) return;
+      audio.playUi();
+      set({ nightEmergencyDeferred: true, exchangeMode: true, selectedCardId: null });
     },
     setRulesOpen: (open) => {
       audio.unlockAudio();

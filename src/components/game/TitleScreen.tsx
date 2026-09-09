@@ -8,7 +8,8 @@ import {
   saveSecrets,
   type Secrets,
 } from "@/lib/game/persist";
-import type { GameChallenge, Mode } from "@/lib/game/types";
+import type { GameChallenge, GameDifficulty, Mode } from "@/lib/game/types";
+import { exchangeLimit } from "@/lib/game/engine";
 import { Button } from "@/components/ui/button";
 import { useGameStore } from "@/store/game-store";
 import { MasterPassOverlay } from "@/components/game/MasterPassOverlay";
@@ -64,6 +65,8 @@ export function TitleScreen() {
   const [studioTaps, setStudioTaps] = useState(0);
   const [pendingMode, setPendingMode] = useState<Mode | null>(null);
   const [pendingChallenge, setPendingChallenge] = useState<GameChallenge>("classic");
+  const [pendingDifficulty, setPendingDifficulty] = useState<GameDifficulty>("standard");
+  const [dayDifficulty, setDayDifficulty] = useState<GameDifficulty>("standard");
 
   useEffect(() => {
     setSecrets(loadSecrets());
@@ -84,14 +87,19 @@ export function TitleScreen() {
     setTutorialComplete(true);
   };
 
-  const requestStart = (mode: Mode, challenge: GameChallenge = "classic") => {
+  const requestStart = (
+    mode: Mode,
+    challenge: GameChallenge = "classic",
+    difficulty: GameDifficulty = challenge === "classic" ? dayDifficulty : "standard",
+  ) => {
     wake();
     if (tutorialSeen()) {
-      start(mode, challenge);
+      start(mode, challenge, difficulty);
       return;
     }
     setPendingMode(mode);
     setPendingChallenge(challenge);
+    setPendingDifficulty(difficulty);
     setTutorialChoiceOpen(true);
   };
 
@@ -101,7 +109,7 @@ export function TitleScreen() {
     const mode = pendingMode;
     setPendingMode(null);
     setTutorialChoiceOpen(false);
-    start(mode, pendingChallenge);
+    start(mode, pendingChallenge, pendingDifficulty);
   };
 
   const showTutorial = () => {
@@ -115,7 +123,7 @@ export function TitleScreen() {
     rememberTutorialChoice();
     const mode = pendingMode;
     setPendingMode(null);
-    start(mode, pendingChallenge);
+    start(mode, pendingChallenge, pendingDifficulty);
   };
 
   const tapStudio = () => {
@@ -230,6 +238,24 @@ export function TitleScreen() {
         <div className="title-panel stagger-in">
           <p className="title-menu-kicker">Elige cómo recorrer el parque</p>
           <div className="title-actions">
+            <div className="day-difficulty-selector" role="group" aria-label="Dificultad de la jornada de día">
+              <button
+                type="button"
+                className={dayDifficulty === "standard" ? "is-selected" : undefined}
+                aria-pressed={dayDifficulty === "standard"}
+                onClick={() => setDayDifficulty("standard")}
+              >
+                <span>Clásico</span><small>3 cambios</small>
+              </button>
+              <button
+                type="button"
+                className={dayDifficulty === "easy" ? "is-selected" : undefined}
+                aria-pressed={dayDifficulty === "easy"}
+                onClick={() => setDayDifficulty("easy")}
+              >
+                <span>Fácil</span><small>4 cambios</small>
+              </button>
+            </div>
             <Button size="lg" className="w-full" onClick={() => requestStart("hotseat")}>
               <Users className="size-4" strokeWidth={1.75} />
               Jugar en pareja
@@ -292,6 +318,8 @@ export function TitleScreen() {
             <div className="night-mode-rules">
               <span><Wrench aria-hidden /> 2 atracciones abiertas</span>
               <span><Sparkles aria-hidden /> Nuevos sectores al completar</span>
+              <span><Crown aria-hidden /> 5 cambios compartidos</span>
+              <span><img src="/images/ace-keyring.webp" alt="" /> Llavero de Ases</span>
             </div>
             <div className="tutorial-choice-actions">
               <Button size="lg" className="w-full" onClick={() => { setNightModeOpen(false); requestStart("hotseat", "night"); }}><Users /> Guardia en pareja</Button>
@@ -357,7 +385,7 @@ export function TitleScreen() {
             <ol className="tutorial-steps">
               <li><span>1</span><p><strong>Robad y hablad.</strong> Es un juego colaborativo: cada jugador tiene su propia mano y decidís juntos dónde encaja cada carta.</p></li>
               <li><span>2</span><p><strong>Tocad o arrastrad.</strong> Podéis elegir una carta y tocar su destino, o llevarla directamente hasta una posición iluminada.</p></li>
-              <li><span>3</span><p><strong>Guardad los cambios.</strong> Solo hay tres para toda la jornada; usadlos cuando desbloqueen una atracción.</p></li>
+              <li><span>3</span><p><strong>Guardad los cambios.</strong> Esta partida permite {exchangeLimit({ challenge: pendingChallenge, difficulty: pendingDifficulty })} cambios; usadlos cuando desbloqueen una atracción.</p></li>
             </ol>
             <Button size="lg" className="mt-5 w-full" onClick={finishTutorial}>
               {pendingMode ? "Empezar partida" : "¡Entendido!"}

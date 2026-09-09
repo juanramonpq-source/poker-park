@@ -1,4 +1,4 @@
-import type { AttractionId, GameChallenge, GameState } from "./types";
+import type { AttractionId, GameChallenge, GameState } from "./types.ts";
 
 export const MASTER_CHALLENGES: GameChallenge[] = ["festival", "mirror", "storm"];
 

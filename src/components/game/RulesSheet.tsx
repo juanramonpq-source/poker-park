@@ -18,7 +18,7 @@ const SECTIONS: Array<{
   },
   {
     title: "Intercambios y aforo",
-    body: "Solo 3 intercambios en toda la partida, compartidos. Puedes pulsar Cambiar y elegir tu carta, o elegir primero la carta de tu mano y después pulsar Cambiar. Luego escoge qué carta recibes de la entrada o de una atracción, si se mantiene la estructura. Tras el cambio sigues tú: coloca la carta que entra. El segundo cierra la primera carta de la entrada; el tercero cierra la segunda. Aforo completo: no hay más intercambios.",
+    body: "Los intercambios son compartidos: 3 en Clásico, 4 en Fácil y Festival, 5 en Noche, Espejo y Tormenta, y 6 en 00:13. Puedes pulsar Cambiar y elegir tu carta, o elegir primero la carta y después pulsar Cambiar. Luego escoge qué carta recibes de la entrada o de una atracción, si se mantiene la estructura. Tras el cambio sigues tú y debes colocar la carta nueva. La primera entrada se cierra al quedar una maniobra; la segunda, al agotar el límite.",
   },
   {
     title: "Atracciones",
@@ -38,12 +38,12 @@ const SECTIONS: Array<{
   },
   {
     title: "La Noche de Guardia",
-    body: "Se desbloquea al completar las siete atracciones. Sois el personal de mantenimiento y empezáis con dos sectores encendidos. Cada atracción revisada permite dar corriente a otra. Si no existe ninguna maniobra obligatoria, el generador abre un sector y el mismo turno continúa. El informe final cuenta revisiones e incidencias.",
+    body: "Se desbloquea al completar las siete atracciones. Sois el personal de mantenimiento, empezáis con dos sectores encendidos y disponéis de 5 cambios. Cada atracción revisada permite dar corriente a otra. El Llavero de Ases permite entregar una figura por un as que pueda colocarse inmediatamente. Si no podéis colocar ninguna carta, podéis probar un intercambio o registrar una incidencia para abrir un sector con el generador. El informe final cuenta revisiones e incidencias.",
     visible: (secrets) => secrets.perfect,
   },
   {
     title: "Poker Park 00:13",
-    body: "La jornada final junta espejo, tormenta y luces. No hay límite de tiempo: la tormenta solo cierra una atracción durante ese turno. La partida termina únicamente si pulsáis Cerrar, se agotan todas las cartas o los dos jugadores pasan seguidos porque no pueden colocar ni intercambiar.",
+    body: "La jornada final junta espejo, tormenta y luces y concede 6 cambios. No hay límite de tiempo: la tormenta solo cierra una atracción durante ese turno. Para que una mala rotación no cierre una partida recuperable, el bloqueo solo se declara tras dos rondas completas —cuatro pases seguidos— sin poder colocar ni intercambiar.",
     visible: (secrets) => masterTrialsComplete(secrets) || secrets.impossiblePerfect,
   },
 ];
@@ -88,7 +88,7 @@ export function RulesSheet() {
         <ol className="rules-quickstart" aria-label="Resumen en tres pasos">
           <li><span>1</span><MousePointer2 aria-hidden /><p><strong>Toca o arrastra</strong><small>una carta de tu mano</small></p></li>
           <li><span>2</span><Sparkles aria-hidden /><p><strong>Busca la luz verde</strong><small>marca destinos válidos</small></p></li>
-          <li><span>3</span><ArrowLeftRight aria-hidden /><p><strong>Usa los cambios</strong><small>solo hay tres</small></p></li>
+          <li><span>3</span><ArrowLeftRight aria-hidden /><p><strong>Usa los cambios</strong><small>3–6 según el modo</small></p></li>
         </ol>
 
         <div className="rules-sections">

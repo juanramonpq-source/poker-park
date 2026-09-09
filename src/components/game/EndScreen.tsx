@@ -4,6 +4,7 @@ import {
   completedAttractions,
   dayBadges,
   dayRating,
+  passLimit,
   ratingCopy,
   RATING_SCALE,
   type DayBadge,
@@ -74,6 +75,12 @@ function endingCopy(game: GameState) {
         body: "No quedaban cartas ni en el mazo ni en las manos. La jornada termina aquí.",
       };
     case "block":
+      if (passLimit(game) === 4) {
+        return {
+          label: "Dos rondas sin jugada",
+          body: "La tormenta cambió de sector varias veces, pero durante cuatro turnos seguidos nadie pudo colocar ni intercambiar.",
+        };
+      }
       return {
         label: "Dos turnos sin jugada",
         body: "Los dos jugadores se quedaron sin una colocación o intercambio posible. La tormenta puede cerrar un sector, pero no termina la partida por sí sola.",
@@ -254,7 +261,7 @@ export function EndScreen() {
         </div>
       ) : null}
       <div className="relative mx-auto max-w-md px-5 pt-[max(2.5rem,env(safe-area-inset-top))]">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted">{isNight ? "Informe de mantenimiento" : isMasterMode ? CHALLENGE_NAMES[challenge] : "Recuento del día"}</p>
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted">{isNight ? "Informe de mantenimiento" : isMasterMode ? CHALLENGE_NAMES[challenge] : game.difficulty === "easy" ? "Recuento · Modo Fácil" : "Recuento del día"}</p>
         <button type="button" onClick={onTapScale} className="mt-3 w-full text-left">
           <p key={pop} className="count-pop font-display text-7xl font-medium leading-none tracking-tight text-accent">{shown}<span className="ml-1 text-2xl text-muted">/ 7</span></p>
           <p className="mt-2 font-display text-xl text-fg">{currentTitle}</p>

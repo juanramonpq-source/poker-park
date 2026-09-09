@@ -106,29 +106,35 @@ AttractionState { slots: (Card|null)[], visitors: Card[] }
 
 GameState.version = 7
   mode: hotseat | ai
-  challenge?: classic | night
-  night?: sectores con suministro, ruta pendiente, elección de apertura e incidencias
+  difficulty?: standard | easy
+  challenge?: classic | night | festival | mirror | storm | impossible
+  night?: sectores con suministro, ruta pendiente, elección de apertura,
+          incidencias y aceRack (los cuatro ases)
   names, deck, hands[2], entrance[2], entranceFaceDown[2]
-  attractions, exchangesUsed (max 3), currentPlayer
+  attractions, exchangesUsed (límite según modo), currentPlayer
   drawnThisTurn, consecutivePasses
   lastMessage, lastCompleted, swappedCardId
   pendingAdvance   // true mientras dura la fiesta de “conseguido”
   ended, endReason: empty | block | closed | null
 ```
 
-`MAX_EXCHANGES = 3`. Mano inicial: 3 cartas. Entrada del parque: 2 cartas
-boca arriba.
+`MAX_EXCHANGES = 3` conserva el valor clásico. `exchangeLimit(state)` devuelve:
+Clásico 3, Fácil/Festival 4, Noche/Espejo/Tormenta 5 y 00:13 6. Mano
+inicial: 3 cartas. Entrada del parque: 2 cartas boca arriba.
 
 ---
 
 ## 5. Flujo de una partida
 
 ### Preparación
-Barajar 52. 2 cartas → Entrada. 3 a cada jugador. Resto = mazo.
+Barajar 52. 2 cartas → Entrada. 3 a cada jugador. Resto = mazo. En la Noche
+de Guardia, los cuatro ases se separan antes del reparto y quedan visibles en
+el Llavero de Ases.
 
 ### Turno
 1. Al empezar turno se roba 1 del mazo (si queda).
-2. **Una colocación** (carta en hueco legal) **o** un intercambio.
+2. **Una colocación** (carta en hueco legal). Los intercambios no consumen la
+   colocación, pero sí una maniobra del límite compartido.
 3. Si haces **intercambio**: el turno **no acaba**. Animación de swap.
    La carta que entra queda seleccionada (`swappedCardId`) y **debes
    poder colocarla** (o quedar bloqueado).
@@ -139,13 +145,16 @@ Barajar 52. 2 cartas → Entrada. 3 a cada jugador. Resto = mazo.
 Los jugadores pueden hablar.
 
 ### Intercambios (aforo)
-- 3 en toda la partida, compartidos.
+- Compartidos y limitados por `exchangeLimit(state)`.
 - Mano ↔ carta de la Entrada, o mano ↔ carta ya colocada en una
   atracción **incompleta**, si la nueva carta sigue siendo legal en ese
   hueco.
-- Tras el 2º: se cierra (boca abajo) la primera carta de la Entrada.
-- Tras el 3º: se cierra la segunda. Aforo completo: no más cambios.
+- La primera carta de la Entrada se cierra al quedar una maniobra; la segunda,
+  al agotar el límite. Aforo completo: no más cambios.
 - Completadas: no se intercambia en ellas.
+- En Noche, una figura también puede cambiarse por un as del llavero solo si
+  ese as puede colocarse inmediatamente en un sector con suministro. La figura
+  vuelve al mazo y el intercambio consume una maniobra.
 
 ### Figuras
 J, Q, K **no rellenan** montaña rusa, terror, túnel, bosque ni restaurante.
@@ -164,8 +173,9 @@ atracciones **completas**. Es **opcional**.
   “El parque está resuelto” + **Cerrar el parque** + opcional
   “Dejar un visitante”.
 - Si está atascado de verdad: “Estás bloqueado, no puedes montar en nada”
-  + **Pasar turno**. Si el otro también pasa (`consecutivePasses >= 2`):
-  fin de jornada.
+  + **Pasar turno**. En los modos sin tormenta bastan dos pases consecutivos.
+  Tormenta y 00:13 esperan cuatro pases (dos rondas completas) para no cerrar
+  por una rotación meteorológica recuperable.
 - También acaba si se vacían mazo y manos.
 
 ### Pantallas
@@ -310,8 +320,10 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
   atracción o hasta un hueco legal iluminado.
 - Baldosas legales: `tile-hot` (borde verde + pulso). Si hay visitante
   posible, tocar la baldosa **deja el visitante** directo.
-- HUD: chip de mazo (cartas restantes), botón **Aforo** grande (restantes
-  3/2/1/0), reglas, mute, salir.
+- HUD: chip de mazo, botón de cambios con el saldo real del modo, reglas,
+  mute y salir.
+- La Entrada nocturna incluye el objeto ilustrado **Llavero de Ases**, con aro,
+  cadenita, cuatro colgantes y el estado real de cada as.
 - Intercambio: overlay de dos cartas que cruzan (`swapFx`).
 
 ---
@@ -333,15 +345,21 @@ Todo sintético en `src/lib/game/audio.ts` (Web Audio). Sin mp3.
 
 - `afterHuman`: persiste; si `pendingAdvance` espera 3200ms y llama
   `advanceTurn`; si `ended` → screen `end`; hotseat → screen `pass`.
-- `pass` y `closePark` se niegan si `hasRequiredAction`.
-- `hasRequiredAction` = colocaciones o intercambios. Visitantes no.
-- IA (`chooseAiMove`): si no hay acción obligatoria → `{ type: "close" }`.
+- `pass` se niega si `hasRequiredAction`; `closePark` siempre permite terminar
+  voluntariamente y pasar al recuento.
+- `hasRequiredAction` = colocaciones, intercambios o generador nocturno.
+  Visitantes no.
+- El generador se ofrece cuando no hay colocación directa aunque aún quede un
+  intercambio; el jugador puede elegir entre gastar el cambio o registrar la
+  incidencia.
+- IA (`chooseAiMove`): si no hay jugada, pasa; nunca cierra el parque por su
+  cuenta. Prioriza un as necesario del llavero y la vía larga nocturna.
 
 ---
 
 ## 11. Tests mínimos a conservar
 
-`src/lib/game/attractions.test.ts` cubre:
+`src/lib/game/attractions.test.ts` y `src/lib/game/engine.test.ts` cubren:
 
 - montaña: orden ascendente, start 2/3
 - amor: arco desde un lado, as en cumbre
@@ -350,6 +368,10 @@ Todo sintético en `src/lib/game/audio.ts` (Web Audio). Sin mp3.
 - figuras ilegales en coaster/love/forest/restaurant
 - restaurant A♣ en 1
 - restrooms K+Q
+- límites por modo y cierre relativo de la Entrada
+- Llavero de Ases, intercambio de figura y A♠ condicionado
+- generador nocturno aun con cambios disponibles
+- cuatro pases antes del bloqueo en Tormenta/00:13
 
 Al portar, ejecuta esos tests primero.
 

@@ -1,17 +1,23 @@
-import { BatteryCharging, LockKeyhole, MoonStar, Wrench } from "lucide-react";
+import { ArrowLeftRight, BatteryCharging, LockKeyhole, MoonStar, Wrench } from "lucide-react";
 import { ATTRACTION_DEFS } from "@/lib/game/attractions";
-import { nightEmergencyAvailable, nightUnlockChoices } from "@/lib/game/engine";
+import { legalExchanges, nightEmergencyAvailable, nightUnlockChoices } from "@/lib/game/engine";
 import { useGameStore } from "@/store/game-store";
 
 export function NightUnlockSheet() {
   const game = useGameStore((state) => state.game);
   const unlock = useGameStore((state) => state.unlockNightSector);
+  const deferred = useGameStore((state) => state.nightEmergencyDeferred);
+  const deferEmergency = useGameStore((state) => state.deferNightEmergency);
   if (!game?.night || game.ended || game.pendingAdvance) return null;
 
   const emergency = nightEmergencyAvailable(game);
+  if (emergency && deferred) return null;
   if (!game.night.pendingUnlock && !emergency) return null;
   const choices = nightUnlockChoices(game);
   if (choices.length === 0) return null;
+  const canExchange = emergency && game.hands[game.currentPlayer].some(
+    (card) => legalExchanges(game, card.id).length > 0,
+  );
 
   return (
     <div className="night-unlock-layer" role="dialog" aria-modal="true" aria-labelledby="night-unlock-title">
@@ -30,7 +36,7 @@ export function NightUnlockSheet() {
         </h2>
         <p className="night-unlock-copy">
           {emergency
-            ? `${game.names[game.currentPlayer]} se ha quedado sin maniobras. Elegid un sector y continuad el mismo turno.`
+            ? `${game.names[game.currentPlayer]} no puede colocar ahora. Podéis registrar una incidencia y alimentar un sector, o gastar antes uno de los cambios disponibles.`
             : "Como personal de mantenimiento, elegid qué atracción comprobaréis a continuación."}
         </p>
         <div className="night-sector-options">
@@ -45,6 +51,11 @@ export function NightUnlockSheet() {
             </button>
           ))}
         </div>
+        {canExchange ? (
+          <button type="button" className="night-exchange-first" onClick={deferEmergency}>
+            <ArrowLeftRight aria-hidden /> Usar un cambio antes
+          </button>
+        ) : null}
         <p className="night-incident-note">
           {emergency
             ? `Incidencia ${game.night.emergencyUses + 1}: quedará anotada en el parte final.`

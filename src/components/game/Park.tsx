@@ -14,7 +14,10 @@ import {
   LockKeyhole,
   Map as MapIcon,
   MousePointer2,
+  X,
 } from "lucide-react";
+import { useState } from "react";
+import { createPortal } from "react-dom";
 import { cardName, isRed } from "@/lib/game/deck";
 import { isAttractionStormClosed, isAttractionUnlocked, legalExchanges } from "@/lib/game/engine";
 import {
@@ -24,7 +27,7 @@ import {
   nextStormAttraction,
   stormClosedAttraction,
 } from "@/lib/game/challenges";
-import type { AttractionId, Card, GameState } from "@/lib/game/types";
+import type { AttractionId, Card, GameState, Suit } from "@/lib/game/types";
 import { AttractionSheet, ICONS } from "@/components/game/AttractionBoard";
 import { RideFinale } from "@/components/game/RideFinale";
 import { PlayingCard } from "@/components/game/PlayingCard";
@@ -248,7 +251,15 @@ function MapTile({
   );
 }
 
-function EntranceTile({ game, className }: { game: GameState; className?: string }) {
+function EntranceTile({
+  game,
+  className,
+  onOpenAceRack,
+}: {
+  game: GameState;
+  className?: string;
+  onOpenAceRack: () => void;
+}) {
   const exchange = useGameStore((s) => s.exchange);
   const { exchanges } = useLegalForSelected();
   const swapFx = useGameStore((s) => s.swapFx);
@@ -264,31 +275,111 @@ function EntranceTile({ game, className }: { game: GameState; className?: string
         <span><ArrowLeftRight aria-hidden /> Entrada</span>
         <small>Intercambio</small>
       </div>
-      <div className="flex min-h-0 flex-1 items-center justify-center gap-2">
-        {game.entrance.map((card, i) => {
-          const index = i as 0 | 1;
-          const down = game.entranceFaceDown[index];
-          const canSwap = exchanges.some((t) => t.kind === "entrance" && t.index === index);
-          if (down) {
-            return <PlayingCard key={`${card.id}-down`} faceDown size="sm" />;
-          }
-          return (
-            <PlayingCard
-              key={card.id}
-              card={card}
-              size="sm"
-              legal={canSwap}
-              className={swapFx?.outgoing.id === card.id ? "card-swap-in" : undefined}
-              onClick={canSwap ? () => exchange({ kind: "entrance", index }) : undefined}
-            />
-          );
-        })}
+      <div className="entrance-card-stack">
+        <div className="entrance-cards-row">
+          {game.entrance.map((card, i) => {
+            const index = i as 0 | 1;
+            const down = game.entranceFaceDown[index];
+            const canSwap = exchanges.some((t) => t.kind === "entrance" && t.index === index);
+            if (down) {
+              return <PlayingCard key={`${card.id}-down`} faceDown size="sm" />;
+            }
+            return (
+              <PlayingCard
+                key={card.id}
+                card={card}
+                size="sm"
+                legal={canSwap}
+                className={swapFx?.outgoing.id === card.id ? "card-swap-in" : undefined}
+                onClick={canSwap ? () => exchange({ kind: "entrance", index }) : undefined}
+              />
+            );
+          })}
+        </div>
+        {game.challenge === "night" ? (
+          <button
+            type="button"
+            className="ace-keyring-trigger"
+            onClick={onOpenAceRack}
+            aria-label={`Abrir Llavero de Ases; quedan ${game.night?.aceRack?.length ?? 0}`}
+          >
+            <img src="/images/ace-keyring.webp" alt="" />
+            <small>Llavero de Ases</small>
+            <span>{game.night?.aceRack?.length ?? 0}</span>
+          </button>
+        ) : null}
       </div>
     </section>
   );
 }
 
+const ACE_SUIT_LABELS: Record<Suit, string> = {
+  hearts: "Corazones",
+  spades: "Picas",
+  diamonds: "Diamantes",
+  clubs: "Tréboles",
+};
+
+const ACE_SUIT_ORDER: Suit[] = ["hearts", "spades", "diamonds", "clubs"];
+
+function AceRackSheet({ game, onClose }: { game: GameState; onClose: () => void }) {
+  const exchange = useGameStore((s) => s.exchange);
+  const exchangeMode = useGameStore((s) => s.exchangeMode);
+  const selectedCardId = useGameStore((s) => s.selectedCardId);
+  const { exchanges } = useLegalForSelected();
+  const rack = game.night?.aceRack ?? [];
+  const selectedCard = game.hands[game.currentPlayer].find((card) => card.id === selectedCardId);
+  const rackTargets = exchanges.filter((target) => target.kind === "ace-rack");
+
+  if (typeof document === "undefined") return null;
+  return createPortal(
+    <div className="ace-rack-layer" role="dialog" aria-modal="true" aria-labelledby="ace-rack-title">
+      <button type="button" className="ace-rack-backdrop" onClick={onClose} aria-label="Cerrar Llavero de Ases" />
+      <section className="ace-rack-card stagger-in">
+        <header>
+          <img src="/images/ace-keyring.webp" alt="" />
+          <span><small>Equipo de mantenimiento</small><h2 id="ace-rack-title">Llavero de Ases</h2></span>
+          <button type="button" onClick={onClose} aria-label="Cerrar"><X aria-hidden /></button>
+        </header>
+        <p>
+          Entrega una jota, reina o rey para tomar un as que pueda colocarse ahora. El cambio consume una maniobra y la figura vuelve al mazo.
+        </p>
+        <div className="ace-rack-hooks">
+          {ACE_SUIT_ORDER.map((suit) => {
+            const ace = rack.find((card) => card.suit === suit);
+            const canTake = Boolean(ace && rackTargets.some((target) => target.cardId === ace.id));
+            return (
+              <div key={suit} className={cn("ace-rack-hook", canTake && "is-ready", !ace && "is-empty")}>
+                <span className="ace-hook-chain" aria-hidden />
+                {ace ? (
+                  <PlayingCard
+                    card={ace}
+                    size="sm"
+                    legal={canTake}
+                    dimmed={!canTake}
+                    onClick={canTake ? () => { exchange({ kind: "ace-rack", cardId: ace.id }); onClose(); } : undefined}
+                  />
+                ) : <span className="ace-empty-tag">En circulación</span>}
+                <small>{ACE_SUIT_LABELS[suit]}</small>
+              </div>
+            );
+          })}
+        </div>
+        <div className={cn("ace-rack-guide", rackTargets.length > 0 && "is-ready")}>
+          {rackTargets.length > 0
+            ? `Puedes cambiar ${selectedCard ? cardName(selectedCard) : "la figura elegida"} por ${rackTargets.length === 1 ? "el as iluminado" : "uno de los ases iluminados"}.`
+            : exchangeMode && selectedCard
+              ? "Ningún as disponible encaja todavía en un sector abierto."
+              : "Para usarlo: elige una figura de tu mano y pulsa Cambiar."}
+        </div>
+      </section>
+    </div>,
+    document.body,
+  );
+}
+
 export function Park({ game }: { game: GameState }) {
+  const [aceRackOpen, setAceRackOpen] = useState(false);
   const openAttraction = useGameStore((s) => s.openAttraction);
   const aiThinking = useGameStore((s) => s.aiThinking);
   const aiMoveFx = useGameStore((s) => s.aiMoveFx);
@@ -380,11 +471,12 @@ export function Park({ game }: { game: GameState }) {
           <MapTile id="chairs" game={game} />
           <MapTile id="restaurant" game={game} />
           <MapTile id="restrooms" game={game} />
-          <EntranceTile game={game} />
+          <EntranceTile game={game} onOpenAceRack={() => setAceRackOpen(true)} />
         </div>
       </div>
       <ParkMascots />
       {openAttraction ? <AttractionSheet id={openAttraction} game={game} /> : null}
+      {aceRackOpen && game.challenge === "night" ? <AceRackSheet game={game} onClose={() => setAceRackOpen(false)} /> : null}
     </div>
   );
 }

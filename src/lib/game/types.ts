@@ -17,6 +17,7 @@ export type AttractionId =
   | "restrooms";
 
 export type Mode = "hotseat" | "ai";
+export type GameDifficulty = "standard" | "easy";
 export type GameChallenge = "classic" | "night" | "festival" | "mirror" | "storm" | "impossible";
 
 export type Screen = "title" | "playing" | "pass" | "end";
@@ -31,6 +32,7 @@ export interface NightShiftState {
   route: AttractionId[];
   pendingUnlock: boolean;
   emergencyUses: number;
+  aceRack?: Card[];
 }
 
 export interface FestivalState {
@@ -47,11 +49,13 @@ export interface StormState {
 
 export type ExchangeTarget =
   | { kind: "entrance"; index: 0 | 1 }
-  | { kind: "slot"; attractionId: AttractionId; index: number };
+  | { kind: "slot"; attractionId: AttractionId; index: number }
+  | { kind: "ace-rack"; cardId: string };
 
 export interface GameState {
   version: 7;
   mode: Mode;
+  difficulty?: GameDifficulty;
   challenge?: GameChallenge;
   night?: NightShiftState;
   festival?: FestivalState;

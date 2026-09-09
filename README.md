@@ -12,7 +12,7 @@ Si vas a continuar el desarrollo en **ChatGPT Codex**, lee primero [`docs/CODEX.
 npm install
 npm run dev          # http://0.0.0.0:8080
 npm run typecheck
-node --experimental-strip-types --test src/lib/game/attractions.test.ts
+npm run test:game
 npm run build        # estático + prerender de /
 ```
 
@@ -28,6 +28,8 @@ Auth y base de datos están **apagados**. Toda la partida vive en `localStorage`
 - Audio procedural Web Audio (`src/lib/game/audio.ts`)
 - PWA: `public/manifest.webmanifest` + iconos
 - Control táctil por toque o arrastre, manteniendo siempre visibles los naipes
+- Dificultad Fácil opcional y balance específico para cada reto desbloqueable
+- Llavero de Ases ilustrado para la Noche de Guardia
 - Plano ilustrado desplegable propio de cada modo, con caminos, jardines y las
   atracciones superpuestas como paradas de la ruta que los jugadores recorren
   guiados por la baraja francesa; al cerrar el parque, el plano vuelve a plegarse

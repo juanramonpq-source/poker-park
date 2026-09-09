@@ -38,6 +38,7 @@ const MASTER_MODES: {
   kicker: string;
   rule: string;
   reward: string;
+  changes: number;
   icon: typeof Sparkles;
   secretKey: keyof Secrets;
 }[] = [
@@ -47,6 +48,7 @@ const MASTER_MODES: {
     kicker: "Encadena el brillo",
     rule: "Alterna atracciones: cada cambio mantiene el combo y enciende más bombillas.",
     reward: "Reverso Fuegos de Feria",
+    changes: 4,
     icon: Lightbulb,
     secretKey: "festivalPerfect",
   },
@@ -56,6 +58,7 @@ const MASTER_MODES: {
     kicker: "Todo empieza al otro lado",
     rule: "No solo se refleja el plano: cada atracción debe construirse en el orden inverso.",
     reward: "Insignia Plata de Luna",
+    changes: 5,
     icon: FlipHorizontal2,
     secretKey: "mirrorPerfect",
   },
@@ -65,6 +68,7 @@ const MASTER_MODES: {
     kicker: "Juega con el pronóstico",
     rule: "La lluvia cierra un sector cada turno. Siempre conoceréis el siguiente.",
     reward: "Reverso Nube Dorada",
+    changes: 5,
     icon: CloudLightning,
     secretKey: "stormPerfect",
   },
@@ -74,6 +78,7 @@ const MASTER_MODES: {
     kicker: "El parque imposible",
     rule: "Espejo, tormenta y combos de luz en una única jornada final. No tiene cronómetro: solo acaba si cerráis el parque, se agotan las cartas o ambos os bloqueáis.",
     reward: "Final verdadero, Reverso DUAL y Galería Maestro",
+    changes: 6,
     icon: Crown,
     secretKey: "impossiblePerfect",
   },
@@ -119,7 +124,7 @@ export function MasterPassOverlay({
                 onClick={() => setSelected(mode.id)}
               >
                 <span className="master-mode-icon">{locked ? <LockKeyhole /> : <Icon />}</span>
-                <span className="master-mode-copy"><small>{locked ? "Entrada oculta" : mode.kicker}</small><strong>{mode.title}</strong><p>{locked ? "Completa los otros tres modos." : mode.rule}</p></span>
+                <span className="master-mode-copy"><small>{locked ? "Entrada oculta" : `${mode.kicker} · ${mode.changes} cambios`}</small><strong>{mode.title}</strong><p>{locked ? "Completa los otros tres modos." : mode.rule}</p></span>
                 <span className="master-mode-state">{complete ? <><Check /> Superado</> : locked ? "???" : "Jugar"}</span>
               </button>
             );
@@ -143,7 +148,7 @@ export function MasterPassOverlay({
                 <ol>
                   <li><span>1</span>Se termina al pulsar <strong>Cerrar</strong>.</li>
                   <li><span>2</span>Se termina si ya no queda ninguna carta en el mazo ni en las manos.</li>
-                  <li><span>3</span>Se termina cuando ambos jugadores pasan seguidos sin poder colocar ni intercambiar.</li>
+                  <li><span>3</span>Con tormenta solo se declara bloqueo tras dos rondas completas —cuatro pases seguidos— sin poder colocar ni intercambiar.</li>
                 </ol>
               </section>
             ) : null}

@@ -31,7 +31,11 @@ hasta que el progreso guardado haya desbloqueado el modo correspondiente.
 1. Roba 1 carta del mazo (si queda).
 2. Una acción:
    - Colocar una carta en una atracción, **o**
-   - Un intercambio estructural (máximo 3 en toda la partida).
+   - Un intercambio estructural dentro del límite compartido del modo.
+
+Hay 3 cambios en Clásico, 4 en Fácil y Festival, 5 en Noche, Espejo y
+Tormenta, y 6 en Poker Park 00:13. La primera carta de la Entrada se cierra
+cuando solo queda un cambio; la segunda, al agotar el límite.
 
 La interfaz permite hacer la colocación tocando carta y destino o arrastrando
 la carta hasta un hueco válido. Son dos controles para la misma acción y no
@@ -83,10 +87,10 @@ Cuando ya no se puede ampliar ninguna atracción (o el parque está completo), l
 ## Final
 
 - Se agotan mazo y manos, o
-- bloqueo irresoluble (los dos jugadores pasan), o
+- bloqueo irresoluble (dos pases seguidos; cuatro en modos con tormenta), o
 - el parque está resuelto y se elige **Cerrar el parque**.
 
-En **Poker Park 00:13** no hay límite de tiempo: la tormenta solo cierra una atracción durante un turno. La partida acaba por una de estas mismas condiciones o al elegir **Cerrar el parque**.
+En **Poker Park 00:13** no hay límite de tiempo: la tormenta solo cierra una atracción durante un turno. El bloqueo exige dos rondas completas —cuatro pases seguidos— para no confundir una mala rotación del clima con una partida imposible.
 
 ## Evaluación
 
@@ -106,8 +110,20 @@ No hay ganador. Solo el parque que habéis sido capaces de crear juntos.
 Al completar las 7 atracciones del parque clásico se desbloquea este segundo reto. Los jugadores pasan a ser el personal de mantenimiento del parque y mantienen sus manos independientes.
 
 - La partida empieza con Restaurante y Aseos disponibles; los otros cinco sectores están sin suministro.
+- Antes del reparto se reservan los cuatro ases en el **Llavero de Ases**. Una
+  figura puede cambiarse por un as que encaje inmediatamente en un sector con
+  suministro; la figura vuelve al mazo y se consume uno de los 5 cambios.
+- La primera elección de suministro siempre ofrece Montaña Rusa y Bosque
+  Encantado, para que los recorridos largos no aparezcan demasiado tarde.
 - Al completar una atracción, se elige entre dos sectores cuál recibe corriente a continuación.
 - Las cartas solo pueden colocarse o intercambiarse con atracciones que ya tengan suministro. Las reglas internas de las siete atracciones no cambian.
-- Si no queda ninguna colocación o intercambio obligatorio y aún existen sectores cerrados, el generador de emergencia permite abrir uno y continuar el mismo turno. Cada uso queda anotado como incidencia.
+- Si no queda ninguna colocación directa y aún existen sectores cerrados, el generador permite abrir uno y continuar el mismo turno. Si todavía existe un intercambio, el equipo puede gastarlo antes o registrar la incidencia. Cada uso del generador queda anotado.
 - El final se presenta como informe de mantenimiento: atracciones revisadas, incidencias y autorización de apertura.
 - Completar las 7 revisiones concede la acreditación Guardianes del Alba y desbloquea las recompensas de La octava luz.
+
+## Modos del Pase Maestro
+
+- **Festival de las Luces:** reglas clásicas y combo por alternar atracciones; 4 cambios.
+- **Parque Espejo:** dependencias de las siete atracciones en orden inverso; 5 cambios.
+- **Día de Tormenta:** un sector cierra temporalmente y el siguiente se anuncia; 5 cambios y cuatro pases antes del bloqueo.
+- **Poker Park 00:13:** combina Espejo, Tormenta y Festival; 6 cambios y cuatro pases antes del bloqueo.
