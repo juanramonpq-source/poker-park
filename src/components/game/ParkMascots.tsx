@@ -163,11 +163,12 @@ export function MenuMascots() {
       const dialogs = Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"]')).filter(visible);
       const root = dialogs.at(-1) ?? document.querySelector<HTMLElement>(".title-panel");
       if (!root) return setAnchor(null);
-      const candidates = Array.from(root.querySelectorAll<HTMLElement>("button:not(:disabled)"))
+      const allCandidates = Array.from(root.querySelectorAll<HTMLElement>("button:not(:disabled)"))
         .filter((button) => {
-          const label = button.getAttribute("aria-label")?.toLocaleLowerCase("es") ?? "";
-          return visible(button) && !label.startsWith("cerrar") && !button.matches(".mascot-button, [class*='backdrop'], .title-studio-badge");
+          return visible(button) && !button.matches(".mascot-button, [class*='backdrop'], .title-studio-badge");
         });
+      const preferred = allCandidates.filter((button) => !(button.getAttribute("aria-label")?.toLocaleLowerCase("es") ?? "").startsWith("cerrar"));
+      const candidates = preferred.length > 0 ? preferred : allCandidates;
       if (forceTarget || !target.current || !candidates.includes(target.current)) {
         target.current = candidates[Math.floor(Math.random() * candidates.length)] ?? null;
         perchRatio.current = 0.32 + Math.random() * 0.36;
