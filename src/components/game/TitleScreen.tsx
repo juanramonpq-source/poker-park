@@ -15,6 +15,7 @@ import { MasterPassOverlay } from "@/components/game/MasterPassOverlay";
 import { DeveloperMenu } from "@/components/game/DeveloperMenu";
 import { MasterGallery } from "@/components/game/MasterGallery";
 import { CHALLENGE_BACKGROUNDS } from "@/lib/game/challenges";
+import { MenuMascots } from "@/components/game/ParkMascots";
 
 function Motes() {
   return (
@@ -358,6 +359,7 @@ export function TitleScreen() {
           </section>
         </div>
       ) : null}
+      <MenuMascots />
     </main>
   );
 }

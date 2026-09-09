@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { playMascot } from "@/lib/game/audio";
 import { cn } from "@/lib/utils";
 
@@ -15,11 +15,13 @@ const MASCOT_IDS = MASCOTS.map(({ id }) => id);
 function MascotButton({
   id,
   className,
+  style,
   alwaysVisible = false,
   onGreet,
 }: {
   id: MascotId;
   className?: string;
+  style?: CSSProperties;
   alwaysVisible?: boolean;
   onGreet?: () => void;
 }) {
@@ -41,6 +43,7 @@ function MascotButton({
     <button
       type="button"
       className={cn("mascot-button", alwaysVisible && "is-always-visible", className)}
+      style={style}
       onClick={greet}
       aria-label={`Saludar a ${mascot.name}, ${mascot.animal}`}
       title={`Saluda a ${mascot.name}`}
@@ -99,6 +102,106 @@ export function ParkMascots() {
       <MascotButton
         id={active}
         className={cn("park-mascot", `park-mascot-${active}`)}
+        onGreet={() => {
+          window.clearTimeout(greetTimer.current);
+          greetTimer.current = window.setTimeout(() => setActive(null), 1050);
+        }}
+      />
+    </div>
+  );
+}
+
+export function MenuMascots() {
+  const [active, setActive] = useState<MascotId | null>(null);
+  const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
+  const last = useRef<MascotId | null>(null);
+  const target = useRef<HTMLElement | null>(null);
+  const perchRatio = useRef(0.5);
+  const showTimer = useRef(0);
+  const hideTimer = useRef(0);
+  const greetTimer = useRef(0);
+
+  useEffect(() => {
+    let mounted = true;
+    const queue = (first = false) => {
+      const delay = first ? 4600 + Math.random() * 2600 : 15000 + Math.random() * 14000;
+      showTimer.current = window.setTimeout(() => {
+        if (!mounted) return;
+        const candidates = MASCOT_IDS.filter((id) => id !== last.current);
+        const next = candidates[Math.floor(Math.random() * candidates.length)]!;
+        last.current = next;
+        setActive(next);
+        hideTimer.current = window.setTimeout(() => {
+          if (!mounted) return;
+          setActive(null);
+          queue();
+        }, 6500);
+      }, delay);
+    };
+    queue(true);
+    return () => {
+      mounted = false;
+      window.clearTimeout(showTimer.current);
+      window.clearTimeout(hideTimer.current);
+      window.clearTimeout(greetTimer.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!active) {
+      target.current = null;
+      setAnchor(null);
+      return;
+    }
+
+    const visible = (element: Element) => {
+      const rect = element.getBoundingClientRect();
+      return rect.width >= 44 && rect.height >= 36 && rect.bottom > 36 && rect.top < window.innerHeight - 16;
+    };
+
+    const updateAnchor = (forceTarget = false) => {
+      const dialogs = Array.from(document.querySelectorAll<HTMLElement>('[role="dialog"]')).filter(visible);
+      const root = dialogs.at(-1) ?? document.querySelector<HTMLElement>(".title-panel");
+      if (!root) return setAnchor(null);
+      const candidates = Array.from(root.querySelectorAll<HTMLElement>("button:not(:disabled)"))
+        .filter((button) => {
+          const label = button.getAttribute("aria-label")?.toLocaleLowerCase("es") ?? "";
+          return visible(button) && !label.startsWith("cerrar") && !button.matches(".mascot-button, [class*='backdrop'], .title-studio-badge");
+        });
+      if (forceTarget || !target.current || !candidates.includes(target.current)) {
+        target.current = candidates[Math.floor(Math.random() * candidates.length)] ?? null;
+        perchRatio.current = 0.32 + Math.random() * 0.36;
+      }
+      if (!target.current) return setAnchor(null);
+      const rect = target.current.getBoundingClientRect();
+      setAnchor({
+        x: Math.min(window.innerWidth - 26, Math.max(26, rect.left + rect.width * perchRatio.current)),
+        y: Math.min(window.innerHeight - 34, Math.max(32, rect.top + 2)),
+      });
+    };
+
+    const frame = window.requestAnimationFrame(() => updateAnchor(true));
+    const observer = new MutationObserver(() => updateAnchor());
+    const reposition = () => updateAnchor();
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", reposition, true);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener("resize", reposition);
+      window.removeEventListener("scroll", reposition, true);
+    };
+  }, [active]);
+
+  if (!active || !anchor) return null;
+
+  return (
+    <div className="menu-mascot-layer" aria-live="polite">
+      <MascotButton
+        id={active}
+        className={cn("menu-mascot-perch", `menu-mascot-${active}`)}
+        style={{ left: anchor.x, top: anchor.y }}
         onGreet={() => {
           window.clearTimeout(greetTimer.current);
           greetTimer.current = window.setTimeout(() => setActive(null), 1050);

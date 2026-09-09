@@ -584,6 +584,35 @@
 .park-mascot-hedgehog { right: .1rem; bottom: 27%; }
 .park-mascot-fish { right: .2rem; top: 12%; animation-name: mascot-float-visit; }
 
+.menu-mascot-layer {
+  position: fixed;
+  z-index: 110;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.menu-mascot-perch {
+  position: fixed;
+  width: 2.75rem;
+  height: 2.75rem;
+  pointer-events: auto;
+  transform-origin: 50% 100%;
+  animation: mascot-perch-visit 6.5s cubic-bezier(.22, 1, .36, 1) both;
+}
+.menu-mascot-perch::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 18%;
+  right: 18%;
+  bottom: .12rem;
+  height: .28rem;
+  border-radius: 50%;
+  background: rgb(5 20 32 / .3);
+  filter: blur(2px);
+}
+.menu-mascot-fish::after { opacity: .36; transform: translateY(.3rem) scale(.72); }
+
 .mascot-click-fx {
   position: absolute;
   inset: 30%;
@@ -643,6 +672,11 @@
   80% { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
   100% { opacity: 0; transform: translate3d(55%, -18%, 0) scale(.8); }
 }
+@keyframes mascot-perch-visit {
+  0% { opacity: 0; transform: translate(-50%, -45%) scale(.68); }
+  10%, 82% { opacity: 1; transform: translate(-50%, -72%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -52%) scale(.76); }
+}
 @keyframes mascot-reaction {
   0% { transform: scale(1); }
   38% { transform: translateY(-18%) scale(1.22) rotate(-4deg); }
@@ -661,6 +695,7 @@
 
 @media (max-width: 430px) {
   .park-mascot { width: 2.8rem; height: 2.8rem; }
+  .menu-mascot-perch { width: 2.5rem; height: 2.5rem; }
   .park-mascot-turtle { left: -.15rem; }
   .park-mascot-hedgehog { right: -.15rem; }
   .park-mascot-fish { right: -.1rem; }
@@ -676,9 +711,11 @@
   .mascot-sprite,
   .mascot-sprite.is-reacting,
   .park-mascot,
+  .menu-mascot-perch,
   .mascot-parade-current,
   .mascot-party-member { animation: none; }
   .park-mascot { opacity: 1; }
+  .menu-mascot-perch { opacity: 1; transform: translate(-50%, -72%); }
   .mascot-click-fx { display: none; }
 }
 
