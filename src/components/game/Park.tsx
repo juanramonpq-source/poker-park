@@ -196,6 +196,7 @@ function MapTile({
       )}
       aria-label={`${def.name}, ${locked ? "sin suministro" : stormClosed ? "cerrada por lluvia este turno" : complete ? "conseguido" : attractionProgress(id, attr.slots)}${hot || canVisit ? ", disponible para la carta elegida" : ""}`}
       data-attraction-id={id}
+      data-card-drop-attraction={id}
     >
       <div className="tile-topline">
         <Icon

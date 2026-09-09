@@ -1,4 +1,5 @@
 import type { Card, Rank, Suit } from "@/lib/game/types";
+import type { PointerEventHandler } from "react";
 import { cardName, isRed, rankLabel } from "@/lib/game/deck";
 import { AceArt, FaceArt } from "@/components/game/CardArt";
 import { cn } from "@/lib/utils";
@@ -197,6 +198,10 @@ export function PlayingCard({
   legal = false,
   size = "md",
   onClick,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp,
+  onPointerCancel,
   className,
 }: {
   card?: Card | null;
@@ -206,13 +211,17 @@ export function PlayingCard({
   legal?: boolean;
   size?: Size;
   onClick?: () => void;
+  onPointerDown?: PointerEventHandler<HTMLButtonElement>;
+  onPointerMove?: PointerEventHandler<HTMLButtonElement>;
+  onPointerUp?: PointerEventHandler<HTMLButtonElement>;
+  onPointerCancel?: PointerEventHandler<HTMLButtonElement>;
   className?: string;
 }) {
   const clickable = Boolean(onClick);
   const red = card ? isRed(card.suit) : false;
   const hidden = faceDown || !card;
   const classes = cn(
-    "relative shrink-0 overflow-hidden border shadow-soft select-none",
+    "playing-card relative shrink-0 overflow-hidden border shadow-soft select-none",
     sizeMap[size],
     hidden ? "card-back border-border" : "bg-card-face border-suit-ink/10",
     selected && "card-picked z-10",
@@ -248,7 +257,19 @@ export function PlayingCard({
 
   if (clickable) {
     return (
-      <button type="button" onClick={onClick} className={classes} style={style} aria-label={label} aria-pressed={selected}>
+      <button
+        type="button"
+        draggable={false}
+        onClick={onClick}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerCancel}
+        className={classes}
+        style={style}
+        aria-label={label}
+        aria-pressed={selected}
+      >
         {inner}
       </button>
     );
@@ -266,11 +287,15 @@ export function EmptySlot({
   label,
   onClick,
   size = "sm",
+  dropAttractionId,
+  dropIndex,
 }: {
   active?: boolean;
   label?: string;
   onClick?: () => void;
   size?: Size;
+  dropAttractionId?: string;
+  dropIndex?: number;
 }) {
   const reserved = Boolean(label && (label.includes("♥") || label.includes("♦") || label.includes("♠") || label.includes("♣") || label.includes("K")));
   const aceRed = Boolean(label && (label.includes("♥") || label.includes("♦")));
@@ -295,7 +320,15 @@ export function EmptySlot({
   );
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={classes} aria-label={label ?? "Hueco vacío"}>
+      <button
+        type="button"
+        onClick={onClick}
+        className={classes}
+        aria-label={label ?? "Hueco vacío"}
+        data-card-drop-slot={dropAttractionId ? "true" : undefined}
+        data-drop-attraction={dropAttractionId}
+        data-drop-index={dropIndex}
+      >
         {inner}
       </button>
     );

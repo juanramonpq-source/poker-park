@@ -1,4 +1,4 @@
-import { BookOpen, Crown, FerrisWheel, MoonStar, Palette, Sparkles, Users, UserRound, Wrench, X } from "lucide-react";
+import { BookOpen, Crown, FerrisWheel, MoonStar, Palette, ShieldCheck, Sparkles, Users, UserRound, Wrench, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { playLifetimeUnlock, playUi, startChallengeBed, startTitleBed, unlockAudio } from "@/lib/game/audio";
 import {
@@ -16,6 +16,7 @@ import { DeveloperMenu } from "@/components/game/DeveloperMenu";
 import { MasterGallery } from "@/components/game/MasterGallery";
 import { CHALLENGE_BACKGROUNDS } from "@/lib/game/challenges";
 import { MenuMascots } from "@/components/game/ParkMascots";
+import { LegalSheet } from "@/components/game/LegalSheet";
 
 function Motes() {
   return (
@@ -58,6 +59,7 @@ export function TitleScreen() {
   const [masterPassOpen, setMasterPassOpen] = useState(false);
   const [developerOpen, setDeveloperOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [legalOpen, setLegalOpen] = useState(false);
   const [tutorialComplete, setTutorialComplete] = useState(false);
   const [studioTaps, setStudioTaps] = useState(0);
   const [pendingMode, setPendingMode] = useState<Mode | null>(null);
@@ -204,7 +206,7 @@ export function TitleScreen() {
             Poker Park
           </h1>
           <p className="title-description">
-            Un día de feria, cartas al sol y atracciones para montar en compañía.
+            Montad en las atracciones del parque, guiados por la baraja francesa y en compañía.
           </p>
           <p className="title-detail">Cooperativo · 2 jugadores · Una baraja</p>
           {secrets.lifetime ? (
@@ -270,6 +272,10 @@ export function TitleScreen() {
               <button type="button" onClick={() => setRulesOpen(true)} className="title-text-action">
                 <BookOpen className="size-4" strokeWidth={1.7} />
                 Reglas completas
+              </button>
+              <button type="button" onClick={() => setLegalOpen(true)} className="title-text-action">
+                <ShieldCheck className="size-4" strokeWidth={1.7} />
+                Privacidad
               </button>
             </div>
           </div>
@@ -350,7 +356,7 @@ export function TitleScreen() {
             </div>
             <ol className="tutorial-steps">
               <li><span>1</span><p><strong>Robad y hablad.</strong> Es un juego colaborativo: cada jugador tiene su propia mano y decidís juntos dónde encaja cada carta.</p></li>
-              <li><span>2</span><p><strong>Tocad una atracción.</strong> Veréis su forma y las posiciones válidas para la carta elegida.</p></li>
+              <li><span>2</span><p><strong>Tocad o arrastrad.</strong> Podéis elegir una carta y tocar su destino, o llevarla directamente hasta una posición iluminada.</p></li>
               <li><span>3</span><p><strong>Guardad los cambios.</strong> Solo hay tres para toda la jornada; usadlos cuando desbloqueen una atracción.</p></li>
             </ol>
             <Button size="lg" className="mt-5 w-full" onClick={finishTutorial}>
@@ -359,6 +365,7 @@ export function TitleScreen() {
           </section>
         </div>
       ) : null}
+      <LegalSheet open={legalOpen} onClose={() => setLegalOpen(false)} />
       <MenuMascots />
     </main>
   );

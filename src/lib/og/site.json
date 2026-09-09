@@ -1,5 +1,6 @@
 {
   "title": "Poker Park",
   "type": "x:game",
-  "card": "custom"
+  "card": "custom",
+  "color": "10263B"
 }

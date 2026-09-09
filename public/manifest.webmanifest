@@ -1,33 +1,37 @@
 {
   "name": "Poker Park · Pentonúi Games",
   "short_name": "Poker Park",
+  "description": "Montad en las atracciones de un parque guiados por la baraja francesa. Juego cooperativo para dos.",
+  "lang": "es",
+  "categories": ["games", "entertainment", "card"],
   "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#10263B",
   "theme_color": "#10263B",
   "icons": [
     {
-      "src": "/apple-touch-icon.png",
+      "src": "/apple-touch-icon.png?v=poker-park-v1",
       "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-192.png",
+      "src": "/icon-192.png?v=poker-park-v1",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icon-512.png?v=poker-park-v1",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icon-maskable-512.png?v=poker-park-v1",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

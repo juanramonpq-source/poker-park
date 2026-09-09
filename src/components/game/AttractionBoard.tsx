@@ -88,6 +88,8 @@ function SlotCell({
       active={canPlace}
       label={hint}
       onClick={canPlace ? () => place(attractionId, index) : undefined}
+      dropAttractionId={canPlace ? attractionId : undefined}
+      dropIndex={canPlace ? index : undefined}
     />
   );
 }

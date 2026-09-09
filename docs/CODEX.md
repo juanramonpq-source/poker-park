@@ -3,8 +3,8 @@
 Copia este archivo entero al proyecto (o pégalo como instrucciones de Codex).
 El código de referencia vive en `src/lib/game/`, `src/components/game/` y `src/store/game-store.ts`.
 
-**Autor:** Juan Ramón Pérez Quintanar  
-**Producto:** PWA móvil cooperativa, en español, 2 jugadores, baraja francesa de 52 cartas.  
+**Estudio:** Pentonúi Games
+**Producto:** PWA móvil cooperativa, en español, 2 jugadores, para montar en las atracciones de un parque guiados por una baraja francesa de 52 cartas.
 **Tono:** feria alegre (algodón, noria, atardecer). Nunca gótico ni siniestro.
 
 ---
@@ -85,7 +85,7 @@ src/store/game-store.ts        UI store + afterHuman + IA
 src/components/game/*
 src/styles.css
 public/manifest.webmanifest
-public/icon-192.png  icon-512.png  apple-touch-icon.png
+public/app-store-icon-1024.png  icon-192.png  icon-512.png  icon-maskable-512.png  apple-touch-icon.png
 public/images/park-day.jpg  park-dusk.jpg  card-back.jpg
 ```
 
@@ -271,7 +271,7 @@ Pantalla final (`EndScreen`):
    `playRollCrash`). Si 7/7, fiesta (`playParty`) y fuegos.
 3. Insignias (`dayBadges`).
 4. “Fin, gracias por jugar.”
-5. “Creado por Juan Ramón Pérez Quintanar”.
+5. “Creado por Pentonúi Games”.
 6. Volver al inicio.
 
 Easter egg: en el título, 7 toques desbloquean “pase de por vida”
@@ -294,7 +294,9 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
 - Huecos reservados (A♠ A♥ A♦ A♣ y columnas ♦): **fantasmas muy
   transparentes**. En el mapa mini **no** se pintan marcas de as.
 - Mano: cartas grandes, abanico, flotan. Al seleccionar: brillo + sonido
-  `playSelect`.
+  `playSelect`. El toque sigue siendo el control principal y, como alternativa,
+  se puede arrastrar una carta sin perder su identidad visual hasta una
+  atracción o hasta un hueco legal iluminado.
 - Baldosas legales: `tile-hot` (borde verde + pulso). Si hay visitante
   posible, tocar la baldosa **deja el visitante** directo.
 - HUD: chip de mazo (cartas restantes), botón **Aforo** grande (restantes
@@ -364,4 +366,4 @@ No hace falta servidor. Todo corre en el cliente.
 
 ## 13. Créditos en producto
 
-Pantalla final y pie: **Creado por Juan Ramón Pérez Quintanar**.
+Pantalla final y pie: **Creado por Pentonúi Games**.

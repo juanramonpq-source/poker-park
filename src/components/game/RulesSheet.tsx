@@ -1,15 +1,20 @@
 import { ArrowLeftRight, ChevronDown, MousePointer2, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { loadSecrets, masterTrialsComplete, type Secrets } from "@/lib/game/persist";
 import { useGameStore } from "@/store/game-store";
 
-const SECTIONS = [
+const SECTIONS: Array<{
+  title: string;
+  body: string;
+  visible?: (secrets: Secrets) => boolean;
+}> = [
   {
     title: "Objetivo",
-    body: "Montar en todas las atracciones posibles durante una jornada en pareja. No hay ganador: solo el parque que seáis capaces de crear juntos.",
+    body: "Montar en todas las atracciones posibles durante una jornada en pareja, guiados por la baraja francesa. No hay ganador: solo el parque que seáis capaces de recorrer y crear juntos.",
   },
   {
     title: "Turno",
-    body: "Robas una carta y colocas. Un intercambio no gasta el turno: cambias una carta, ves el intercambio y luego puedes colocar la carta nueva. Podéis hablar con libertad.",
+    body: "Robas una carta y colocas. Puedes tocar la carta y después su destino, o arrastrarla directamente hasta una atracción o un hueco iluminado; ambos controles hacen exactamente lo mismo. Un intercambio no gasta el turno: cambias una carta, ves el intercambio y luego puedes colocar la carta nueva. Podéis hablar con libertad.",
   },
   {
     title: "Intercambios y aforo",
@@ -34,10 +39,12 @@ const SECTIONS = [
   {
     title: "La Noche de Guardia",
     body: "Se desbloquea al completar las siete atracciones. Sois el personal de mantenimiento y empezáis con dos sectores encendidos. Cada atracción revisada permite dar corriente a otra. Si no existe ninguna maniobra obligatoria, el generador abre un sector y el mismo turno continúa. El informe final cuenta revisiones e incidencias.",
+    visible: (secrets) => secrets.perfect,
   },
   {
     title: "Poker Park 00:13",
     body: "La jornada final junta espejo, tormenta y luces. No hay límite de tiempo: la tormenta solo cierra una atracción durante ese turno. La partida termina únicamente si pulsáis Cerrar, se agotan todas las cartas o los dos jugadores pasan seguidos porque no pueden colocar ni intercambiar.",
+    visible: (secrets) => masterTrialsComplete(secrets) || secrets.impossiblePerfect,
   },
 ];
 
@@ -45,6 +52,8 @@ export function RulesSheet() {
   const open = useGameStore((s) => s.rulesOpen);
   const setRulesOpen = useGameStore((s) => s.setRulesOpen);
   if (!open) return null;
+  const secrets = loadSecrets();
+  const visibleSections = SECTIONS.filter((section) => section.visible?.(secrets) ?? true);
 
   return (
     <div className="rules-overlay">
@@ -77,13 +86,13 @@ export function RulesSheet() {
         </div>
 
         <ol className="rules-quickstart" aria-label="Resumen en tres pasos">
-          <li><span>1</span><MousePointer2 aria-hidden /><p><strong>Elige una carta</strong><small>de tu propia mano</small></p></li>
+          <li><span>1</span><MousePointer2 aria-hidden /><p><strong>Toca o arrastra</strong><small>una carta de tu mano</small></p></li>
           <li><span>2</span><Sparkles aria-hidden /><p><strong>Busca la luz verde</strong><small>marca destinos válidos</small></p></li>
           <li><span>3</span><ArrowLeftRight aria-hidden /><p><strong>Usa los cambios</strong><small>solo hay tres</small></p></li>
         </ol>
 
         <div className="rules-sections">
-          {SECTIONS.map((section, index) => (
+          {visibleSections.map((section, index) => (
             <details key={section.title} open={index === 0}>
               <summary>
                 <span>{section.title}</span>

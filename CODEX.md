@@ -187,7 +187,7 @@ Si se completa una atracción: `pendingAdvance` + animación `RideFinale` (~3,2 
 - Completar: animación temática (`RideFinale`) y luego sello **CONSEGUIDO** + bloqueo.
 - Entrada de ficha: rebote suave (`scheme-enter` ~0,7 s), no oscilación violenta.
 - Recuento final: número grande + redoble (`playRollTick` / `playRollFill` / `playRollCrash`).
-- PWA: nombre **Poker Park**, iconos alegres en `public/icon-192.png`, `icon-512.png`, `apple-touch-icon.png`.
+- PWA: nombre **Poker Park**, icono diurno del parque en `public/icon-192.png`, `icon-512.png`, `icon-maskable-512.png` y `apple-touch-icon.png`.
 - Música de feria **larga** (vals multi-frase en `audio.ts`), no un loop corto.
 
 Colores (`src/styles.css` `@theme`): cielo `#6ec8f0`, acento `#d6453d`, fondo `#eaf6ff`, superficie `#fffaf1`, bien `#2f9e5f`. Fuentes: **Fraunces** (títulos) + **Nunito**.
@@ -224,7 +224,7 @@ Si se porta a un Vite+React SPA limpio, basta con:
 - `public/images/park-day.jpg` — fondo del mapa / título
 - `public/images/park-dusk.jpg`
 - `public/images/card-back.jpg` — dorso de carta (noria)
-- `public/icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `favicon.svg`
+- `public/app-store-icon-1024.png`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png`, `apple-touch-icon.png`, `favicon-32.png`
 - `public/manifest.webmanifest` — name/short_name **Poker Park**
 
 ---

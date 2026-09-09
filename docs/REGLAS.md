@@ -20,7 +20,11 @@ Fuente de verdad de diseño. La implementación canónica está en `src/lib/game
 
 ## Objetivo
 
-Montar todas las atracciones posibles durante una jornada en pareja. No hay que hacerlo perfecto. Hay que recorrerlo.
+Montar en todas las atracciones posibles durante una jornada en pareja,
+guiados por la baraja francesa. No hay que hacerlo perfecto. Hay que recorrerlo.
+
+En la ayuda de la portada, las reglas de los modos secretos permanecen ocultas
+hasta que el progreso guardado haya desbloqueado el modo correspondiente.
 
 ## Turno
 
@@ -28,6 +32,10 @@ Montar todas las atracciones posibles durante una jornada en pareja. No hay que 
 2. Una acción:
    - Colocar una carta en una atracción, **o**
    - Un intercambio estructural (máximo 3 en toda la partida).
+
+La interfaz permite hacer la colocación tocando carta y destino o arrastrando
+la carta hasta un hueco válido. Son dos controles para la misma acción y no
+alteran ninguna regla.
 
 Tras un intercambio el turno **no acaba**: se coloca la carta recibida.
 

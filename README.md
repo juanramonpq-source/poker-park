@@ -1,8 +1,8 @@
 # Poker Park
 
-Juego de cartas cooperativo para 2 jugadores (móvil primero). Baraja francesa de 52 cartas. Se construye juntos un parque de atracciones. **No hay ganador**: al final se evalúa el día según las atracciones completadas.
+Juego de cartas cooperativo para 2 jugadores (móvil primero). Una baraja francesa de 52 cartas os guía para montar en las atracciones de un parque. **No hay ganador**: al final se evalúa el día según las atracciones completadas.
 
-Creado por **Juan Ramón Pérez Quintanar**.
+Creado por **Pentonúi Games**.
 
 Si vas a continuar el desarrollo en **ChatGPT Codex**, lee primero [`docs/CODEX.md`](docs/CODEX.md). Es la especificación canónica del producto, las reglas y los invariantes que no se pueden romper.
 
@@ -27,6 +27,15 @@ Auth y base de datos están **apagados**. Toda la partida vive en `localStorage`
 - Motor puro en `src/lib/game/` (sin React)
 - Audio procedural Web Audio (`src/lib/game/audio.ts`)
 - PWA: `public/manifest.webmanifest` + iconos
+- Control táctil por toque o arrastre, manteniendo siempre visibles los naipes
+
+## Distribución
+
+- Versión de producto: **1.0.0**
+- Icono maestro para tiendas: `public/app-store-icon-1024.png`
+- Privacidad: [`PRIVACY.md`](PRIVACY.md)
+- Créditos: [`CREDITS.md`](CREDITS.md)
+- Licencia: [`LICENSE`](LICENSE)
 
 ## Mapa rápido
 

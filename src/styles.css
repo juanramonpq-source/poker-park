@@ -205,12 +205,14 @@
 .title-studio-badge {
   position: absolute;
   z-index: 2;
-  top: max(0.875rem, env(safe-area-inset-top));
-  left: 0.875rem;
+  top: max(0.075rem, calc(env(safe-area-inset-top) + 0.075rem));
+  left: 0.075rem;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   opacity: 0.48;
+  min-height: 2.75rem;
+  padding: 0.8rem;
   pointer-events: auto;
   touch-action: manipulation;
 }
@@ -359,7 +361,7 @@
 
 .title-secondary-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
 }
 
@@ -488,6 +490,14 @@
 .tutorial-steps strong {
   color: var(--color-fg);
 }
+
+.legal-overlay { z-index: 55; }
+.legal-card { width: min(100%, 33rem); }
+.legal-sections { display: grid; gap: 0.55rem; margin-top: 1rem; }
+.legal-sections > section { display: grid; grid-template-columns: 2rem 1fr; align-items: start; gap: 0.7rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: color-mix(in oklab, var(--color-bg) 62%, var(--color-surface)); padding: 0.7rem; }
+.legal-sections > section > svg { width: 1rem; height: 1rem; margin: 0.1rem auto 0; color: var(--color-accent); }
+.legal-sections h3 { color: var(--color-fg); font-family: var(--font-sans); font-size: 0.78rem; font-weight: 850; }
+.legal-sections p { margin-top: 0.18rem; color: var(--color-muted); font-size: 0.68rem; line-height: 1.4; }
 
 .end-brand {
   display: grid;
@@ -1162,13 +1172,27 @@
 .clear-selection:hover { background: var(--color-bg); }
 .clear-selection svg { width: 0.85rem; height: 0.85rem; }
 .hand-cards { display: flex; min-height: 6.65rem; align-items: flex-end; justify-content: center; padding: 0.5rem 0.5rem 0.15rem; }
+.hand-cards .playing-card { touch-action: none; -webkit-touch-callout: none; -webkit-user-drag: none; }
 .hand-warning { padding: 0.15rem 0 0.25rem; color: var(--color-muted); font-size: 0.65rem; line-height: 1.35; text-align: center; }
 
 .hand-card { animation: none; }
 .hand-card-on { transform: translateY(-0.35rem) rotate(0deg) scale(1.04); filter: drop-shadow(0 10px 16px rgb(80 40 10 / 0.3)); }
+.hand-card-drag-source { opacity: 0.22; filter: grayscale(0.25); }
 .card-picked { box-shadow: 0 0 0 3px var(--color-good), 0 10px 24px -12px rgb(47 158 95 / 0.8); }
 .card-picked::after { display: none; }
 .tile-hot { z-index: 1; border-color: var(--color-good); animation: none; box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-good) 52%, transparent), 0 14px 24px -18px rgb(33 105 65 / 0.8); }
+.is-card-dragging { cursor: grabbing; user-select: none; }
+.card-drag-layer { position: fixed; z-index: 140; inset: 0; overflow: hidden; pointer-events: none; }
+.card-drag-ghost { position: fixed; display: grid; justify-items: center; transform: translate(-50%, -80%) rotate(-1.5deg) scale(1.08); transform-origin: 50% 100%; filter: drop-shadow(0 20px 20px rgb(10 27 43 / 0.42)); }
+.drag-card-identity { opacity: 1 !important; box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-good) 78%, white), 0 18px 34px -12px rgb(10 27 43 / 0.58); }
+.card-drag-hint { position: absolute; top: calc(100% + 0.45rem); width: max-content; max-width: 11rem; border: 1px solid color-mix(in oklab, var(--color-ivory) 34%, transparent); border-radius: 999px; background: color-mix(in oklab, var(--color-night) 92%, transparent); box-shadow: var(--shadow-soft); padding: 0.36rem 0.65rem; color: var(--color-ivory); font-size: 0.65rem; font-weight: 850; letter-spacing: 0.01em; }
+.card-drag-hint.is-ready { background: var(--color-good); color: white; }
+.card-drop-hover { outline: 4px solid color-mix(in oklab, var(--color-good) 82%, white); outline-offset: -4px; filter: brightness(1.05) saturate(1.08); }
+[data-card-drop-slot="true"].card-drop-hover { position: relative; z-index: 5; transform: translateY(-0.2rem) scale(1.08); box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-good) 38%, transparent), 0 12px 22px -12px rgb(33 105 65 / 0.72); }
+
+@media (prefers-reduced-motion: reduce) {
+  .card-drag-ghost { transform: translate(-50%, -80%); }
+}
 
 .attraction-overlay { position: absolute; z-index: 30; inset: 0; display: flex; align-items: stretch; justify-content: center; padding: 0.5rem; }
 .attraction-backdrop { position: absolute; inset: 0; background: rgb(16 38 59 / 0.42); backdrop-filter: blur(3px); }
@@ -2020,7 +2044,7 @@
 
 .title-night-toggle {
   display: inline-flex;
-  min-height: 2.2rem;
+  min-height: 2.75rem;
   align-items: center;
   gap: 0.4rem;
   margin-top: 0.65rem;
