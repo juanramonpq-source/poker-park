@@ -68,6 +68,7 @@ interface GameStore {
   aiMoveFx: AiMoveFx | null;
   visitorPromptHidden: boolean;
   mapIntroOpen: boolean;
+  mapOutroOpen: boolean;
   hydrate: () => void;
   start: (mode: Mode, challenge?: GameChallenge) => void;
   resume: () => void;
@@ -83,6 +84,7 @@ interface GameStore {
   closePark: () => void;
   hideVisitorPrompt: () => void;
   dismissMapIntro: () => void;
+  finishMapOutro: () => void;
   continueAfterPass: () => void;
   toggleMute: () => void;
   toggleNightTheme: () => void;
@@ -142,6 +144,22 @@ export const useGameStore = create<GameStore>((set, get) => {
     }
   };
 
+  const beginMapOutro = (game: GameState) => {
+    if (get().mapOutroOpen) return;
+    audio.playMapFold();
+    set({
+      game,
+      screen: "playing",
+      selectedCardId: null,
+      exchangeMode: false,
+      openAttraction: null,
+      aiThinking: false,
+      visitorPromptHidden: false,
+      mapIntroOpen: false,
+      mapOutroOpen: true,
+    });
+  };
+
   const afterHuman = (next: GameState, fromHuman = true) => {
     persist(next);
     if (next.pendingAdvance && next.lastCompleted) {
@@ -157,15 +175,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         const current = get().game;
         if (!current) return;
         if (current.ended) {
-          set({
-            game: current,
-            screen: "end",
-            selectedCardId: null,
-            exchangeMode: false,
-            openAttraction: null,
-            aiThinking: false,
-            visitorPromptHidden: false,
-          });
+          beginMapOutro(current);
           return;
         }
         if (current.night?.pendingUnlock) {
@@ -179,15 +189,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       return;
     }
     if (next.ended) {
-      set({
-        game: next,
-        screen: "end",
-        selectedCardId: null,
-        exchangeMode: false,
-        openAttraction: null,
-        aiThinking: false,
-        visitorPromptHidden: false,
-      });
+      beginMapOutro(next);
       return;
     }
     if (fromHuman && next.mode === "hotseat") {
@@ -301,6 +303,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     aiMoveFx: null,
     visitorPromptHidden: false,
     mapIntroOpen: false,
+    mapOutroOpen: false,
     pulse,
     hydrate: () => {
       const settings = loadSettings();
@@ -322,6 +325,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       audio.unlockAudio();
       audio.startChallengeBed(challenge);
       audio.playStart();
+      audio.playMapUnfold();
       audio.playDeal();
       window.setTimeout(() => audio.playDeal(), 70);
       window.setTimeout(() => audio.playDeal(), 140);
@@ -338,6 +342,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         aiMoveFx: null,
         visitorPromptHidden: false,
         mapIntroOpen: true,
+        mapOutroOpen: false,
       });
     },
     resume: () => {
@@ -350,6 +355,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         screen: saved.ended ? "end" : "playing",
         openAttraction: null,
         mapIntroOpen: false,
+        mapOutroOpen: false,
       });
       if (saved.mode === "ai" && saved.currentPlayer === 1 && !saved.ended) queueAi();
     },
@@ -368,6 +374,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         exchangeMode: false,
         openAttraction: null,
         mapIntroOpen: false,
+        mapOutroOpen: false,
       });
     },
     quitToTitle: () => {
@@ -387,6 +394,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         aiThinking: false,
         aiMoveFx: null,
         mapIntroOpen: false,
+        mapOutroOpen: false,
       });
     },
     selectCard: (id) => {
@@ -483,6 +491,22 @@ export const useGameStore = create<GameStore>((set, get) => {
       set({ visitorPromptHidden: true });
     },
     dismissMapIntro: () => set({ mapIntroOpen: false }),
+    finishMapOutro: () => {
+      const game = get().game;
+      if (!game?.ended) {
+        set({ mapOutroOpen: false });
+        return;
+      }
+      set({
+        screen: "end",
+        mapOutroOpen: false,
+        selectedCardId: null,
+        exchangeMode: false,
+        openAttraction: null,
+        aiThinking: false,
+        visitorPromptHidden: false,
+      });
+    },
     continueAfterPass: () => {
       audio.playUi();
       set({ screen: "playing", selectedCardId: null, openAttraction: null });

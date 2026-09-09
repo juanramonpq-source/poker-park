@@ -282,8 +282,13 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
 ## 8. UI (contrato visual)
 
 - Al comenzar una partida nueva en cualquier modo se despliega brevemente un
-  plano de parque de tres pliegues. Es una transición de presentación, se
-  puede omitir, respeta `prefers-reduced-motion` y nunca modifica las reglas.
+  plano ilustrado de parque de tres pliegues. El mapa continuo contiene
+  caminos, jardines, agua y representaciones de las siete atracciones. Es una
+  transición de presentación, se puede omitir, respeta
+  `prefers-reduced-motion` y nunca modifica las reglas.
+- Al cerrar el parque, el mismo plano se pliega con la animación inversa antes
+  de presentar el recuento. Esta espera solo afecta a la presentación: el
+  resultado de la partida ya está cerrado y no admite nuevas acciones.
 - Durante la partida, el grid de atracciones queda superpuesto sobre ese
   plano. Papel, pliegues, ruta y rotulación se adaptan a la identidad visual
   del modo activo.

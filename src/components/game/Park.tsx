@@ -8,7 +8,6 @@ import {
   ArrowLeftRight,
   Check,
   CloudLightning,
-  Compass,
   Crown,
   FlipHorizontal2,
   Lightbulb,
@@ -30,6 +29,7 @@ import { AttractionSheet, ICONS } from "@/components/game/AttractionBoard";
 import { RideFinale } from "@/components/game/RideFinale";
 import { PlayingCard } from "@/components/game/PlayingCard";
 import { ParkMascots } from "@/components/game/ParkMascots";
+import { ParkMapArtwork } from "@/components/game/ParkMapArtwork";
 import { cn } from "@/lib/utils";
 import { attractionIsHot, useGameStore, useLegalForSelected } from "@/store/game-store";
 
@@ -352,9 +352,8 @@ export function Park({ game }: { game: GameState }) {
       {challenge === "storm" ? <div className="storm-atmosphere" aria-hidden="true" /> : null}
       {challenge === "impossible" ? <div className="void-atmosphere" aria-hidden="true" /> : null}
       <div className="park-map-sheet" data-map-surface={challenge}>
+        <ParkMapArtwork challenge={challenge} />
         <div className="park-map-folds" aria-hidden />
-        <div className="park-map-route" aria-hidden />
-        <Compass className="park-map-watermark" aria-hidden />
         <span className="park-map-signature" aria-hidden>
           <MapIcon /> Plano · {CHALLENGE_NAMES[challenge]}
         </span>

@@ -28,8 +28,9 @@ Auth y base de datos están **apagados**. Toda la partida vive en `localStorage`
 - Audio procedural Web Audio (`src/lib/game/audio.ts`)
 - PWA: `public/manifest.webmanifest` + iconos
 - Control táctil por toque o arrastre, manteniendo siempre visibles los naipes
-- Plano desplegable propio de cada modo, con las atracciones superpuestas como
-  paradas de la ruta que los jugadores recorren guiados por la baraja francesa
+- Plano ilustrado desplegable propio de cada modo, con caminos, jardines y las
+  atracciones superpuestas como paradas de la ruta que los jugadores recorren
+  guiados por la baraja francesa; al cerrar el parque, el plano vuelve a plegarse
 
 ## Distribución
 

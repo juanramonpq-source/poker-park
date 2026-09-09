@@ -27,6 +27,12 @@
   --color-map-ink: #705639;
   --color-map-route: #c7473f;
   --color-map-fold: #9a784b;
+  --color-map-land: #91b783;
+  --color-map-water: #78bec9;
+  --color-map-path: #fff2ce;
+  --color-map-path-edge: #b89461;
+  --color-map-building: #c85d4e;
+  --color-map-light: #e8b83f;
 
   --font-display: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
@@ -902,6 +908,336 @@
 @media (max-height: 680px) {
   .park-map-intro-sheet { height: 61dvh; }
   .map-intro-heading small { display: none; }
+}
+
+/* Plano ilustrado V2: un mapa continuo, dividido físicamente por sus pliegues. */
+.park-map-art-definitions {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.park-map-artwork {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  color: var(--color-map-ink);
+  pointer-events: none;
+}
+
+.park-map-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.park-map-art.is-portrait { display: none; }
+.map-art-base { fill: color-mix(in oklab, var(--color-map-paper) 96%, white); }
+.map-art-garden { fill: color-mix(in oklab, var(--color-map-land) 56%, var(--color-map-paper)); opacity: 0.66; }
+.map-art-garden.is-secondary { opacity: 0.48; }
+.map-art-water { fill: color-mix(in oklab, var(--color-map-water) 72%, var(--color-map-paper)); opacity: 0.72; }
+.map-art-water-line { fill: none; stroke: color-mix(in oklab, var(--color-map-water) 82%, var(--color-map-ink)); stroke-width: 5; stroke-linecap: round; opacity: 0.46; }
+.map-art-path-edge,
+.map-art-path,
+.map-art-route { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.map-art-path-edge { stroke: var(--color-map-path-edge); stroke-width: 45; opacity: 0.54; }
+.map-art-path { stroke: var(--color-map-path); stroke-width: 35; opacity: 0.96; }
+.map-art-route { stroke: var(--color-map-route); stroke-width: 4; stroke-dasharray: 8 14; opacity: 0.72; }
+
+.map-art-tree path:first-child { fill: none; stroke: var(--color-map-ink); stroke-width: 5; stroke-linecap: round; opacity: 0.62; }
+.map-art-tree path:last-child { fill: color-mix(in oklab, var(--color-map-land) 82%, var(--color-map-paper)); stroke: color-mix(in oklab, var(--color-map-land) 62%, var(--color-map-ink)); stroke-width: 4; stroke-linejoin: round; }
+.map-art-lamp { fill: none; stroke: var(--color-map-ink); stroke-width: 4; opacity: 0.58; }
+.map-art-lamp .map-art-light { fill: var(--color-map-light); stroke: none; opacity: 0.94; }
+
+.map-art-landmark { color: var(--color-map-ink); }
+.map-landmark-halo { fill: color-mix(in oklab, var(--color-map-paper) 76%, transparent); stroke: color-mix(in oklab, var(--color-map-route) 26%, transparent); stroke-width: 2; }
+.map-landmark-drawing { fill: none; stroke: currentColor; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.map-landmark-fill { fill: color-mix(in oklab, var(--color-map-building) 26%, var(--color-map-paper)); }
+.map-landmark-water { fill: color-mix(in oklab, var(--color-map-water) 55%, var(--color-map-paper)); }
+.map-landmark-accent { fill: color-mix(in oklab, var(--color-map-light) 72%, var(--color-map-paper)); stroke: var(--color-map-route); }
+.map-landmark-label {
+  fill: var(--color-map-ink);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  paint-order: stroke;
+  stroke: color-mix(in oklab, var(--color-map-paper) 88%, transparent);
+  stroke-width: 6px;
+}
+
+.map-art-compass { fill: none; stroke: var(--color-map-ink); stroke-width: 4; opacity: 0.46; }
+.map-art-compass path { fill: color-mix(in oklab, var(--color-map-route) 24%, transparent); }
+.map-art-compass text { fill: var(--color-map-ink); stroke: none; font-family: var(--font-sans); font-size: 22px; font-weight: 900; }
+.map-art-edition { fill: var(--color-map-ink); font-family: var(--font-sans); font-size: 17px; font-weight: 850; letter-spacing: 0.14em; opacity: 0.52; }
+
+.park-map-sheet > .park-map-artwork { opacity: 0.55; }
+.park-map-sheet > .park-map-artwork .map-landmark-label { opacity: 0.38; }
+.park-map-sheet > .park-map-artwork .map-landmark-halo { opacity: 0.62; }
+.park-map-sheet .park-grid { z-index: 3; }
+
+.park-map-sheet .park-tile,
+.park-map-sheet .park-entrance {
+  background: linear-gradient(
+    155deg,
+    color-mix(in oklab, var(--tile-wash) 36%, color-mix(in oklab, var(--color-map-paper) 89%, transparent)),
+    color-mix(in oklab, var(--color-map-paper) 88%, transparent)
+  );
+  backdrop-filter: blur(1.5px);
+  box-shadow: inset 0 1px rgb(255 255 255 / 0.2), 0 8px 18px -16px rgb(36 24 9 / 0.5);
+}
+
+.map-intro-v2.park-map-intro-sheet {
+  width: min(calc(100vw - 1.5rem), 54rem);
+  height: min(68dvh, 36rem);
+  filter: drop-shadow(0 34px 28px rgb(0 0 0 / 0.5));
+  animation: map-v2-sheet-open 2.55s var(--ease-smooth) both;
+}
+
+.map-intro-v2 .park-map-intro-fold {
+  display: block;
+  overflow: hidden;
+  border-color: color-mix(in oklab, var(--color-map-fold) 64%, transparent);
+  background: var(--color-map-paper);
+  padding: 0;
+  transform-style: preserve-3d;
+}
+
+.map-intro-v2 .map-intro-panorama {
+  position: absolute;
+  inset-block: 0;
+  width: 300%;
+  overflow: hidden;
+}
+
+.map-intro-v2 .map-intro-fold-left .map-intro-panorama { left: 0; }
+.map-intro-v2 .map-intro-fold-center .map-intro-panorama { left: -100%; }
+.map-intro-v2 .map-intro-fold-right .map-intro-panorama { left: -200%; }
+
+.map-intro-v2 .map-intro-fold-left {
+  z-index: 3;
+  transform-origin: right center;
+  animation: map-v2-fold-left-open 1.7s 0.16s var(--ease-smooth) both;
+}
+
+.map-intro-v2 .map-intro-fold-center {
+  z-index: 2;
+  box-shadow: 0 0 22px color-mix(in oklab, var(--color-map-fold) 36%, transparent);
+  animation: map-v2-fold-center-open 1.7s var(--ease-smooth) both;
+}
+
+.map-intro-v2 .map-intro-fold-right {
+  z-index: 3;
+  transform-origin: left center;
+  animation: map-v2-fold-right-open 1.7s 0.16s var(--ease-smooth) both;
+}
+
+.map-intro-v2 .map-intro-heading {
+  position: absolute;
+  z-index: 7;
+  top: 8%;
+  left: 50%;
+  width: 88%;
+  gap: 0.2rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in oklab, var(--color-map-paper) 76%, transparent);
+  color: var(--color-map-ink);
+  padding: 0.55rem 0.35rem;
+  transform: translateX(-50%);
+  backdrop-filter: blur(2px);
+  animation: map-v2-copy-open 1.5s 0.58s var(--ease-smooth) both;
+}
+
+.map-intro-heading-icon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-map-route);
+  color: var(--color-accent-fg);
+  box-shadow: 0 5px 12px -8px rgb(0 0 0 / 0.7);
+}
+
+.map-intro-heading-icon svg { width: 1rem; height: 1rem; }
+.map-intro-v2 .map-intro-heading > span:nth-child(2) { font-size: clamp(0.38rem, 1.15vw, 0.58rem); }
+.map-intro-v2 .map-intro-heading strong { font-size: clamp(0.86rem, 2.8vw, 1.52rem); }
+.map-intro-v2 .map-intro-heading small { max-width: 11rem; font-size: clamp(0.4rem, 1.18vw, 0.62rem); }
+
+.map-intro-v2 .map-intro-entrance {
+  position: absolute;
+  z-index: 7;
+  bottom: 9%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: map-v2-copy-open 1.45s 0.72s var(--ease-smooth) both;
+}
+
+.map-intro-stamp {
+  position: absolute;
+  z-index: 7;
+  right: 0.35rem;
+  bottom: 0.35rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  border: 1px solid color-mix(in oklab, var(--color-map-route) 55%, transparent);
+  color: var(--color-map-route);
+  padding: 0.22rem 0.3rem;
+  font-size: clamp(0.34rem, 1vw, 0.5rem);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  opacity: 0.72;
+  text-transform: uppercase;
+  transform: rotate(-3deg);
+}
+
+.map-intro-stamp svg { width: 0.58rem; height: 0.58rem; }
+.map-intro-v2 .map-intro-compass { z-index: 7; left: 0.34rem; right: auto; }
+
+.map-intro-crease {
+  position: absolute;
+  z-index: 8;
+  top: 0;
+  bottom: 0;
+  width: 1.1rem;
+  background: linear-gradient(90deg, transparent, rgb(0 0 0 / 0.12), rgb(255 255 255 / 0.17), transparent);
+  opacity: 0.52;
+  pointer-events: none;
+}
+
+.map-intro-crease.is-left { left: calc(33.333% - 0.55rem); }
+.map-intro-crease.is-right { left: calc(66.666% - 0.55rem); transform: scaleX(-1); }
+
+.park-map-intro.is-closing {
+  animation: park-map-outro-dismiss 2.55s var(--ease-smooth) both;
+}
+
+.park-map-intro.is-closing .map-intro-v2.park-map-intro-sheet {
+  animation: map-v2-sheet-close 2.55s var(--ease-smooth) both;
+}
+
+.park-map-intro.is-closing .map-intro-fold-left {
+  animation: map-v2-fold-left-close 1.7s 0.42s cubic-bezier(0.64, 0, 0.78, 0) both;
+}
+
+.park-map-intro.is-closing .map-intro-fold-center {
+  animation: map-v2-fold-center-close 2.05s 0.28s cubic-bezier(0.64, 0, 0.78, 0) both;
+}
+
+.park-map-intro.is-closing .map-intro-fold-right {
+  animation: map-v2-fold-right-close 1.7s 0.42s cubic-bezier(0.64, 0, 0.78, 0) both;
+}
+
+.park-map-intro.is-closing .map-intro-heading,
+.park-map-intro.is-closing .map-intro-entrance {
+  animation: map-v2-copy-close 0.38s ease-in both;
+}
+
+.map-intro-closing-copy {
+  position: absolute;
+  z-index: 10;
+  bottom: max(1.35rem, env(safe-area-inset-bottom));
+  left: 50%;
+  color: #fffaf1;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-shadow: 0 2px 12px #000;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  animation: map-v2-closing-label 2.1s ease both;
+}
+
+@keyframes map-v2-sheet-open {
+  0% { filter: drop-shadow(0 8px 8px rgb(0 0 0 / 0.24)); transform: translateY(8%) rotate(-3deg) scale(0.72); }
+  64% { filter: drop-shadow(0 38px 30px rgb(0 0 0 / 0.52)); transform: translateY(0) rotate(-0.7deg) scale(1.018); }
+  100% { filter: drop-shadow(0 34px 28px rgb(0 0 0 / 0.5)); transform: translateY(0) rotate(-1.2deg) scale(1); }
+}
+
+@keyframes map-v2-fold-left-open {
+  0% { opacity: 0.86; transform: translateX(100%) rotateY(-88deg); }
+  72% { transform: translateX(0) rotateY(4deg); }
+  100% { opacity: 1; transform: translateX(0) rotateY(0); }
+}
+
+@keyframes map-v2-fold-right-open {
+  0% { opacity: 0.86; transform: translateX(-100%) rotateY(88deg); }
+  72% { transform: translateX(0) rotateY(-4deg); }
+  100% { opacity: 1; transform: translateX(0) rotateY(0); }
+}
+
+@keyframes map-v2-fold-center-open {
+  0% { transform: scaleX(0.88) rotateX(4deg); }
+  72% { transform: scaleX(1.015) rotateX(-1deg); }
+  100% { transform: scale(1) rotateX(0); }
+}
+
+@keyframes map-v2-copy-open {
+  0% { opacity: 0; filter: blur(4px); transform: translateX(-50%) translateY(8px); }
+  100% { opacity: 1; filter: blur(0); transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes map-v2-sheet-close {
+  0% { filter: drop-shadow(0 34px 28px rgb(0 0 0 / 0.5)); transform: translateY(0) rotate(-1.2deg) scale(1); }
+  66% { filter: drop-shadow(0 18px 15px rgb(0 0 0 / 0.42)); transform: translateY(1%) rotate(1.4deg) scale(0.82); }
+  100% { filter: drop-shadow(0 5px 4px rgb(0 0 0 / 0.22)); transform: translateY(10%) rotate(3deg) scale(0.5); }
+}
+
+@keyframes map-v2-fold-left-close {
+  0% { opacity: 1; transform: translateX(0) rotateY(0); }
+  100% { opacity: 0.9; transform: translateX(100%) rotateY(-88deg); }
+}
+
+@keyframes map-v2-fold-right-close {
+  0% { opacity: 1; transform: translateX(0) rotateY(0); }
+  100% { opacity: 0.9; transform: translateX(-100%) rotateY(88deg); }
+}
+
+@keyframes map-v2-fold-center-close {
+  0%, 72% { transform: scaleX(1) rotateX(0); }
+  100% { transform: scaleX(0.88) rotateX(4deg); }
+}
+
+@keyframes map-v2-copy-close {
+  to { opacity: 0; filter: blur(3px); transform: translateX(-50%) translateY(-6px); }
+}
+
+@keyframes park-map-outro-dismiss {
+  0% { opacity: 0; }
+  12%, 83% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes map-v2-closing-label {
+  0%, 16% { opacity: 0; transform: translateX(-50%) translateY(5px); }
+  34%, 80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-3px); }
+}
+
+@media (max-width: 640px) {
+  .park-map-art.is-landscape { display: none; }
+  .park-map-art.is-portrait { display: block; }
+  .map-intro-v2.park-map-intro-sheet { height: min(65dvh, 34rem); }
+  .map-intro-v2 .map-intro-heading { top: 7%; width: 94%; padding-inline: 0.2rem; }
+  .map-intro-v2 .map-intro-heading small { max-width: 7.8rem; }
+  .map-intro-stamp { right: 0.18rem; bottom: 0.24rem; }
+  .map-intro-v2 .map-intro-compass { left: 0.18rem; bottom: 0.2rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-intro-v2.park-map-intro-sheet,
+  .map-intro-v2 .park-map-intro-fold,
+  .map-intro-v2 .map-intro-heading,
+  .map-intro-v2 .map-intro-entrance,
+  .park-map-intro.is-closing,
+  .park-map-intro.is-closing .map-intro-v2.park-map-intro-sheet,
+  .park-map-intro.is-closing .park-map-intro-fold,
+  .map-intro-closing-copy { animation-duration: 0.01ms; }
 }
 
 /* Mascotas de Poker Park: hojas de cuatro fotogramas generadas para el juego. */
@@ -2371,6 +2707,12 @@
   --color-map-ink: #9fc9e8;
   --color-map-route: #ffc857;
   --color-map-fold: #3d678e;
+  --color-map-land: #1d5060;
+  --color-map-water: #2f789c;
+  --color-map-path: #1d4667;
+  --color-map-path-edge: #557b9b;
+  --color-map-building: #6aa9d2;
+  --color-map-light: #ffc857;
   --shadow-soft: 0 18px 42px -22px rgb(0 0 0 / 0.72);
   --shadow-lifted: 0 28px 70px -28px rgb(0 0 0 / 0.9);
   color: var(--color-fg);
@@ -2539,6 +2881,12 @@
   --color-map-ink: #f4d9be;
   --color-map-route: #ffcf4f;
   --color-map-fold: #76548a;
+  --color-map-land: #493665;
+  --color-map-water: #3d6f89;
+  --color-map-path: #52396e;
+  --color-map-path-edge: #8a6a9d;
+  --color-map-building: #d46b91;
+  --color-map-light: #ffcf4f;
 }
 .challenge-mirror {
   --color-bg: #081827;
@@ -2556,6 +2904,12 @@
   --color-map-ink: #c8eef7;
   --color-map-route: #a9ecff;
   --color-map-fold: #4c7b8c;
+  --color-map-land: #245163;
+  --color-map-water: #3d7185;
+  --color-map-path: #1d4a5e;
+  --color-map-path-edge: #678a99;
+  --color-map-building: #70c6d7;
+  --color-map-light: #a9ecff;
 }
 .challenge-storm {
   --color-bg: #061b24;
@@ -2573,6 +2927,12 @@
   --color-map-ink: #c5e3dc;
   --color-map-route: #ffc857;
   --color-map-fold: #4b7479;
+  --color-map-land: #214c48;
+  --color-map-water: #2e6070;
+  --color-map-path: #1d484f;
+  --color-map-path-edge: #55797f;
+  --color-map-building: #7ea59f;
+  --color-map-light: #ffc857;
 }
 .challenge-impossible {
   --color-bg: #090b26;
@@ -2590,6 +2950,12 @@
   --color-map-ink: #dfd1ed;
   --color-map-route: #ffd05b;
   --color-map-fold: #61517c;
+  --color-map-land: #302754;
+  --color-map-water: #293f67;
+  --color-map-path: #242249;
+  --color-map-path-edge: #6a5a87;
+  --color-map-building: #9d78ba;
+  --color-map-light: #ffd05b;
 }
 
 .challenge-festival .park-vignette,

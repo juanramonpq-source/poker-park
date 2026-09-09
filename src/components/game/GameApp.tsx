@@ -16,17 +16,19 @@ import { challengeClass } from "@/lib/game/challenges";
 function PlayingTable() {
   const game = useGameStore((s) => s.game);
   const mapIntroOpen = useGameStore((s) => s.mapIntroOpen);
+  const mapOutroOpen = useGameStore((s) => s.mapOutroOpen);
   if (!game) return null;
   return (
     <div className="playing-table relative flex h-dvh flex-col overflow-hidden bg-bg">
       <Hud />
       <div className="relative min-h-0 flex-1 overflow-hidden">
-        <Park game={game} />
+        {mapIntroOpen ? <div className="h-full bg-bg" aria-hidden="true" /> : <Park game={game} />}
       </div>
       <Hand />
       <NightUnlockSheet />
       <BlockedSheet />
       {mapIntroOpen ? <ParkMapIntro game={game} /> : null}
+      {mapOutroOpen ? <ParkMapIntro game={game} direction="closing" /> : null}
     </div>
   );
 }

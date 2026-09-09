@@ -727,6 +727,25 @@ export function playStart() {
   burst(0.16, 0.1, sfxBus, 1400, 0.7, t);
 }
 
+export function playMapUnfold() {
+  if (!sfxBus) return;
+  const t = now();
+  burst(0.24, 0.055, sfxBus, 720, 0.45, t);
+  burst(0.32, 0.04, sfxBus, 1250, 0.36, t + 0.18);
+  burst(0.22, 0.032, sfxBus, 1850, 0.42, t + 0.44);
+  tone(196, 0.18, "triangle", 0.024, sfxBus, 0.012, -7, t + 0.62);
+}
+
+export function playMapFold() {
+  if (!sfxBus) return;
+  const t = now();
+  duck(0.6, 0.45);
+  burst(0.28, 0.052, sfxBus, 1700, 0.38, t);
+  burst(0.34, 0.045, sfxBus, 1050, 0.42, t + 0.23);
+  burst(0.24, 0.04, sfxBus, 620, 0.5, t + 0.52);
+  tone(147, 0.3, "triangle", 0.028, sfxBus, 0.018, -11, t + 0.72);
+}
+
 export function playEnd() {
   if (!sfxBus) return;
   const dest = sfxBus;
