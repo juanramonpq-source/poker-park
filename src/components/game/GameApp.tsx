@@ -5,6 +5,7 @@ import { FxLayer } from "@/components/game/FxLayer";
 import { Hand } from "@/components/game/Hand";
 import { Hud } from "@/components/game/Hud";
 import { Park } from "@/components/game/Park";
+import { ParkMapIntro } from "@/components/game/ParkMapIntro";
 import { NightUnlockSheet } from "@/components/game/NightUnlockSheet";
 import { PassScreen } from "@/components/game/PassScreen";
 import { RulesSheet } from "@/components/game/RulesSheet";
@@ -14,9 +15,10 @@ import { challengeClass } from "@/lib/game/challenges";
 
 function PlayingTable() {
   const game = useGameStore((s) => s.game);
+  const mapIntroOpen = useGameStore((s) => s.mapIntroOpen);
   if (!game) return null;
   return (
-    <div className="relative flex h-dvh flex-col overflow-hidden bg-bg">
+    <div className="playing-table relative flex h-dvh flex-col overflow-hidden bg-bg">
       <Hud />
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <Park game={game} />
@@ -24,6 +26,7 @@ function PlayingTable() {
       <Hand />
       <NightUnlockSheet />
       <BlockedSheet />
+      {mapIntroOpen ? <ParkMapIntro game={game} /> : null}
     </div>
   );
 }

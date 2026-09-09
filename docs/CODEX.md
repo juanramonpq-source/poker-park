@@ -281,6 +281,12 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
 
 ## 8. UI (contrato visual)
 
+- Al comenzar una partida nueva en cualquier modo se despliega brevemente un
+  plano de parque de tres pliegues. Es una transición de presentación, se
+  puede omitir, respeta `prefers-reduced-motion` y nunca modifica las reglas.
+- Durante la partida, el grid de atracciones queda superpuesto sobre ese
+  plano. Papel, pliegues, ruta y rotulación se adaptan a la identidad visual
+  del modo activo.
 - **Sin scroll** en el mapa. Grid de baldosas:
   - fila1: Montaña Rusa (ancha) | Casa del Terror
   - fila2: Túnel | Bosque | Sillas

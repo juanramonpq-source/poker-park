@@ -67,6 +67,7 @@ interface GameStore {
   swapFx: { n: number; incoming: Card; outgoing: Card } | null;
   aiMoveFx: AiMoveFx | null;
   visitorPromptHidden: boolean;
+  mapIntroOpen: boolean;
   hydrate: () => void;
   start: (mode: Mode, challenge?: GameChallenge) => void;
   resume: () => void;
@@ -81,6 +82,7 @@ interface GameStore {
   pass: () => void;
   closePark: () => void;
   hideVisitorPrompt: () => void;
+  dismissMapIntro: () => void;
   continueAfterPass: () => void;
   toggleMute: () => void;
   toggleNightTheme: () => void;
@@ -298,6 +300,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     swapFx: null,
     aiMoveFx: null,
     visitorPromptHidden: false,
+    mapIntroOpen: false,
     pulse,
     hydrate: () => {
       const settings = loadSettings();
@@ -334,6 +337,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         aiThinking: false,
         aiMoveFx: null,
         visitorPromptHidden: false,
+        mapIntroOpen: true,
       });
     },
     resume: () => {
@@ -345,6 +349,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         game: saved,
         screen: saved.ended ? "end" : "playing",
         openAttraction: null,
+        mapIntroOpen: false,
       });
       if (saved.mode === "ai" && saved.currentPlayer === 1 && !saved.ended) queueAi();
     },
@@ -362,6 +367,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         selectedCardId: null,
         exchangeMode: false,
         openAttraction: null,
+        mapIntroOpen: false,
       });
     },
     quitToTitle: () => {
@@ -380,6 +386,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         openAttraction: null,
         aiThinking: false,
         aiMoveFx: null,
+        mapIntroOpen: false,
       });
     },
     selectCard: (id) => {
@@ -475,6 +482,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       audio.playUi();
       set({ visitorPromptHidden: true });
     },
+    dismissMapIntro: () => set({ mapIntroOpen: false }),
     continueAfterPass: () => {
       audio.playUi();
       set({ screen: "playing", selectedCardId: null, openAttraction: null });

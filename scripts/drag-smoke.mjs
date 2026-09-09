@@ -23,6 +23,7 @@ try {
   await mkdir("screenshots", { recursive: true });
   await page.goto(baseURL, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Jugar con compañero" }).click();
+  await page.locator("[data-map-intro='visible']").waitFor({ state: "detached", timeout: 4000 });
   await page.waitForSelector(".hand-cards button");
 
   const cards = page.locator(".hand-cards button");

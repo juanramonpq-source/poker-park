@@ -4,11 +4,23 @@ import {
   filledCount,
   isAttractionComplete,
 } from "@/lib/game/attractions";
-import { ArrowLeftRight, Check, CloudLightning, Crown, FlipHorizontal2, Lightbulb, LockKeyhole, MousePointer2 } from "lucide-react";
+import {
+  ArrowLeftRight,
+  Check,
+  CloudLightning,
+  Compass,
+  Crown,
+  FlipHorizontal2,
+  Lightbulb,
+  LockKeyhole,
+  Map as MapIcon,
+  MousePointer2,
+} from "lucide-react";
 import { cardName, isRed } from "@/lib/game/deck";
 import { isAttractionStormClosed, isAttractionUnlocked, legalExchanges } from "@/lib/game/engine";
 import {
   CHALLENGE_BACKGROUNDS,
+  CHALLENGE_NAMES,
   hasMirrorRules,
   nextStormAttraction,
   stormClosedAttraction,
@@ -330,7 +342,7 @@ export function Park({ game }: { game: GameState }) {
         : "Después te mostraremos dónde puede colocarse";
 
   return (
-    <div className={cn("relative h-full min-h-0", hasMirrorRules(game) && "mirror-board")}>
+    <div className={cn("park-map-stage relative h-full min-h-0", hasMirrorRules(game) && "mirror-board")}>
       <img
         src={CHALLENGE_BACKGROUNDS[challenge]}
         alt=""
@@ -339,30 +351,38 @@ export function Park({ game }: { game: GameState }) {
       <div className="park-vignette" />
       {challenge === "storm" ? <div className="storm-atmosphere" aria-hidden="true" /> : null}
       {challenge === "impossible" ? <div className="void-atmosphere" aria-hidden="true" /> : null}
-      <div className="park-grid">
-        <div className="turn-banner" role="status" aria-live="polite">
-          <span className={cn("turn-step", busy && "is-busy")}>
-            {busy ? <MousePointer2 aria-hidden /> : step}
-          </span>
-          <span className="turn-copy"><strong>{statusTitle}</strong><small>{statusDetail}</small></span>
-          {challenge === "festival" ? (
-            <span className="mode-meter festival-meter"><Lightbulb aria-hidden /><span><small>Meta: 7 · bonus</small><strong>×{game.festival?.combo ?? 0} · {game.festival?.bulbs ?? 0} bombillas</strong></span></span>
-          ) : challenge === "mirror" ? (
-            <span className="mode-meter mirror-meter"><FlipHorizontal2 aria-hidden /><span><small>Reglas</small><strong>Orden invertido</strong></span></span>
-          ) : challenge === "storm" ? (
-            <span className="mode-meter storm-meter"><CloudLightning aria-hidden /><span><small>Ahora · después</small><strong>{stormNow ? ATTRACTION_DEFS[stormNow].name : "Despejado"} → {stormNext ? ATTRACTION_DEFS[stormNext].name : "despejado"}</strong></span></span>
-          ) : challenge === "impossible" ? (
-            <span className="mode-meter impossible-meter"><Crown aria-hidden /><span><small>00:13 · combo ×{game.festival?.combo ?? 0}</small><strong>{stormNow ? ATTRACTION_DEFS[stormNow].name : "Despejado"} → {stormNext ? ATTRACTION_DEFS[stormNext].name : "despejado"}</strong></span></span>
-          ) : null}
+      <div className="park-map-sheet" data-map-surface={challenge}>
+        <div className="park-map-folds" aria-hidden />
+        <div className="park-map-route" aria-hidden />
+        <Compass className="park-map-watermark" aria-hidden />
+        <span className="park-map-signature" aria-hidden>
+          <MapIcon /> Plano · {CHALLENGE_NAMES[challenge]}
+        </span>
+        <div className="park-grid">
+          <div className="turn-banner" role="status" aria-live="polite">
+            <span className={cn("turn-step", busy && "is-busy")}>
+              {busy ? <MousePointer2 aria-hidden /> : step}
+            </span>
+            <span className="turn-copy"><strong>{statusTitle}</strong><small>{statusDetail}</small></span>
+            {challenge === "festival" ? (
+              <span className="mode-meter festival-meter"><Lightbulb aria-hidden /><span><small>Meta: 7 · bonus</small><strong>×{game.festival?.combo ?? 0} · {game.festival?.bulbs ?? 0} bombillas</strong></span></span>
+            ) : challenge === "mirror" ? (
+              <span className="mode-meter mirror-meter"><FlipHorizontal2 aria-hidden /><span><small>Reglas</small><strong>Orden invertido</strong></span></span>
+            ) : challenge === "storm" ? (
+              <span className="mode-meter storm-meter"><CloudLightning aria-hidden /><span><small>Ahora · después</small><strong>{stormNow ? ATTRACTION_DEFS[stormNow].name : "Despejado"} → {stormNext ? ATTRACTION_DEFS[stormNext].name : "despejado"}</strong></span></span>
+            ) : challenge === "impossible" ? (
+              <span className="mode-meter impossible-meter"><Crown aria-hidden /><span><small>00:13 · combo ×{game.festival?.combo ?? 0}</small><strong>{stormNow ? ATTRACTION_DEFS[stormNow].name : "Despejado"} → {stormNext ? ATTRACTION_DEFS[stormNext].name : "despejado"}</strong></span></span>
+            ) : null}
+          </div>
+          <MapTile id="coaster" game={game} className="col-span-2" />
+          <MapTile id="haunted" game={game} />
+          <MapTile id="love" game={game} />
+          <MapTile id="forest" game={game} />
+          <MapTile id="chairs" game={game} />
+          <MapTile id="restaurant" game={game} />
+          <MapTile id="restrooms" game={game} />
+          <EntranceTile game={game} />
         </div>
-        <MapTile id="coaster" game={game} className="col-span-2" />
-        <MapTile id="haunted" game={game} />
-        <MapTile id="love" game={game} />
-        <MapTile id="forest" game={game} />
-        <MapTile id="chairs" game={game} />
-        <MapTile id="restaurant" game={game} />
-        <MapTile id="restrooms" game={game} />
-        <EntranceTile game={game} />
       </div>
       <ParkMascots />
       {openAttraction ? <AttractionSheet id={openAttraction} game={game} /> : null}
