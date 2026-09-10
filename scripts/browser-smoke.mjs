@@ -113,6 +113,9 @@ try {
     // networkidle never settles and would burn the whole timeout.
     const resp = await page.goto(url, { waitUntil: "domcontentloaded", timeout: timeoutMs });
     const status = resp?.status() ?? 0;
+    // The opening begins in black while the client hydrates. A fixed 1 s delay
+    // can capture that legitimate transition, and must not count as a render.
+    await page.waitForFunction(() => document.body.innerText.trim().length > 0 || Boolean(document.querySelector("canvas")), undefined, { timeout: timeoutMs });
     await page.waitForTimeout(1000);
 
     const title = await page.title();

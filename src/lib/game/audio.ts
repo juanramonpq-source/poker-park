@@ -1,16 +1,21 @@
 import type { GameChallenge } from "./types";
+import { SoundtrackPlayer } from "./soundtrack";
 
 type MusicMode = "off" | "title" | "park" | "night" | "festival" | "mirror" | "storm" | "impossible";
 
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let musicBus: GainNode | null = null;
+let proceduralBus: GainNode | null = null;
+let soundtrack: SoundtrackPlayer | null = null;
+let proceduralActive = false;
 let sfxBus: GainNode | null = null;
 let noiseBuf: AudioBuffer | null = null;
 let rainBuf: AudioBuffer | null = null;
 let muted = false;
 let musicMode: MusicMode = "off";
 let musicTimer = 0;
+let thunderTimer = 0;
 let nextNote = 0;
 let noteIndex = 0;
 let visBound = false;
@@ -389,6 +394,7 @@ function stopPads() {
 }
 
 function startPads(mode: MusicMode) {
+  const musicBus = proceduralBus;
   if (!ctx || !musicBus) return;
   stopPads();
   const specs =
@@ -486,6 +492,7 @@ function startCrowd() {
 }
 
 function stopWeather() {
+  window.clearTimeout(thunderTimer);
   if (!ctx) {
     weatherNodes = [];
     return;
@@ -545,6 +552,15 @@ function startWeather(mode: MusicMode) {
       { type: "lowpass", frequency: 6800, q: 0.25 },
     ], 0.052, 1.6, "rain");
     addWeatherLayer([{ type: "lowpass", frequency: 240, q: 0.45 }], 0.018, 2.4);
+    // Weather belongs to the game, not to either recorded or fallback music.
+    const thunderTick = () => {
+      if (musicMode !== "storm") return;
+      if (ctx?.state === "running" && !muted && !document.hidden) {
+        scheduleThunder(ctx.currentTime + 0.08, 0.82);
+      }
+      thunderTimer = window.setTimeout(thunderTick, 18000);
+    };
+    thunderTimer = window.setTimeout(thunderTick, 4200);
   } else if (mode === "impossible") {
     // El final no hereda la lluvia: queda un aire mecánico, estrecho e incómodo.
     addWeatherLayer([
@@ -578,18 +594,27 @@ export function unlockAudio() {
     sfxBus.gain.value = 0.78;
     master.gain.value = muted ? 0 : 0.85;
     musicBus.connect(master);
+    soundtrack = new SoundtrackPlayer(ctx, musicBus);
     sfxBus.connect(master);
     master.connect(ctx.destination);
     makeNoise();
   }
-  if (ctx.state === "suspended") {
-    void ctx.resume();
+  if (ctx.state === "suspended" || (ctx.state as string) === "interrupted") {
+    void ctx.resume().catch(() => { /* a later user gesture can retry */ });
   }
   if (!visBound) {
     visBound = true;
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && ctx?.state === "suspended") {
-        void ctx.resume();
+      if (document.visibilityState === "hidden") {
+        void ctx?.suspend().catch(() => {});
+      } else if (ctx && !muted) {
+        void ctx.resume().catch(() => {});
+        // Never catch up minutes of queued synthetic notes after a backgrounded tab.
+        if (proceduralActive && musicMode !== "off") {
+          window.clearTimeout(musicTimer);
+          nextNote = ctx.currentTime + 0.04;
+          musicTick();
+        }
       }
     });
   }
@@ -600,7 +625,8 @@ export function setMuted(next: boolean) {
   if (master && ctx) {
     master.gain.setTargetAtTime(next ? 0 : 0.85, ctx.currentTime, 0.04);
   }
-  if (!next && musicMode !== "off" && ctx) {
+  if (!next && ctx) void ctx.resume().catch(() => {});
+  if (!next && proceduralActive && musicMode !== "off" && ctx) {
     window.clearTimeout(musicTimer);
     nextNote = ctx.currentTime + 0.04;
     musicTick();
@@ -847,6 +873,7 @@ export function playPass() {
 }
 
 function scheduleStep(time: number, step: Step, beat: number, index: number, mode: MusicMode) {
+  const musicBus = proceduralBus;
   if (!musicBus || !ctx) return;
   const dur = Math.max(0.18, step.beats * beat * 0.92);
   if (step.chord) glidePads(time, step.chord);
@@ -891,8 +918,6 @@ function scheduleStep(time: number, step: Step, beat: number, index: number, mod
   }
   if (mode === "storm") {
     if (index % 2 === 0) burst(0.045, 0.022, musicBus, index % 4 === 0 ? 165 : 1150, 0.55, time);
-    if (index % 32 === 6) scheduleThunder(time + beat * 0.28, 0.82);
-    if (index % 64 === 39) scheduleThunder(time + beat * 0.12, 1.08);
   }
   if (mode === "impossible") {
     if (index % 3 !== 1) burst(0.035, 0.014, musicBus, index % 6 === 0 ? 105 : 1860, 0.8, time);
@@ -907,7 +932,7 @@ function scheduleStep(time: number, step: Step, beat: number, index: number, mod
 }
 
 function musicTick() {
-  if (!ctx || muted || musicMode === "off") return;
+  if (!ctx || muted || !proceduralActive || musicMode === "off" || document.visibilityState === "hidden") return;
   const score = musicMode === "title"
     ? TITLE_SCORE
     : musicMode === "night"
@@ -945,18 +970,41 @@ function musicTick() {
 }
 
 function startMode(mode: MusicMode) {
-  if (!ctx || !musicBus) return;
+  if (!ctx || !musicBus || mode === "off") return;
   window.clearTimeout(musicTimer);
+  stopProceduralMusic();
   musicMode = mode;
   noteIndex = 0;
   nextNote = ctx.currentTime + 0.12;
   const target = mode === "title" ? 0.2 : mode === "night" || mode === "mirror" || mode === "storm" ? 0.25 : mode === "impossible" ? 0.3 : 0.34;
+  musicBus.gain.cancelScheduledValues(ctx.currentTime);
   musicBus.gain.setTargetAtTime(target, ctx.currentTime, 0.08);
-  startPads(mode);
   startWeather(mode);
   if (mode === "park") startCrowd();
   else stopCrowd();
-  musicTick();
+  void soundtrack?.play(mode, () => {
+    if (!ctx || !musicBus || musicMode !== mode) return;
+    proceduralBus = ctx.createGain();
+    proceduralBus.connect(musicBus);
+    proceduralActive = true;
+    noteIndex = 0;
+    nextNote = ctx.currentTime + 0.04;
+    startPads(mode);
+    musicTick();
+  });
+}
+
+function stopProceduralMusic() {
+  proceduralActive = false;
+  window.clearTimeout(musicTimer);
+  stopPads();
+  const oldBus = proceduralBus;
+  proceduralBus = null;
+  if (oldBus && ctx) {
+    oldBus.gain.setTargetAtTime(0, ctx.currentTime, 0.06);
+    // Notes already scheduled on the old bus must never leak into the new mode.
+    window.setTimeout(() => oldBus.disconnect(), 500);
+  }
 }
 
 export function startTitleBed() {
@@ -967,6 +1015,7 @@ export function startTitleBed() {
 
 export function startParkBed() {
   unlockAudio();
+  if (musicMode === "park") return;
   startMode("park");
 }
 
@@ -986,7 +1035,8 @@ export function startChallengeBed(challenge: GameChallenge = "classic") {
 export function stopParkBed() {
   window.clearTimeout(musicTimer);
   musicMode = "off";
-  stopPads();
+  soundtrack?.stop();
+  stopProceduralMusic();
   stopCrowd();
   stopWeather();
   if (musicBus && ctx) {

@@ -63,7 +63,7 @@ Lleva solo el juego, no el andamiaje del sandbox original.
 | Vite + React 19 + TypeScript | TanStack Start / Nitro / Vercel |
 | Tailwind v4 (`src/styles.css` `@theme`) | Auth, PGLite, Better Auth |
 | Zustand persistente | `src/lib/auth`, `src/lib/db`, `src/lib/app-data` |
-| Web Audio API procedural | node_modules, `.vercel`, `scripts/` de Grok |
+| Web Audio API + música MP3 propia | node_modules, `.vercel`, `scripts/` de Grok |
 | PWA: `manifest.webmanifest` + iconos | `/__grok/install` |
 
 App de una sola ruta `/`. Viewport `width=device-width, viewport-fit=cover`.
@@ -88,7 +88,8 @@ src/lib/game/attractions.ts    validez, huecos legales, hints
 src/lib/game/engine.ts         turnos, colocación, fin, recuento
 src/lib/game/ai.ts             compañero automático
 src/lib/game/persist.ts        localStorage v7
-src/lib/game/audio.ts          música y SFX procedurales
+src/lib/game/audio.ts          mezclador, ambientes, SFX y música de recuperación
+src/lib/game/soundtrack.ts     siete pistas Suno, carga y bucles con fundidos
 src/lib/game/attractions.test.ts
 src/store/game-store.ts        UI store + afterHuman + IA
 src/components/game/*
@@ -374,12 +375,24 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
 
 ## 9. Audio
 
-Todo sintético en `src/lib/game/audio.ts` (Web Audio). Sin mp3.
+Música grabada en `public/audio/*-suno-v1.mp3`, producida a partir de las melodías
+originales mediante Suno Pro. Procedencia y proceso en `docs/MUSICA-SUNO.md` y
+`docs/suno-music-manifest.json`. Mezclador Web Audio en `src/lib/game/audio.ts`.
 
-- Cama del título y cama del parque: vals largo (~90s), no un loop de 4s.
+- Siete pistas: portada, parque, guardia nocturna y cuatro retos del Pase Maestro.
+- Parque es una variante más activa de la introducción aprobada por el usuario.
+- `soundtrack.ts` carga solo el modo actual, conserva solo la última pista
+  decodificada y descarta respuestas de modos antiguos. Fundidos entre pistas
+  y solapamiento de 1,5 s entre final e inicio del bucle.
+- Las composiciones sintéticas originales quedan como recuperación automática
+  si la descarga o decodificación falla; nunca se duplican con la pista grabada.
+- Público, lluvia y truenos se conservan separados de la grabación.
 - SFX: select, deal, place, exchange, aforo, complete (por atracción),
   pass, end, redobles del recuento, fiesta.
-- Unlock en el primer gesto. Mute en settings.
+- Unlock en el primer gesto. Mute en settings. Pausa al ocultar la pestaña y
+  reanudación sin acumular notas al volver.
+- Pruebas: `node --experimental-strip-types --test scripts/soundtrack.test.mjs`
+  y `node scripts/soundtrack-browser-smoke.mjs` contra el servidor de desarrollo.
 
 ---
 
