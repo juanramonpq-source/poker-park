@@ -4,8 +4,10 @@ import { exchangeLimit, legalExchanges } from "@/lib/game/engine";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { Button } from "@/components/ui/button";
+import { useOnlineGame } from "@/lib/multiplayer/online-game";
 
 export function Hud() {
+  const online = useOnlineGame();
   const game = useGameStore((s) => s.game);
   const muted = useGameStore((s) => s.muted);
   const toggleMute = useGameStore((s) => s.toggleMute);
@@ -17,11 +19,13 @@ export function Hud() {
   const toggleExchange = useGameStore((s) => s.toggleExchange);
   const aiThinking = useGameStore((s) => s.aiThinking);
   const aiMoveFx = useGameStore((s) => s.aiMoveFx);
+  const onlineLocalPlayer = useGameStore((s) => s.onlineLocalPlayer);
+  const onlineConnected = useGameStore((s) => s.onlineConnected);
   const [menuOpen, setMenuOpen] = useState(false);
   const [closeConfirmOpen, setCloseConfirmOpen] = useState(false);
 
   if (!game) return null;
-  const locked = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance;
+  const locked = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance || (game.mode === "online" && (!onlineConnected || onlineLocalPlayer !== game.currentPlayer));
   const remaining = exchangeLimit(game) - game.exchangesUsed;
   const aforo = remaining <= 0;
   const selectedCanExchange = selectedCardId
@@ -47,6 +51,7 @@ export function Hud() {
 
   const exitGame = () => {
     setMenuOpen(false);
+    if (game.mode === "online") online.leaveRoom();
     goTitle();
   };
 
@@ -67,7 +72,7 @@ export function Hud() {
           <span className="player-avatar" aria-hidden>{isNight ? <Wrench /> : <UserRound />}</span>
           <span className="player-copy">
             <small>{aiMoveFx ? "Última revisión" : aiThinking ? "Comprobando" : (game.mode === "ai" && game.currentPlayer === 0) || game.mode === "solo" ? "Ahora" : isNight ? "Guardia" : "Turno"}</small>
-            <strong>{aiMoveFx ? game.names[1] : currentName}</strong>
+            <strong>{aiMoveFx ? game.names[aiMoveFx.player ?? 1] : currentName}</strong>
           </span>
         </div>
 
@@ -107,6 +112,7 @@ export function Hud() {
           <button
             type="button"
             className="close-park-action"
+            disabled={locked}
             onClick={requestClose}
             aria-label={isNight ? "Cerrar el turno y ver el recuento" : "Cerrar el parque y ver el recuento"}
           >

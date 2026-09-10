@@ -12,6 +12,8 @@ import { RulesSheet } from "@/components/game/RulesSheet";
 import { TitleScreen } from "@/components/game/TitleScreen";
 import { useGameStore } from "@/store/game-store";
 import { challengeClass } from "@/lib/game/challenges";
+import { OnlineGameProvider } from "@/lib/multiplayer/online-game";
+import { OnlineStatusPill } from "@/components/game/OnlineStatusPill";
 
 function PlayingTable() {
   const game = useGameStore((s) => s.game);
@@ -25,6 +27,7 @@ function PlayingTable() {
         {mapIntroOpen ? <div className="h-full bg-bg" aria-hidden="true" /> : <Park game={game} />}
       </div>
       <Hand />
+      <OnlineStatusPill />
       <NightUnlockSheet />
       <BlockedSheet />
       {mapIntroOpen ? <ParkMapIntro game={game} /> : null}
@@ -34,6 +37,10 @@ function PlayingTable() {
 }
 
 export function GameApp() {
+  return <OnlineGameProvider><GameAppContent /></OnlineGameProvider>;
+}
+
+function GameAppContent() {
   const screen = useGameStore((s) => s.screen);
   const hydrate = useGameStore((s) => s.hydrate);
   const game = useGameStore((s) => s.game);

@@ -56,6 +56,8 @@ export function Hand() {
   const aiThinking = useGameStore((s) => s.aiThinking);
   const aiMoveFx = useGameStore((s) => s.aiMoveFx);
   const visitorPromptHidden = useGameStore((s) => s.visitorPromptHidden);
+  const onlineLocalPlayer = useGameStore((s) => s.onlineLocalPlayer);
+  const onlineConnected = useGameStore((s) => s.onlineConnected);
   const openPark = useGameStore((s) => s.openPark);
   const place = useGameStore((s) => s.place);
   const visit = useGameStore((s) => s.visit);
@@ -87,9 +89,9 @@ export function Hand() {
   }, []);
 
   if (!game) return null;
-  const viewer = game.mode === "ai" ? 0 : game.currentPlayer;
+  const viewer = game.mode === "ai" ? 0 : game.mode === "online" ? (onlineLocalPlayer ?? 0) : game.currentPlayer;
   const hand = game.hands[viewer];
-  const locked = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance || (game.mode === "ai" && game.currentPlayer === 1);
+  const locked = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance || (game.mode === "ai" && game.currentPlayer === 1) || (game.mode === "online" && (!onlineConnected || onlineLocalPlayer !== game.currentPlayer));
   const selectedCard = hand.find((c) => c.id === selectedCardId);
   const selectedCanExchange = Boolean(
     selectedCard && !game.swappedCardId && legalExchanges(game, selectedCard.id).length,
@@ -99,7 +101,11 @@ export function Hand() {
   const noMove = Boolean(selectedCardId) && !selectedHasMove && !locked;
   const isNight = game.challenge === "night";
   const guideTitle = locked
-    ? game.pendingAdvance
+      ? game.mode === "online" && !onlineConnected
+        ? "Reconectando con tu compañero"
+        : game.mode === "online" && onlineLocalPlayer !== game.currentPlayer
+        ? `Es el turno de ${game.names[game.currentPlayer]}`
+        : game.pendingAdvance
       ? isNight ? "¡Revisión superada!" : "¡Atracción conseguida!"
       : isNight ? "Tu compañero comprueba el sector" : "Espera a tu compañero"
     : noMove

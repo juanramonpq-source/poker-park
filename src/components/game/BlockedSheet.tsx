@@ -10,8 +10,11 @@ export function BlockedSheet() {
   const visitorPromptHidden = useGameStore((s) => s.visitorPromptHidden);
   const aiThinking = useGameStore((s) => s.aiThinking);
   const aiMoveFx = useGameStore((s) => s.aiMoveFx);
+  const onlineLocalPlayer = useGameStore((s) => s.onlineLocalPlayer);
+  const onlineConnected = useGameStore((s) => s.onlineConnected);
   if (!game || game.ended || game.pendingAdvance || aiThinking || aiMoveFx) return null;
   if (game.mode === "ai" && game.currentPlayer === 1) return null;
+  if (game.mode === "online" && (!onlineConnected || onlineLocalPlayer !== game.currentPlayer)) return null;
   if (hasRequiredAction(game)) return null;
   if (visitorPromptHidden) return null;
 

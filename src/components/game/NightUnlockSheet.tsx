@@ -8,7 +8,10 @@ export function NightUnlockSheet() {
   const unlock = useGameStore((state) => state.unlockNightSector);
   const deferred = useGameStore((state) => state.nightEmergencyDeferred);
   const deferEmergency = useGameStore((state) => state.deferNightEmergency);
+  const onlineLocalPlayer = useGameStore((state) => state.onlineLocalPlayer);
+  const onlineConnected = useGameStore((state) => state.onlineConnected);
   if (!game?.night || game.ended || game.pendingAdvance) return null;
+  if (game.mode === "online" && (!onlineConnected || onlineLocalPlayer !== game.currentPlayer)) return null;
 
   const emergency = nightEmergencyAvailable(game);
   if (emergency && deferred) return null;

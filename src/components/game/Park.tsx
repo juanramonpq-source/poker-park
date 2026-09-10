@@ -251,7 +251,7 @@ function MapTile({
           +{attr.visitors.length}
         </span>
       ) : null}
-      {showingAiMove ? <span className="ai-move-tile-badge">Jugada CPU</span> : null}
+      {showingAiMove ? <span className="ai-move-tile-badge">{game.mode === "online" ? "Jugada compañero" : "Jugada CPU"}</span> : null}
     </button>
   );
 }
@@ -410,7 +410,7 @@ export function Park({ game }: { game: GameState }) {
   const stormNext = nextStormAttraction(game);
   const step = selectedCardId ? 2 : 1;
   const statusTitle = aiMoveFx
-    ? `${game.names[1]} jugó ${cardName(aiMoveFx.card)}`
+    ? `${game.names[aiMoveFx.player ?? 1]} jugó ${cardName(aiMoveFx.card)}`
     : aiThinking
     ? `${game.names[1]} está pensando`
     : game.pendingAdvance

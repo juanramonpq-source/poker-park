@@ -1,4 +1,4 @@
-import { BookOpen, Crown, FerrisWheel, MoonStar, Palette, ShieldCheck, Sparkles, User, Users, Wrench, X } from "lucide-react";
+import { BookOpen, Crown, FerrisWheel, Globe2, MoonStar, Palette, ShieldCheck, Sparkles, User, Users, Wrench, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { playLifetimeUnlock, playUi, startChallengeBed, startTitleBed, unlockAudio } from "@/lib/game/audio";
 import {
@@ -22,6 +22,7 @@ import { SoloModeChooser } from "@/components/game/SoloModeChooser";
 import { PairStartChooser } from "@/components/game/PairStartChooser";
 import { DifficultySelector } from "@/components/game/DifficultySelector";
 import { ClassicMedals } from "@/components/game/ClassicMedals";
+import { OnlineLobby } from "@/components/game/OnlineLobby";
 
 function Motes() {
   return (
@@ -47,7 +48,7 @@ export function TitleScreen() {
   const setShowcaseTheme = useGameStore((s) => s.setShowcaseTheme);
   const cardBack = useGameStore((s) => s.cardBack);
   const setCardBack = useGameStore((s) => s.setCardBack);
-  const canResume = Boolean(game && !game.ended);
+  const canResume = Boolean(game && !game.ended && game.mode !== "online");
   const [secrets, setSecrets] = useState<Secrets>({
     perfect: false,
     lifetime: false,
@@ -74,10 +75,12 @@ export function TitleScreen() {
   const [soloChoice, setSoloChoice] = useState<{ challenge: GameChallenge; initialDifficulty: GameDifficulty } | null>(null);
   const [pairSetupOpen, setPairSetupOpen] = useState(false);
   const [nightDifficulty, setNightDifficulty] = useState<GameDifficulty>("standard");
+  const [onlineOpen, setOnlineOpen] = useState(false);
 
   useEffect(() => {
     setSecrets(loadSecrets());
     setTutorialComplete(window.localStorage.getItem(TUTORIAL_SEEN_KEY) === "true");
+    if (new URL(window.location.href).searchParams.has("sala")) setOnlineOpen(true);
   }, []);
 
   const wake = () => {
@@ -271,6 +274,10 @@ export function TitleScreen() {
               <User className="size-4" strokeWidth={1.75} />
               Modo solitario
             </Button>
+            <Button size="lg" variant="secondary" className="w-full title-online-button" onClick={() => setOnlineOpen(true)}>
+              <Globe2 className="size-4" strokeWidth={1.75} />
+              Jugar online <small>Beta</small>
+            </Button>
             {secrets.perfect ? (
               <button type="button" className="night-challenge-button" onClick={() => setNightModeOpen(true)}>
                 <span><MoonStar aria-hidden /></span>
@@ -404,6 +411,7 @@ export function TitleScreen() {
         </div>
       ) : null}
       <LegalSheet open={legalOpen} onClose={() => setLegalOpen(false)} />
+      {onlineOpen ? <OnlineLobby secrets={secrets} onClose={() => setOnlineOpen(false)} /> : null}
       <MenuMascots />
     </main>
   );

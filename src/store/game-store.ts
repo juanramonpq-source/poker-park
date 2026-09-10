@@ -49,6 +49,7 @@ export type AiMoveFx = {
   attractionId: AttractionId;
   index: number | null;
   kind: "place" | "visit";
+  player?: 0 | 1;
 };
 
 interface GameStore {
@@ -72,8 +73,18 @@ interface GameStore {
   mapIntroOpen: boolean;
   mapOutroOpen: boolean;
   nightEmergencyDeferred: boolean;
+  onlineLocalPlayer: 0 | 1 | null;
+  onlineConnected: boolean;
   hydrate: () => void;
-  start: (mode: Mode, challenge?: GameChallenge, difficulty?: GameDifficulty) => void;
+  start: (
+    mode: Mode,
+    challenge?: GameChallenge,
+    difficulty?: GameDifficulty,
+    names?: [string, string],
+  ) => void;
+  setOnlineLocalPlayer: (player: 0 | 1 | null) => void;
+  setOnlineConnected: (connected: boolean) => void;
+  syncOnlineGame: (game: GameState, move?: AiMoveFx | null) => void;
   resume: () => void;
   goTitle: () => void;
   quitToTitle: () => void;
@@ -138,6 +149,14 @@ function juice(
 }
 
 export const useGameStore = create<GameStore>((set, get) => {
+  const canAct = () => {
+    const { game, onlineLocalPlayer } = get();
+    return (
+      !game ||
+      game.mode !== "online" ||
+      (get().onlineConnected && onlineLocalPlayer === game.currentPlayer)
+    );
+  };
   const pulse: GameStore["pulse"] = (kind, attractionId = null) => {
     fxN += 1;
     set({ fx: { n: fxN, kind, attractionId } });
@@ -248,8 +267,10 @@ export const useGameStore = create<GameStore>((set, get) => {
           ? current.hands[current.currentPlayer].find((card) => card.id === move.cardId)
           : undefined;
       try {
-        if (move.type === "place") next = placeCard(current, move.cardId, move.attractionId, move.index);
-        else if (move.type === "visit") next = placeVisitor(current, move.cardId, move.attractionId);
+        if (move.type === "place")
+          next = placeCard(current, move.cardId, move.attractionId, move.index);
+        else if (move.type === "visit")
+          next = placeVisitor(current, move.cardId, move.attractionId);
         else if (move.type === "exchange") {
           outgoing = current.hands[current.currentPlayer].find((c) => c.id === move.cardId);
           next = exchangeCard(current, move.cardId, move.target);
@@ -265,6 +286,7 @@ export const useGameStore = create<GameStore>((set, get) => {
           attractionId: move.attractionId,
           index: move.type === "place" ? move.index : null,
           kind: move.type,
+          player: 1,
         };
         persist(next);
         window.clearTimeout(aiRevealTimer);
@@ -315,6 +337,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     mapIntroOpen: false,
     mapOutroOpen: false,
     nightEmergencyDeferred: false,
+    onlineLocalPlayer: null,
+    onlineConnected: false,
     pulse,
     hydrate: () => {
       const settings = loadSettings();
@@ -327,10 +351,10 @@ export const useGameStore = create<GameStore>((set, get) => {
         machineRoomUnlocked: secrets.pentonuiSignal,
         showcaseTheme: settings.showcaseTheme,
         cardBack: settings.cardBack,
-        game: s.screen === "title" ? saved : s.game ?? saved,
+        game: s.screen === "title" ? saved : (s.game ?? saved),
       }));
     },
-    start: (mode, challenge = "classic", difficulty = "standard") => {
+    start: (mode, challenge = "classic", difficulty = "standard", names) => {
       window.clearTimeout(aiRevealTimer);
       window.clearTimeout(aiRevealClearTimer);
       audio.unlockAudio();
@@ -340,7 +364,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       audio.playDeal();
       window.setTimeout(() => audio.playDeal(), 70);
       window.setTimeout(() => audio.playDeal(), 140);
-      const game = createGame(mode, undefined, challenge, difficulty);
+      const game = createGame(mode, names, challenge, difficulty);
       persist(game);
       pulse("deal");
       set({
@@ -355,6 +379,52 @@ export const useGameStore = create<GameStore>((set, get) => {
         mapIntroOpen: true,
         mapOutroOpen: false,
         nightEmergencyDeferred: false,
+      });
+    },
+    setOnlineLocalPlayer: (onlineLocalPlayer) => set({ onlineLocalPlayer }),
+    setOnlineConnected: (onlineConnected) => set({ onlineConnected }),
+    syncOnlineGame: (game, move = null) => {
+      const previous = get().game;
+      persist(game);
+      audio.unlockAudio();
+      audio.startChallengeBed(game.challenge ?? "classic");
+      if (move) {
+        set({ aiMoveFx: move, aiThinking: true });
+        window.setTimeout(() => {
+          if (get().aiMoveFx?.n !== move.n) return;
+          juice(previous, game, get().pulse, move.attractionId);
+          if (game.ended) {
+            beginMapOutro(game);
+            return;
+          }
+          set({
+            game,
+            screen: "playing",
+            selectedCardId: null,
+            exchangeMode: false,
+            openAttraction: null,
+            aiThinking: false,
+          });
+        }, 680);
+        window.setTimeout(() => {
+          if (get().aiMoveFx?.n === move.n) set({ aiMoveFx: null });
+        }, 1650);
+        return;
+      }
+      if (game.ended && !previous?.ended) {
+        beginMapOutro(game);
+        return;
+      }
+      set({
+        game,
+        screen: game.ended ? "end" : "playing",
+        selectedCardId: null,
+        exchangeMode: false,
+        openAttraction: null,
+        aiThinking: false,
+        aiMoveFx: null,
+        mapIntroOpen: previous?.mode === "online" ? get().mapIntroOpen : true,
+        mapOutroOpen: false,
       });
     },
     resume: () => {
@@ -413,6 +483,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       });
     },
     selectCard: (id) => {
+      if (!canAct()) return;
       const { selectedCardId } = get();
       const next = selectedCardId === id ? null : id;
       if (next) {
@@ -422,6 +493,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       set({ selectedCardId: next });
     },
     toggleExchange: () => {
+      if (!canAct()) return;
       const { game, exchangeMode } = get();
       if (!game || game.exchangesUsed >= exchangeLimit(game) || game.swappedCardId) return;
       audio.playUi();
@@ -435,8 +507,10 @@ export const useGameStore = create<GameStore>((set, get) => {
       set({ openAttraction: id });
     },
     place: (attractionId, index) => {
+      if (!canAct()) return;
       const { game, selectedCardId, exchangeMode } = get();
-      if (!game || !selectedCardId || exchangeMode || get().aiThinking || game.pendingAdvance) return;
+      if (!game || !selectedCardId || exchangeMode || get().aiThinking || game.pendingAdvance)
+        return;
       try {
         const next = placeCard(game, selectedCardId, attractionId, index);
         juice(game, next, get().pulse, attractionId);
@@ -446,6 +520,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     },
     visit: (attractionId) => {
+      if (!canAct()) return;
       const { game, selectedCardId } = get();
       if (!game || !selectedCardId || get().aiThinking) return;
       try {
@@ -457,6 +532,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     },
     exchange: (target) => {
+      if (!canAct()) return;
       const { game, selectedCardId, exchangeMode } = get();
       if (!game || !selectedCardId || !exchangeMode || get().aiThinking) return;
       try {
@@ -468,15 +544,13 @@ export const useGameStore = create<GameStore>((set, get) => {
           afterHuman(next);
           return;
         }
-        const incoming = next.hands[next.currentPlayer].find((c) => c.id === next.swappedCardId) ?? null;
+        const incoming =
+          next.hands[next.currentPlayer].find((c) => c.id === next.swappedCardId) ?? null;
         set({
           game: next,
           selectedCardId: next.swappedCardId,
           exchangeMode: false,
-          swapFx:
-            outgoing && incoming
-              ? { n: Date.now(), incoming, outgoing }
-              : null,
+          swapFx: outgoing && incoming ? { n: Date.now(), incoming, outgoing } : null,
         });
         window.setTimeout(() => {
           if (get().swapFx?.n) set({ swapFx: null });
@@ -486,6 +560,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     },
     pass: () => {
+      if (!canAct()) return;
       const { game } = get();
       if (!game || get().aiThinking) return;
       if (hasRequiredAction(game)) return;
@@ -493,6 +568,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       afterHuman(next);
     },
     closePark: () => {
+      if (!canAct()) return;
       const { game } = get();
       if (!game || game.ended) return;
       window.clearTimeout(aiTimer);
@@ -561,6 +637,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       audio.playComplete("haunted");
     },
     unlockNightSector: (id) => {
+      if (!canAct()) return;
       const game = get().game;
       if (!game?.night) return;
       const emergency = nightEmergencyAvailable(game);
@@ -580,6 +657,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
     },
     deferNightEmergency: () => {
+      if (!canAct()) return;
       const game = get().game;
       if (!game || !nightEmergencyAvailable(game)) return;
       const canExchange = game.hands[game.currentPlayer].some(

@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { MascotParade } from "@/components/game/ParkMascots";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
+import { useOnlineGame } from "@/lib/multiplayer/online-game";
 
 const NIGHT_SCALE = [
   "Sin corriente", "Primera comprobación", "Sector asegurado", "Guardia en marcha",
@@ -116,6 +117,7 @@ function maintenanceBadges(count: number, emergencyUses: number): DayBadge[] {
 }
 
 export function EndScreen() {
+  const online = useOnlineGame();
   const game = useGameStore((s) => s.game);
   const quitToTitle = useGameStore((s) => s.quitToTitle);
   const pulse = useGameStore((s) => s.pulse);
@@ -186,6 +188,10 @@ export function EndScreen() {
   }, [step, done.length, perfect, isNight, challenge, difficulty, pulse]);
 
   if (!game) return null;
+  const returnToTitle = () => {
+    if (game.mode === "online") online.leaveRoom();
+    quitToTitle();
+  };
   const ending = endingCopy(game);
 
   const onTapScale = () => {
@@ -236,7 +242,7 @@ export function EndScreen() {
             <p>Creado por Pentonúi Games</p>
           </button>
           {lifetime ? <p className="mt-4 rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-[12px] text-accent">Pase de por vida desbloqueado. La noria te espera en la entrada.</p> : null}
-          <Button size="lg" className="mt-8 w-full" onClick={quitToTitle}>Volver al inicio</Button>
+          <Button size="lg" className="mt-8 w-full" onClick={returnToTitle}>Volver al inicio</Button>
         </div>
         {machineRoomOpen ? (
           <div className="machine-room-secret" role="dialog" aria-modal="true" aria-labelledby="machine-room-title">

@@ -16,7 +16,7 @@ export type AttractionId =
   | "restaurant"
   | "restrooms";
 
-export type Mode = "hotseat" | "ai" | "solo";
+export type Mode = "hotseat" | "ai" | "solo" | "online";
 export type GameDifficulty = "standard" | "easy";
 export type GameChallenge = "classic" | "night" | "festival" | "mirror" | "storm" | "impossible";
 
