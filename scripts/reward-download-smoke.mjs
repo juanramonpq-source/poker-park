@@ -6,7 +6,7 @@ import { makeDeck } from "../src/lib/game/deck.ts";
 import { ATTRACTION_IDS } from "../src/lib/game/types.ts";
 
 const url = process.argv[2] ?? "http://127.0.0.1:8080/";
-assert.match(url, /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//, "This source-module smoke runs only against the local dev server");
+assert.match(url, /^https?:\/\//, "Expected an HTTP(S) game URL");
 const chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const browser = await chromium.launch({ headless: true, ...(existsSync(chrome) ? { executablePath: chrome } : {}) });
 const deck = makeDeck();
