@@ -11,12 +11,12 @@ import {
 import { P2PRoom, type PeerInfo } from "@/lib/multiplayer";
 import {
   ATTRACTION_IDS,
-  type AttractionId,
   type GameChallenge,
   type GameDifficulty,
   type GameState,
 } from "@/lib/game/types";
 import { useGameStore, type AiMoveFx } from "@/store/game-store";
+import { isGameState } from "@/lib/game/state-validation";
 
 type OnlineRole = "host" | "guest";
 type OnlineStatus = "idle" | "joining" | "waiting" | "connected" | "failed";
@@ -184,9 +184,12 @@ export function OnlineGameProvider({ children }: { children: ReactNode }) {
       onMessage: (_from, data, channel) => {
         if (channel !== "reliable" || !data || typeof data !== "object") return;
         const packet = data as Partial<GamePacket>;
-        if (packet.type !== "game" || !packet.game || packet.game.mode !== "online") return;
+        if (packet.type !== "game" || !isGameState(packet.game) || packet.game.mode !== "online") return;
         remoteGames.current.add(packet.game);
-        useGameStore.getState().syncOnlineGame(packet.game, packet.move ?? null);
+        useGameStore.getState().syncOnlineGame(
+          packet.game,
+          inferMove(useGameStore.getState().game, packet.game),
+        );
       },
     });
     roomRef.current = room;

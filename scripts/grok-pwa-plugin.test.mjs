@@ -6,9 +6,9 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 import {
   appNameFromHost,
-  createHeadInjector,
+  createHeadInjector as createRealHeadInjector,
   grokXCreatorHeadTags,
-  injectGrokPwaHead,
+  injectGrokPwaHead as injectRealGrokPwaHead,
   isDocumentPath,
   isInstallQuery,
   publicAppHost,
@@ -20,6 +20,22 @@ import {
 import { renderInstallPage } from "./grok-pwa-plugin.mjs";
 
 const TEMPLATE_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+// Generic fixtures must not inherit the installed game's identity or artwork.
+const fixtureRoot = mkdtempSync(join(tmpdir(), "poker-park-head-tests-"));
+const injectGrokPwaHead = (html, ctx = {}) =>
+  injectRealGrokPwaHead(html, { cwd: fixtureRoot, ...ctx });
+const createHeadInjector = (ctx = {}) =>
+  createRealHeadInjector({ cwd: fixtureRoot, ...ctx });
+
+test("preserves the app manifest and touch icon without adding competing ones", () => {
+  const html = '<html><head><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/apple-touch-icon.png?v=1"></head></html>';
+  const out = injectGrokPwaHead(html);
+  assert.equal((out.match(/rel="manifest"/g) ?? []).length, 1);
+  assert.equal((out.match(/rel="apple-touch-icon"/g) ?? []).length, 1);
+  assert.match(out, /grok-app-builder\/extensions\.js/);
+  assert.equal(injectGrokPwaHead(out), out);
+});
 
 test("injects before </head>", () => {
   const out = injectGrokPwaHead("<html><head><title>x</title></head><body></body></html>");
@@ -503,4 +519,3 @@ test("vite plugin bakes og identity as a virtual module", () => {
   assert.match(plugin, /virtual:grok-og-identity/);
   assert.match(plugin, /snapshotOgIdentity/);
 });
-

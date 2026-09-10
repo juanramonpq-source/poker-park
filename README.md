@@ -1,6 +1,6 @@
 # Poker Park
 
-Juego de cartas cooperativo para 2 jugadores (móvil primero). Una baraja francesa de 52 cartas os guía para montar en las atracciones de un parque. **No hay ganador**: al final se evalúa el día según las atracciones completadas.
+Juego de cartas para 1–2 jugadores (móvil primero), en solitario, con compañero automático, en el mismo dispositivo u online. Una baraja francesa de 52 cartas os guía para montar en las atracciones de un parque. **No hay ganador**: al final se evalúa el día según las atracciones completadas.
 
 Creado por **Pentonúi Games**.
 
@@ -16,7 +16,22 @@ npm run test:game
 npm run build        # estático + prerender de /
 ```
 
-Auth y base de datos están **apagados**. Toda la partida vive en `localStorage`.
+Auth está **apagado**. El progreso se guarda en `localStorage`. El modo online necesita el servidor de señalización `/api/rtc` y comparte la partida por WebRTC. Railway ejecuta `npm run build:railway` y `npm run start:railway`; una publicación estática de Netlify no proporciona ese servidor.
+
+Sin `DATABASE_URL`, la señalización usa memoria temporal de una única instancia.
+Con PostgreSQL, las instancias comparten la señalización. No se deben activar
+varias réplicas con el almacenamiento en memoria.
+
+## Verificación antes de distribuir
+
+`npm test`, `npm run test:game`, `npm run typecheck`, `npm run lint` y
+`npm run build:railway`. Ejecutar las pruebas de navegador contra el servidor
+compilado, incluyendo `test:online` y `test:online-entries`.
+
+La preparación para Android e iOS y los límites comprobados están en
+[`docs/AUDITORIA-MOVIL.md`](docs/AUDITORIA-MOVIL.md). Este repositorio aún es una
+aplicación web: no contiene proyectos nativos, firma de tiendas ni arranque
+offline garantizado.
 
 ## Stack
 

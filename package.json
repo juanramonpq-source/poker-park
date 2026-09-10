@@ -26,6 +26,7 @@
     "test:solo-modes": "node scripts/solo-modes-smoke.mjs",
     "test:difficulty-medals": "node scripts/difficulty-medals-smoke.mjs",
     "test:map-outro": "node scripts/map-outro-smoke.mjs",
+    "test:recovery": "node --experimental-strip-types scripts/recovery-smoke.mjs",
     "test:online": "node scripts/online-mode-smoke.mjs",
     "test:online-entries": "node scripts/online-entry-modes-smoke.mjs",
     "test:drag": "node scripts/drag-smoke.mjs",

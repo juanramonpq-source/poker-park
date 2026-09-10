@@ -355,6 +355,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       }));
     },
     start: (mode, challenge = "classic", difficulty = "standard", names) => {
+      window.clearTimeout(advanceTimer);
       window.clearTimeout(aiRevealTimer);
       window.clearTimeout(aiRevealClearTimer);
       audio.unlockAudio();
@@ -428,8 +429,15 @@ export const useGameStore = create<GameStore>((set, get) => {
       });
     },
     resume: () => {
-      const saved = get().game ?? loadGame();
+      let saved = get().game ?? loadGame();
       if (!saved) return;
+      // A reload during the celebration loses its timer. Finish that pending
+      // turn through the existing engine before resuming local play.
+      if (saved.pendingAdvance && saved.mode !== "online" && !saved.ended) {
+        window.clearTimeout(advanceTimer);
+        saved = saved.night?.pendingUnlock ? prepareNightUnlock(saved) : advanceTurn(saved);
+        persist(saved);
+      }
       audio.unlockAudio();
       audio.startChallengeBed(saved.challenge ?? "classic");
       set({
@@ -443,6 +451,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (saved.mode === "ai" && saved.currentPlayer === 1 && !saved.ended) queueAi();
     },
     goTitle: () => {
+      window.clearTimeout(advanceTimer);
       window.clearTimeout(aiTimer);
       window.clearTimeout(aiRevealTimer);
       window.clearTimeout(aiRevealClearTimer);
@@ -462,6 +471,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       });
     },
     quitToTitle: () => {
+      window.clearTimeout(advanceTimer);
       window.clearTimeout(aiTimer);
       window.clearTimeout(aiRevealTimer);
       window.clearTimeout(aiRevealClearTimer);

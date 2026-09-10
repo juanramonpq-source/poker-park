@@ -15,7 +15,7 @@ export const Route = createRootRoute({
       { name: "apple-mobile-web-app-title", content: "Poker Park" },
       {
         name: "description",
-        content: "Montad en las atracciones de un parque guiados por la baraja francesa. Un juego cooperativo para dos.",
+        content: "Vive un día en un parque de atracciones, guiado por una baraja francesa. Para 1–2 jugadores, en solitario, en el mismo dispositivo u online.",
       },
     ],
     links: [
@@ -24,8 +24,6 @@ export const Route = createRootRoute({
       { rel: "icon", type: "image/png", sizes: "512x512", href: "/icon-512.png?v=poker-park-v1" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "stylesheet", href: appCss },
-      { rel: "manifest", href: "/__grok/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/__grok/icon-180.png?v=poker-park" },
       { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png?v=poker-park-v1" },
       {
         rel: "stylesheet",

@@ -1,4 +1,5 @@
 import { shuffle } from "./deck.ts";
+import { isGameState } from "./state-validation.ts";
 import type { Card, GameChallenge, GameDifficulty, GameState } from "./types.ts";
 
 const SAVE_KEY = "poker-park.save.v7";
@@ -27,7 +28,15 @@ export function loadSettings(): Settings {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (!raw) return { ...defaultSettings };
     const parsed = JSON.parse(raw) as Partial<Settings>;
-    return { ...defaultSettings, ...parsed, version: 1 };
+    return {
+      ...defaultSettings,
+      muted: typeof parsed?.muted === "boolean" ? parsed.muted : defaultSettings.muted,
+      nightTheme: typeof parsed?.nightTheme === "boolean" ? parsed.nightTheme : defaultSettings.nightTheme,
+      showcaseTheme: ALL_CHALLENGES.includes(parsed?.showcaseTheme as GameChallenge)
+        ? parsed.showcaseTheme! : defaultSettings.showcaseTheme,
+      cardBack: ["classic", "mechanical", "festival", "storm", "impossible", "dual"].includes(parsed?.cardBack ?? "")
+        ? parsed.cardBack! : defaultSettings.cardBack,
+    };
   } catch {
     return { ...defaultSettings };
   }
@@ -46,7 +55,7 @@ export function loadGame(): GameState | null {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as GameState;
-    if (parsed.version !== SAVE_VERSION) return null;
+    if (!isGameState(parsed) || parsed.version !== SAVE_VERSION) return null;
     if (parsed.ended) return null;
     if (parsed.challenge === "night" && parsed.night && Array.isArray(parsed.night.aceRack)) {
       const cardsInPlay: Card[] = [

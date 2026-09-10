@@ -34,17 +34,27 @@ try {
 
   const closingMap = page.locator(".park-map-intro.is-closing");
   await closingMap.waitFor();
-  await page.waitForTimeout(2_350);
+  // Freeze the visual frame so screenshot timing cannot capture the next screen.
+  await closingMap.evaluate((element) => {
+    for (const animation of element.getAnimations({ subtree: true })) {
+      animation.pause();
+      animation.currentTime = 2350;
+    }
+  });
   const closingFrame = await closingMap.evaluate((element) => ({
     opacity: Number.parseFloat(getComputedStyle(element).opacity),
     coversCenter: Boolean(document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.closest(".park-map-intro.is-closing")),
+    frameOpacity: Number.parseFloat(getComputedStyle(element.querySelector(".park-map-intro-sheet"), "::after").opacity),
   }));
-  if (closingFrame.opacity < 0.95 || !closingFrame.coversCenter) {
+  if (closingFrame.opacity < 0.95 || !closingFrame.coversCenter || closingFrame.frameOpacity > 0.01) {
     throw new Error(`el cierre deja ver el tablero: ${JSON.stringify(closingFrame)}`);
   }
 
   mkdirSync("screenshots", { recursive: true });
   await page.screenshot({ path: "screenshots/map-outro-last-frame-mobile.png" });
+  await closingMap.evaluate((element) => {
+    for (const animation of element.getAnimations({ subtree: true })) animation.play();
+  });
   await page.locator(".end-splash").waitFor();
   const boardVisibleAfterClose = await page.locator(".playing-table").isVisible().catch(() => false);
   if (boardVisibleAfterClose) throw new Error("el tablero reaparece después de plegar el plano");

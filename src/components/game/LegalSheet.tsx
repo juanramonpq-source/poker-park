@@ -21,11 +21,11 @@ export function LegalSheet({ open, onClose }: { open: boolean; onClose: () => vo
         <div className="legal-sections">
           <section>
             <ShieldCheck aria-hidden />
-            <div><h3>Juego privado por diseño</h3><p>No crea cuentas, no incluye publicidad ni seguimiento propio y no solicita información personal.</p></div>
+            <div><h3>Sin cuentas ni publicidad</h3><p>No necesitas dar tu nombre real. En online usas un apodo y compartes la partida con la persona que entra en tu sala.</p></div>
           </section>
           <section>
             <HardDrive aria-hidden />
-            <div><h3>Progreso en tu dispositivo</h3><p>Las partidas, preferencias y recompensas se guardan únicamente en el almacenamiento local del navegador. Puedes eliminarlas desde el menú de desarrollador o borrando los datos del sitio.</p></div>
+            <div><h3>Progreso en tu dispositivo</h3><p>Las copias de partidas, preferencias y recompensas se guardan en el navegador. En online también se comparte el estado con el otro jugador. Puedes borrar los datos del sitio para eliminar el progreso local.</p></div>
           </section>
           <section>
             <Sparkles aria-hidden />
@@ -36,6 +36,8 @@ export function LegalSheet({ open, onClose }: { open: boolean; onClose: () => vo
             <div><h3>Pentonúi Games</h3><p>© 2026 Pentonúi Games. Todos los derechos reservados. El alojamiento puede conservar registros técnicos básicos por seguridad y funcionamiento.</p></div>
           </section>
         </div>
+
+        <p className="mt-4 text-sm">En online, juega con personas de confianza: la conexión directa puede revelar tu dirección IP al otro jugador. <a className="underline" href="/privacidad.html" target="_blank" rel="noopener noreferrer">Leer la política completa</a>.</p>
 
         <Button size="lg" className="mt-4 w-full" onClick={onClose}>Entendido</Button>
       </section>

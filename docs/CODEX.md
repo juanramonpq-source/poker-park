@@ -29,7 +29,8 @@ en atracciones completas) son opcionales.
 
 Sigue docs/CODEX.md y no cambies las reglas de atracciones sin que te lo
 pidan. Stack objetivo: Vite + React + TypeScript + Tailwind + Zustand.
-Sin backend. Persistencia en localStorage.
+Persistencia en localStorage. El modo online usa el servidor de señalización
+/api/rtc y conexión WebRTC entre jugadores.
 ```
 
 ---
@@ -48,6 +49,11 @@ atracciones se completaron y se nombra el día.
 ---
 
 ## 2. Stack recomendado al portar
+
+**Estado actual:** el despliegue online funciona con TanStack Start/Nitro en
+Railway. La tabla siguiente describe una posible migración futura, no una
+instrucción para quitar hoy el servidor. El cliente nativo necesitará conservar
+acceso a la señalización; una copia estática por sí sola pierde el online.
 
 Lleva solo el juego, no el andamiaje del sandbox original.
 
@@ -408,7 +414,9 @@ npm create vite@latest poker-park -- --template react-ts
 6. Netlify: build `vite build`, publish `dist`, `_redirects`:
    `/*    /index.html   200`.
 
-No hace falta servidor. Todo corre en el cliente.
+Ese esquema solo cubre el juego local. El modo online añadido posteriormente
+requiere conservar el servidor `/api/rtc` y revisar su dirección al empaquetar
+el cliente para Android e iOS.
 
 ---
 

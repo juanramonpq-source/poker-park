@@ -10,7 +10,6 @@ import {
   remainingCards,
 } from "./engine.ts";
 import type { AttractionId, Card, ExchangeTarget, GameState } from "./types.ts";
-import { ATTRACTION_IDS } from "./types.ts";
 
 export type AiMove =
   | { type: "place"; cardId: string; attractionId: AttractionId; index: number }
