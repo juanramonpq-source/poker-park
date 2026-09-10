@@ -186,4 +186,4 @@ pareja, cada integrante mantiene su mano independiente.
 - **Parque Espejo:** dependencias de las siete atracciones en orden inverso; 5 cambios en dificultad Clásico.
 - Todos los retos se pueden jugar en solitario, en pareja o con el compañero automático.
 - **Día de Tormenta:** un sector cierra temporalmente y el siguiente se anuncia; 5 cambios en Clásico y bloqueo tras dos turnos solitarios o cuatro pases en pareja.
-- **Poker Park 00:13:** combina Espejo, Tormenta y Festival; 6 cambios en Clásico y el mismo margen meteorológico antes del bloqueo.
+- **Poker Park 00:13:** reto final con Espejo, Tormenta y Festival activos a la vez. Para completar las 7 atracciones hay que respetar las dependencias invertidas, planificar los cierres anunciados por el pronóstico y alternar destinos para mantener el combo de luces. Las 00:13 indican la apertura, no una cuenta atrás. Concede 6 cambios en Clásico o 7 en Fácil y conserva el margen de dos rondas completas antes de declarar un bloqueo meteorológico.

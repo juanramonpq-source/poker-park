@@ -41,6 +41,12 @@ const STORM_BRIEFING = [
   "Si el temporal te deja sin jugada, el parque espera dos turnos en solitario o cuatro pases en pareja antes de declarar el bloqueo.",
 ];
 
+const IMPOSSIBLE_BRIEFING = [
+  "Espejo invierte las dependencias de las siete atracciones: cada recorrido debe construirse desde el otro lado.",
+  "Tormenta cierra temporalmente una atracción en cada turno. El pronóstico revela la siguiente y las cartas ya colocadas permanecen a salvo.",
+  "Festival enciende la cadena de luces al alternar atracciones. Repetir destino reinicia el combo a x1, pero no cambia qué cartas son válidas.",
+];
+
 const MASTER_MODES: {
   id: MasterMode;
   title: string;
@@ -89,8 +95,8 @@ const MASTER_MODES: {
     id: "impossible",
     title: "Poker Park 00:13",
     chapter: "Reto final",
-    kicker: "El parque imposible",
-    rule: "Espejo, tormenta y combos de luz en una única jornada final. No tiene cronómetro: solo acaba al cerrar el parque, agotar las cartas o confirmar el bloqueo.",
+    kicker: "Los tres secretos despiertan",
+    rule: "El reto final activa Espejo, Tormenta y Festival a la vez: construye las 7 atracciones al revés, esquiva los cierres y mantén viva la cadena de luces.",
     reward: "Final verdadero, Reverso DUAL y Galería Maestro",
     changes: 6,
     icon: Crown,
@@ -165,13 +171,12 @@ export function MasterPassOverlay({
               </section>
             ) : null}
             {selectedMode.id === "impossible" ? (
-              <section className="festival-briefing impossible-ending-briefing" aria-label="Cuándo termina Poker Park 00:13">
-                <p><strong>Importante: 00:13 no tiene reloj.</strong> La tormenta solo bloquea una atracción durante un turno; no acaba la partida.</p>
+              <section className="festival-briefing impossible-ending-briefing" aria-label="Cómo jugar a Poker Park 00:13">
+                <p><strong>Objetivo del modo</strong> Completar las 7 atracciones con los tres retos del Pase Maestro actuando simultáneamente.</p>
                 <ol>
-                  <li><span>1</span>Se termina al pulsar <strong>Cerrar</strong>.</li>
-                  <li><span>2</span>Se termina si ya no queda ninguna carta en el mazo ni en las manos.</li>
-                  <li><span>3</span>Con tormenta el bloqueo espera dos rondas: dos turnos sin jugada en solitario o cuatro pases en pareja.</li>
+                  {IMPOSSIBLE_BRIEFING.map((rule, index) => <li key={rule}><span>{index + 1}</span>{rule}</li>)}
                 </ol>
+                <p className="festival-briefing-example"><strong>Las 00:13 marcan la apertura, no una cuenta atrás.</strong> Dispones de 6 cambios en Clásico o 7 en Fácil; si el clima bloquea el parque, se esperan dos rondas completas antes de cerrar.</p>
               </section>
             ) : null}
             {selectedMode.id === "mirror" ? (
