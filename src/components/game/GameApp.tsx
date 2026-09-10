@@ -28,7 +28,7 @@ function PlayingTable() {
       <div className="relative min-h-0 flex-1 overflow-hidden">
         {mapIntroOpen ? <div className="h-full bg-bg" aria-hidden="true" /> : <Park game={game} />}
       </div>
-      <div className={mapIntroOpen ? "hand-arrival is-waiting" : "hand-arrival is-ready"} inert={mapIntroOpen || undefined}><Hand key={mapIntroOpen ? "waiting" : "dealt"} /></div>
+      <Hand />
       <OnlineStatusPill />
       <NightUnlockSheet />
       <BlockedSheet />

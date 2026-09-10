@@ -1264,28 +1264,28 @@
 .map-intro-crease.is-right { left: calc(66.666% - 0.55rem); transform: scaleX(-1); }
 
 .park-map-intro.is-closing {
-  animation: park-map-outro-dismiss 2.55s var(--ease-smooth) both;
+  animation: park-map-outro-dismiss 5.1s var(--ease-smooth) both;
 }
 
 .park-map-intro.is-closing .map-intro-v2.park-map-intro-sheet {
-  animation: map-v2-sheet-close 2.55s var(--ease-smooth) both;
+  animation: map-v2-sheet-close 5.1s var(--ease-smooth) both;
 }
 
 .park-map-intro.is-closing .map-intro-fold-left {
-  animation: map-v2-fold-left-close 1.7s 0.42s cubic-bezier(0.64, 0, 0.78, 0) both;
+  animation: map-v2-fold-left-close 3.4s 0.84s cubic-bezier(0.64, 0, 0.78, 0) both;
 }
 
 .park-map-intro.is-closing .map-intro-fold-center {
-  animation: map-v2-fold-center-close 2.05s 0.28s cubic-bezier(0.64, 0, 0.78, 0) both;
+  animation: map-v2-fold-center-close 4.1s 0.56s cubic-bezier(0.64, 0, 0.78, 0) both;
 }
 
 .park-map-intro.is-closing .map-intro-fold-right {
-  animation: map-v2-fold-right-close 1.7s 0.42s cubic-bezier(0.64, 0, 0.78, 0) both;
+  animation: map-v2-fold-right-close 3.4s 0.84s cubic-bezier(0.64, 0, 0.78, 0) both;
 }
 
 .park-map-intro.is-closing .map-intro-heading,
 .park-map-intro.is-closing .map-intro-entrance {
-  animation: map-v2-copy-close 0.38s ease-in both;
+  animation: map-v2-copy-close 0.76s ease-in both;
 }
 
 .map-intro-closing-copy {
@@ -1300,7 +1300,7 @@
   text-shadow: 0 2px 12px #000;
   transform: translateX(-50%);
   white-space: nowrap;
-  animation: map-v2-closing-label 2.1s ease both;
+  animation: map-v2-closing-label 4.2s ease both;
 }
 
 @keyframes map-v2-sheet-open {
@@ -3109,8 +3109,7 @@
 [data-master-mood="storm"] .master-detail-entrance::before { background: repeating-linear-gradient(115deg, transparent 0 18px, rgb(130 213 242 / .13) 19px 20px); animation: rain-light 700ms both; }
 [data-master-mood="impossible"] .master-detail-entrance::before { background: radial-gradient(ellipse at top, rgb(255 208 91 / .32), rgb(156 180 233 / .15) 45%, transparent 80%); animation: mood-light 900ms both; }
 [data-master-mood="impossible"] .master-mode-impossible.is-selected .master-mode-icon { animation: seal-arrive 600ms both; }
-.park-map-intro:not(.is-closing) { --entry-duration: 1600ms; animation-duration: var(--entry-duration); }
-.park-map-intro:not(.is-closing)[data-entrance-pace="repeat"] { --entry-duration: 550ms; }
+.park-map-intro:not(.is-closing) { --entry-duration: 3200ms; animation-duration: var(--entry-duration); }
 .park-map-intro:not(.is-closing) .map-intro-v2.park-map-intro-sheet { animation-duration: var(--entry-duration); }
 .park-map-intro:not(.is-closing) .map-intro-v2 .park-map-intro-fold { animation-duration: calc(var(--entry-duration) * .65); animation-delay: 0ms; }
 .park-entry-gates { position: absolute; inset: 0; pointer-events: none; z-index: 8; perspective: 1000px; }
@@ -3123,9 +3122,6 @@
 .park-entry-ticket > span { color: #ae4834; letter-spacing: .6em; }
 [data-map-challenge="night"] .park-entry-ticket { background: #142f43; color: #ffe4a0; border-color: #bfa167; }
 .park-entry-lantern { position: absolute; inset: -30%; pointer-events: none; z-index: 5; background: radial-gradient(ellipse at 50% 30%, rgb(255 229 148 / .22), transparent 48%); animation: lantern-sweep var(--entry-duration) both; }
-.hand-arrival.is-waiting { visibility: hidden; }
-.hand-arrival.is-ready { animation: hand-arrive 350ms ease-out both; }
-.hand-arrival.is-ready .hand-card { animation-duration: 350ms; }
 @keyframes welcome-pan { from { transform: scale(1.055); opacity: .3; } to { transform: scale(1); opacity: 1; } }
 @keyframes sunrise-pass { 0% { opacity: .8; } 100% { opacity: 0; } }
 @keyframes welcome-sign { from { opacity: 0; transform: translateY(-12px) scale(.94); } to { opacity: 1; transform: none; } }
@@ -3143,10 +3139,9 @@
 @keyframes gate-open-right { 0%, 15% { opacity: 1; transform: rotateY(0); } 100% { opacity: 0; transform: rotateY(100deg); } }
 @keyframes ticket-validate { 0% { opacity: 0; transform: translate(-50%, 12px) rotate(-8deg); } 20%, 50% { opacity: 1; transform: translate(-50%, 0) rotate(-2deg); } 100% { opacity: 0; transform: translate(-50%, -35px) scale(1.12); } }
 @keyframes lantern-sweep { from { transform: translateX(-20%) rotate(-12deg); } to { transform: translateX(15%) rotate(8deg); } }
-@keyframes hand-arrive { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) {
   .title-flying-cards, .title-sunrise, .park-entry-gates, .park-entry-ticket, .park-entry-lantern, .master-detail-entrance::before { display: none; }
-  .title-screen *, .master-pass-card *, .night-first-reveal, .night-first-reveal *, .hand-arrival { animation-delay: 0ms !important; transition-delay: 0ms !important; }
+  .title-screen *, .master-pass-card *, .night-first-reveal, .night-first-reveal * { animation-delay: 0ms !important; transition-delay: 0ms !important; }
 }
 .challenge-festival {
   --color-bg: #160f2e;
