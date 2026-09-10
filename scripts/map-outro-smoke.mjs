@@ -27,6 +27,17 @@ try {
   await page.getByRole("button", { name: /Montar solo/ }).click();
   await page.getByRole("button", { name: "Empezar montando solo" }).click();
   const openMapNow = page.getByRole("button", { name: "Abrir el plano ahora" });
+  const openingMap = page.locator(".park-map-intro:not(.is-closing)");
+  await openingMap.waitFor();
+  const openingFrame = await openingMap.evaluate((element) => {
+    const frame = getComputedStyle(element.querySelector(".park-map-intro-sheet"), "::after");
+    return { display: frame.display, opacity: Number.parseFloat(frame.opacity) };
+  });
+  if (openingFrame.display !== "none" && openingFrame.opacity > 0.01) {
+    throw new Error(`la apertura conserva el marco rectangular: ${JSON.stringify(openingFrame)}`);
+  }
+  mkdirSync("screenshots", { recursive: true });
+  await page.screenshot({ path: "screenshots/map-intro-without-frame-mobile.png" });
   if (await openMapNow.isVisible().catch(() => false)) await openMapNow.evaluate((element) => element.click());
   await page.getByText("6 cartas · toca o arrastra").waitFor();
   await page.getByRole("button", { name: "Cerrar el parque y ver el recuento" }).click();
@@ -41,12 +52,16 @@ try {
       animation.currentTime = 2350;
     }
   });
-  const closingFrame = await closingMap.evaluate((element) => ({
-    opacity: Number.parseFloat(getComputedStyle(element).opacity),
-    coversCenter: Boolean(document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.closest(".park-map-intro.is-closing")),
-    frameOpacity: Number.parseFloat(getComputedStyle(element.querySelector(".park-map-intro-sheet"), "::after").opacity),
-  }));
-  if (closingFrame.opacity < 0.95 || !closingFrame.coversCenter || closingFrame.frameOpacity > 0.01) {
+  const closingFrame = await closingMap.evaluate((element) => {
+    const frame = getComputedStyle(element.querySelector(".park-map-intro-sheet"), "::after");
+    return {
+      opacity: Number.parseFloat(getComputedStyle(element).opacity),
+      coversCenter: Boolean(document.elementFromPoint(innerWidth / 2, innerHeight / 2)?.closest(".park-map-intro.is-closing")),
+      frameDisplay: frame.display,
+      frameOpacity: Number.parseFloat(frame.opacity),
+    };
+  });
+  if (closingFrame.opacity < 0.95 || !closingFrame.coversCenter || (closingFrame.frameDisplay !== "none" && closingFrame.frameOpacity > 0.01)) {
     throw new Error(`el cierre deja ver el tablero: ${JSON.stringify(closingFrame)}`);
   }
 
@@ -62,7 +77,7 @@ try {
   await page.screenshot({ path: "screenshots/map-outro-tally-mobile.png" });
 
   if (errors.length > 0) throw new Error(`errores de navegador: ${errors.join(" | ")}`);
-  console.log(JSON.stringify({ ok: true, closingFrame, boardVisibleAfterClose, errors }, null, 2));
+  console.log(JSON.stringify({ ok: true, openingFrame, closingFrame, boardVisibleAfterClose, errors }, null, 2));
 } finally {
   await browser.close();
 }
