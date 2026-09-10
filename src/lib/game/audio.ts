@@ -621,8 +621,24 @@ export function playSelect() {
   burst(0.09, 0.08, sfxBus, 3200 * j, 1.4, t);
 }
 
+let menuClickActive = false;
+
+/** One UI sound for the whole menu click, including existing nested handlers. */
+export function playMenuClick() {
+  if (menuClickActive) return;
+  try {
+    unlockAudio();
+    playUi();
+  } catch {
+    // Audio support must never prevent navigating the menu.
+  }
+  menuClickActive = true;
+  // Capture and bubble can have a microtask checkpoint between them.
+  window.setTimeout(() => { menuClickActive = false; }, 0);
+}
+
 export function playUi() {
-  if (!sfxBus) return;
+  if (!sfxBus || muted || menuClickActive) return;
   tone(680, 0.07, "sine", 0.07, sfxBus, 0.003);
   burst(0.05, 0.05, sfxBus, 2400, 0.8);
 }

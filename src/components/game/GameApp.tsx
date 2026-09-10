@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { playMenuClick } from "@/lib/game/audio";
 import { BlockedSheet } from "@/components/game/BlockedSheet";
 import { EndScreen } from "@/components/game/EndScreen";
 import { FxLayer } from "@/components/game/FxLayer";
@@ -58,6 +59,12 @@ function GameAppContent() {
 
   return (
     <div
+      onClickCapture={event => {
+        if (screen !== "title" || !(event.target instanceof Element)) return;
+        const button = event.target.closest('button, [role="button"]');
+        if (!button || button.matches(':disabled, [aria-disabled="true"]')) return;
+        playMenuClick();
+      }}
       className={`${(screen !== "title" && game?.challenge === "night") || nightTheme || (screen === "title" && showcaseTheme !== "classic") ? "night-theme" : ""} ${challengeClass(activeChallenge)} card-back-${cardBack} ${machineRoomUnlocked ? "machine-room-unlocked" : ""}`}
     >
       <div id="park-stage">
