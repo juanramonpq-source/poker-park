@@ -23,9 +23,11 @@ try {
     localStorage.removeItem("poker-park.save.v7");
   });
   await page.goto(url, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Jugar en solitario" }).click();
+  await page.getByRole("button", { name: "Modo solitario", exact: true }).click();
+  await page.getByRole("button", { name: /Montar solo/ }).click();
+  await page.getByRole("button", { name: "Empezar montando solo" }).click();
   const openMapNow = page.getByRole("button", { name: "Abrir el plano ahora" });
-  if (await openMapNow.isVisible().catch(() => false)) await openMapNow.click();
+  if (await openMapNow.isVisible().catch(() => false)) await openMapNow.evaluate((element) => element.click());
   await page.getByText("6 cartas · toca o arrastra").waitFor();
   await page.getByRole("button", { name: "Cerrar el parque y ver el recuento" }).click();
   await page.getByRole("button", { name: "Cerrar parque", exact: true }).click();

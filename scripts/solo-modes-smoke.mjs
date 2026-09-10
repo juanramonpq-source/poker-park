@@ -60,10 +60,15 @@ const results = [];
 try {
   await freshTitle();
   await page.getByRole("button", { name: /La Noche de Guardia/ }).click();
-  await page.getByRole("button", { name: "Guardia en solitario" }).waitFor();
+  const nightDialog = page.getByRole("dialog", { name: "La Noche de Guardia" });
+  await nightDialog.getByRole("button", { name: "Modo solitario", exact: true }).waitFor();
   mkdirSync("screenshots", { recursive: true });
   await page.screenshot({ path: "screenshots/solo-night-selector-mobile.png", fullPage: true });
-  await page.getByRole("button", { name: "Guardia en solitario" }).click();
+  await nightDialog.getByRole("button", { name: "Modo solitario", exact: true }).click();
+  await page.getByRole("button", { name: /Montar solo/ }).waitFor();
+  await page.screenshot({ path: "screenshots/solo-choice-mobile.png", fullPage: true });
+  await page.getByRole("button", { name: /Montar solo/ }).click();
+  await page.getByRole("button", { name: "Empezar montando solo" }).click();
   results.push(await readStartedGame("night"));
 
   for (const challenge of ["festival", "mirror", "storm", "impossible"]) {
@@ -76,7 +81,7 @@ try {
       impossible: "Poker Park 00:13",
     }[challenge];
     await page.getByRole("button", { name: new RegExp(label) }).click();
-    const soloButton = page.getByRole("button", { name: "En solitario", exact: true });
+    const soloButton = page.getByRole("dialog", { name: "Pase Maestro" }).getByRole("button", { name: "Modo solitario", exact: true });
     await soloButton.waitFor();
     if (challenge === "festival") {
       await soloButton.scrollIntoViewIfNeeded();
@@ -84,6 +89,8 @@ try {
       await page.screenshot({ path: "screenshots/solo-master-selector-mobile.png", fullPage: true });
     }
     await soloButton.click();
+    await page.getByRole("button", { name: /Montar solo/ }).click();
+    await page.getByRole("button", { name: "Empezar montando solo" }).click();
     results.push(await readStartedGame(challenge));
   }
 

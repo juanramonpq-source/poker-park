@@ -1,5 +1,5 @@
 import { shuffle } from "./deck.ts";
-import type { Card, GameChallenge, GameState } from "./types.ts";
+import type { Card, GameChallenge, GameDifficulty, GameState } from "./types.ts";
 
 const SAVE_KEY = "poker-park.save.v7";
 const SETTINGS_KEY = "poker-park.settings.v1";
@@ -99,7 +99,12 @@ export interface Secrets {
   mirrorPerfect: boolean;
   stormPerfect: boolean;
   impossiblePerfect: boolean;
+  classicMedals: GameChallenge[];
 }
+
+export type SecretFlag = Exclude<keyof Secrets, "classicMedals">;
+
+const ALL_CHALLENGES: GameChallenge[] = ["classic", "night", "festival", "mirror", "storm", "impossible"];
 
 const defaultSecrets: Secrets = {
   perfect: false,
@@ -110,6 +115,7 @@ const defaultSecrets: Secrets = {
   mirrorPerfect: false,
   stormPerfect: false,
   impossiblePerfect: false,
+  classicMedals: [],
 };
 
 export function loadSecrets(): Secrets {
@@ -126,6 +132,9 @@ export function loadSecrets(): Secrets {
       mirrorPerfect: Boolean(parsed.mirrorPerfect),
       stormPerfect: Boolean(parsed.stormPerfect),
       impossiblePerfect: Boolean(parsed.impossiblePerfect),
+      classicMedals: Array.isArray(parsed.classicMedals)
+        ? ALL_CHALLENGES.filter((challenge) => parsed.classicMedals?.includes(challenge))
+        : [],
     };
   } catch {
     return { ...defaultSecrets };
@@ -140,8 +149,29 @@ export function saveSecrets(secrets: Secrets) {
   }
 }
 
-export function unlockSecret(key: keyof Secrets) {
+export function unlockSecret(key: SecretFlag) {
   const next = { ...loadSecrets(), [key]: true };
+  saveSecrets(next);
+  return next;
+}
+
+export function recordPerfectCompletion(challenge: GameChallenge, difficulty: GameDifficulty) {
+  const key: SecretFlag = challenge === "night"
+    ? "nightPerfect"
+    : challenge === "festival"
+      ? "festivalPerfect"
+      : challenge === "mirror"
+        ? "mirrorPerfect"
+        : challenge === "storm"
+          ? "stormPerfect"
+          : challenge === "impossible"
+            ? "impossiblePerfect"
+            : "perfect";
+  const current = loadSecrets();
+  const classicMedals = difficulty === "standard" && !current.classicMedals.includes(challenge)
+    ? [...current.classicMedals, challenge]
+    : current.classicMedals;
+  const next = { ...current, [key]: true, classicMedals };
   saveSecrets(next);
   return next;
 }
@@ -151,9 +181,17 @@ export function masterTrialsComplete(secrets: Secrets) {
 }
 
 export function unlockAllSecrets() {
-  const next: Secrets = Object.fromEntries(
-    Object.keys(defaultSecrets).map((key) => [key, true]),
-  ) as unknown as Secrets;
+  const next: Secrets = {
+    perfect: true,
+    lifetime: true,
+    nightPerfect: true,
+    pentonuiSignal: true,
+    festivalPerfect: true,
+    mirrorPerfect: true,
+    stormPerfect: true,
+    impossiblePerfect: true,
+    classicMedals: [...ALL_CHALLENGES],
+  };
   saveSecrets(next);
   return next;
 }

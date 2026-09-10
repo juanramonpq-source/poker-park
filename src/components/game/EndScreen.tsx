@@ -11,7 +11,7 @@ import {
 } from "@/lib/game/engine";
 import { ATTRACTION_DEFS } from "@/lib/game/attractions";
 import { playLifetimeUnlock, playParty, playRollCrash, playRollFill, playRollTick } from "@/lib/game/audio";
-import { loadSecrets, masterTrialsComplete, unlockSecret, type Secrets } from "@/lib/game/persist";
+import { loadSecrets, masterTrialsComplete, recordPerfectCompletion, unlockSecret } from "@/lib/game/persist";
 import { CHALLENGE_NAMES } from "@/lib/game/challenges";
 import type { GameChallenge, GameState } from "@/lib/game/types";
 import { Button } from "@/components/ui/button";
@@ -37,15 +37,6 @@ const MASTER_REWARDS: Partial<Record<GameChallenge, { title: string; body: strin
   storm: { title: "Nube Dorada", body: "Ni una tormenta pudo cerrar la jornada. El reverso de lluvia queda desbloqueado." },
   impossible: { title: "Guardianes de Poker Park", body: "La hora imposible ha terminado. El final verdadero ha aparecido y el Reverso DUAL queda en la colección." },
 };
-
-function challengeSecretKey(challenge: GameChallenge): keyof Secrets {
-  if (challenge === "night") return "nightPerfect";
-  if (challenge === "festival") return "festivalPerfect";
-  if (challenge === "mirror") return "mirrorPerfect";
-  if (challenge === "storm") return "stormPerfect";
-  if (challenge === "impossible") return "impossiblePerfect";
-  return "perfect";
-}
 
 function masterCopy(challenge: GameChallenge, count: number, solo: boolean) {
   if (count === 7) return MASTER_REWARDS[challenge] ?? ratingCopy("perfect");
@@ -144,6 +135,7 @@ export function EndScreen() {
   const [secrets, setSecrets] = useState(() => loadSecrets());
   const done = game ? completedAttractions(game) : [];
   const challenge = game?.challenge ?? "classic";
+  const difficulty = game?.difficulty ?? "standard";
   const isSolo = game?.mode === "solo";
   const isNight = game?.challenge === "night";
   const isMasterMode = challenge === "festival" || challenge === "mirror" || challenge === "storm" || challenge === "impossible";
@@ -180,7 +172,7 @@ export function EndScreen() {
         playRollCrash(done.length);
         setResolved(true);
         if (perfect) {
-          const nextSecrets = unlockSecret(challengeSecretKey(challenge));
+          const nextSecrets = recordPerfectCompletion(challenge, difficulty);
           setSecrets(nextSecrets);
           if (isNight) setNightReward(true);
           playParty();
@@ -191,7 +183,7 @@ export function EndScreen() {
     };
     timers.push(window.setTimeout(tick, done.length === 0 ? 640 : 680));
     return () => timers.forEach((id) => window.clearTimeout(id));
-  }, [step, done.length, perfect, isNight, challenge, pulse]);
+  }, [step, done.length, perfect, isNight, challenge, difficulty, pulse]);
 
   if (!game) return null;
   const ending = endingCopy(game);
@@ -279,7 +271,7 @@ export function EndScreen() {
         </div>
       ) : null}
       <div className="relative mx-auto max-w-md px-5 pt-[max(2.5rem,env(safe-area-inset-top))]">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted">{isNight ? "Informe de mantenimiento" : isMasterMode ? CHALLENGE_NAMES[challenge] : game.difficulty === "easy" ? "Recuento · Modo Fácil" : "Recuento del día"}</p>
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted">{isNight ? "Informe de mantenimiento" : isMasterMode ? CHALLENGE_NAMES[challenge] : "Recuento del día"} · {difficulty === "easy" ? "Fácil" : "Clásico"}</p>
         <button type="button" onClick={onTapScale} className="mt-3 w-full text-left">
           <p key={pop} className="count-pop font-display text-7xl font-medium leading-none tracking-tight text-accent">{shown}<span className="ml-1 text-2xl text-muted">/ 7</span></p>
           <p className="mt-2 font-display text-xl text-fg">{currentTitle}</p>

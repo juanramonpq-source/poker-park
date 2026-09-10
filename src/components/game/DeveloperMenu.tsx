@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
-import type { Secrets } from "@/lib/game/persist";
+import type { SecretFlag, Secrets } from "@/lib/game/persist";
 import type { GameChallenge } from "@/lib/game/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,10 @@ const EMPTY_SECRETS: Secrets = {
   mirrorPerfect: false,
   stormPerfect: false,
   impossiblePerfect: false,
+  classicMedals: [],
 };
+
+const ALL_CLASSIC_MEDALS: GameChallenge[] = ["classic", "night", "festival", "mirror", "storm", "impossible"];
 
 const PROGRESS_PRESETS: {
   id: string;
@@ -54,10 +57,10 @@ const PROGRESS_PRESETS: {
   { id: "mirror-perfect", title: "Parque Espejo superado", kicker: "Paso 4", result: "Añade el segundo sello del Pase Maestro.", icon: FlipHorizontal2, secrets: { ...EMPTY_SECRETS, perfect: true, nightPerfect: true, festivalPerfect: true, mirrorPerfect: true } },
   { id: "storm-perfect", title: "Tormenta superada", kicker: "Paso 5", result: "Completa los tres sellos y abre Poker Park 00:13.", icon: CloudLightning, secrets: { ...EMPTY_SECRETS, perfect: true, nightPerfect: true, festivalPerfect: true, mirrorPerfect: true, stormPerfect: true } },
   { id: "true-ending", title: "Final verdadero completado", kicker: "Paso 6", result: "Desbloquea Galería Maestro, fondos y Reverso DUAL.", icon: Crown, secrets: { ...EMPTY_SECRETS, perfect: true, nightPerfect: true, festivalPerfect: true, mirrorPerfect: true, stormPerfect: true, impossiblePerfect: true } },
-  { id: "everything", title: "Colección completa", kicker: "Paso 7", result: "Activa también Pase de por vida y Flor Mecánica.", icon: Sparkles, secrets: Object.fromEntries(Object.keys(EMPTY_SECRETS).map((key) => [key, true])) as unknown as Secrets },
+  { id: "everything", title: "Colección completa", kicker: "Paso 7", result: "Activa también las seis medallas clásicas, Pase de por vida y Flor Mecánica.", icon: Sparkles, secrets: { ...EMPTY_SECRETS, perfect: true, lifetime: true, nightPerfect: true, pentonuiSignal: true, festivalPerfect: true, mirrorPerfect: true, stormPerfect: true, impossiblePerfect: true, classicMedals: ALL_CLASSIC_MEDALS } },
 ];
 
-const SECRET_SWITCHES: { key: keyof Secrets; title: string; note: string; icon: LucideIcon }[] = [
+const SECRET_SWITCHES: { key: SecretFlag; title: string; note: string; icon: LucideIcon }[] = [
   { key: "perfect", title: "Parque diurno perfecto", note: "Abre La Noche de Guardia.", icon: FerrisWheel },
   { key: "nightPerfect", title: "Noche de Guardia perfecta", note: "Abre el Pase Maestro y el tema nocturno.", icon: MoonStar },
   { key: "festivalPerfect", title: "Festival de las Luces", note: "Marca el reto y su recompensa como superados.", icon: Lightbulb },
@@ -78,7 +81,9 @@ const QUICK_MODES: { id: GameChallenge; name: string; icon: LucideIcon }[] = [
 ];
 
 function sameSecrets(a: Secrets, b: Secrets) {
-  return (Object.keys(EMPTY_SECRETS) as (keyof Secrets)[]).every((key) => a[key] === b[key]);
+  const flagsMatch = (Object.keys(EMPTY_SECRETS).filter((key) => key !== "classicMedals") as SecretFlag[])
+    .every((key) => a[key] === b[key]);
+  return flagsMatch && a.classicMedals.length === b.classicMedals.length && a.classicMedals.every((mode) => b.classicMedals.includes(mode));
 }
 
 export function DeveloperMenu({
@@ -109,7 +114,7 @@ export function DeveloperMenu({
   const [tab, setTab] = useState<DeveloperTab>("progress");
   const [confirmReset, setConfirmReset] = useState(false);
   const activePreset = useMemo(() => PROGRESS_PRESETS.find((preset) => sameSecrets(preset.secrets, secrets)), [secrets]);
-  const unlockCount = Object.values(secrets).filter(Boolean).length;
+  const unlockCount = SECRET_SWITCHES.filter(({ key }) => secrets[key]).length;
 
   return (
     <div className="developer-layer" role="dialog" aria-modal="true" aria-labelledby="developer-title">

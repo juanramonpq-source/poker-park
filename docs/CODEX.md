@@ -118,10 +118,13 @@ GameState.version = 7
   ended, endReason: empty | block | closed | null
 ```
 
-`MAX_EXCHANGES = 3` conserva el valor clásico. `exchangeLimit(state)` devuelve:
-Clásico 3, Fácil/Festival 4, Noche/Espejo/Tormenta 5 y 00:13 6. Mano
-inicial: 3 cartas por jugador; en solitario, una mano de 5. Entrada del parque:
-2 cartas boca arriba.
+`MAX_EXCHANGES = 3` conserva el valor del parque de día en dificultad Clásico.
+Cada reto tiene su propio límite clásico: Día 3, Festival 4,
+Noche/Espejo/Tormenta 5 y 00:13 6. La dificultad Fácil añade exactamente un
+cambio a ese límite. Ambas dificultades desbloquean el progreso y las
+recompensas; completar las 7 atracciones en Clásico añade además la medalla
+propia del reto a la portada. Mano inicial: 3 cartas por jugador; en solitario,
+una mano de 5. Entrada del parque: 2 cartas boca arriba.
 
 ---
 

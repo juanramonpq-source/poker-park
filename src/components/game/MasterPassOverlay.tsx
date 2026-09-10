@@ -8,16 +8,17 @@ import {
   LockKeyhole,
   Sparkles,
   User,
-  UserRound,
   Users,
   X,
 } from "lucide-react";
 import { useState } from "react";
 import type { Secrets } from "@/lib/game/persist";
 import { masterTrialsComplete } from "@/lib/game/persist";
-import type { GameChallenge, Mode } from "@/lib/game/types";
+import type { GameChallenge, GameDifficulty, Mode } from "@/lib/game/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SoloModeChooser } from "@/components/game/SoloModeChooser";
+import { DifficultySelector } from "@/components/game/DifficultySelector";
 
 type MasterMode = Exclude<GameChallenge, "classic" | "night">;
 
@@ -92,10 +93,12 @@ export function MasterPassOverlay({
 }: {
   secrets: Secrets;
   onClose: () => void;
-  onStart: (mode: Mode, challenge: GameChallenge) => void;
+  onStart: (mode: Mode, challenge: GameChallenge, difficulty: GameDifficulty) => void;
 }) {
   const impossibleOpen = masterTrialsComplete(secrets) || secrets.impossiblePerfect;
   const [selected, setSelected] = useState<MasterMode | null>(null);
+  const [soloChoiceOpen, setSoloChoiceOpen] = useState(false);
+  const [difficulty, setDifficulty] = useState<GameDifficulty>("standard");
   const selectedMode = MASTER_MODES.find((mode) => mode.id === selected);
 
   return (
@@ -122,10 +125,10 @@ export function MasterPassOverlay({
                 key={mode.id}
                 disabled={locked}
                 className={cn("master-mode-option", `master-mode-${mode.id}`, selected === mode.id && "is-selected", complete && "is-complete")}
-                onClick={() => setSelected(mode.id)}
+                onClick={() => { setSelected(mode.id); setDifficulty("standard"); }}
               >
                 <span className="master-mode-icon">{locked ? <LockKeyhole /> : <Icon />}</span>
-                <span className="master-mode-copy"><small>{locked ? "Entrada oculta" : `${mode.kicker} · ${mode.changes} cambios`}</small><strong>{mode.title}</strong><p>{locked ? "Completa los otros tres modos." : mode.rule}</p></span>
+                <span className="master-mode-copy"><small>{locked ? "Entrada oculta" : `${mode.kicker} · ${mode.changes} cambios en Clásico`}</small><strong>{mode.title}</strong><p>{locked ? "Completa los otros tres modos." : mode.rule}</p></span>
                 <span className="master-mode-state">{complete ? <><Check /> Superado</> : locked ? "???" : "Jugar"}</span>
               </button>
             );
@@ -161,14 +164,22 @@ export function MasterPassOverlay({
                 </ol>
               </section>
             ) : null}
+            <DifficultySelector challenge={selectedMode.id} value={difficulty} onChange={setDifficulty} dark />
             <div className="master-start-actions">
-              <Button size="lg" onClick={() => onStart("hotseat", selectedMode.id)}><Users /> En pareja</Button>
-              <Button size="lg" variant="secondary" onClick={() => onStart("ai", selectedMode.id)}><UserRound /> Con compañero</Button>
-              <Button size="lg" variant="secondary" className="master-start-solo" onClick={() => onStart("solo", selectedMode.id)}><User /> En solitario</Button>
+              <Button size="lg" onClick={() => onStart("hotseat", selectedMode.id, difficulty)}><Users /> En pareja</Button>
+              <Button size="lg" variant="secondary" onClick={() => setSoloChoiceOpen(true)}><User /> Modo solitario</Button>
             </div>
           </div>
         ) : <p className="master-select-hint">Toca una entrada para consultar su recompensa y empezar.</p>}
       </section>
+      {soloChoiceOpen && selectedMode ? (
+        <SoloModeChooser
+          onClose={() => setSoloChoiceOpen(false)}
+          challenge={selectedMode.id}
+          initialDifficulty={difficulty}
+          onChoose={(mode, chosenDifficulty) => onStart(mode, selectedMode.id, chosenDifficulty)}
+        />
+      ) : null}
     </div>
   );
 }

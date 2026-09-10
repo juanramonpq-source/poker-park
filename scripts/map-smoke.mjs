@@ -33,8 +33,10 @@ async function checkMap(viewport, name, skip, testClose = false) {
   await page.goto(baseURL, { waitUntil: "networkidle" });
   const startClickAt = Date.now();
   await page
-    .getByRole("button", { name: "Jugar con compañero", exact: true })
+    .getByRole("button", { name: "Modo solitario", exact: true })
     .evaluate((element) => element.click());
+  await page.getByRole("button", { name: /Con compañero virtual/ }).evaluate((element) => element.click());
+  await page.getByRole("button", { name: "Empezar con compañero virtual" }).evaluate((element) => element.click());
   const startClickDurationMs = Date.now() - startClickAt;
   const intro = page.locator("[data-map-intro='visible']");
   try {
@@ -140,8 +142,11 @@ async function checkNightMap() {
   await page.goto(baseURL, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: /La Noche de Guardia/ }).click();
   await page
-    .getByRole("button", { name: "Guardia con compañero" })
+    .getByRole("dialog", { name: "La Noche de Guardia" })
+    .getByRole("button", { name: "Modo solitario", exact: true })
     .evaluate((element) => element.click());
+  await page.getByRole("button", { name: /Con compañero virtual/ }).evaluate((element) => element.click());
+  await page.getByRole("button", { name: "Empezar con compañero virtual" }).evaluate((element) => element.click());
   const intro = page.locator("[data-map-intro='visible'][data-map-challenge='night']");
   await intro.waitFor({ state: "visible", timeout: 5000 });
   await page.waitForTimeout(520);
@@ -182,8 +187,10 @@ try {
   });
   await reducedPage.goto(baseURL, { waitUntil: "networkidle" });
   await reducedPage
-    .getByRole("button", { name: "Jugar con compañero", exact: true })
+    .getByRole("button", { name: "Modo solitario", exact: true })
     .evaluate((element) => element.click());
+  await reducedPage.getByRole("button", { name: /Con compañero virtual/ }).evaluate((element) => element.click());
+  await reducedPage.getByRole("button", { name: "Empezar con compañero virtual" }).evaluate((element) => element.click());
   await reducedPage.locator("[data-map-intro='visible']").waitFor({ state: "detached", timeout: 1200 });
   results.push({ reducedMotion: true, mapVisible: await reducedPage.locator("[data-map-surface='classic']").isVisible() });
   await reducedPage.close();

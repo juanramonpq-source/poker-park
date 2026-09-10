@@ -42,12 +42,12 @@ const SECTIONS: Array<{
   },
   {
     title: "La Noche de Guardia",
-    body: "Se desbloquea al completar las siete atracciones. El personal de mantenimiento empieza con dos sectores encendidos y dispone de 5 cambios. Los cuatro ases siguen dentro del mazo y salen con normalidad. Si el as que necesitas continúa oculto, el Llavero de Ases permite recuperarlo entregando una figura, siempre que pueda colocarse inmediatamente. Cada atracción revisada permite dar corriente a otra. Si no puedes colocar ninguna carta, puedes probar un intercambio o registrar una incidencia para abrir un sector con el generador. Puede jugarse en pareja, con compañero o en solitario.",
+    body: "Se desbloquea al completar las siete atracciones. El personal de mantenimiento empieza con dos sectores encendidos y dispone de 5 cambios en Clásico o 6 en Fácil. Los cuatro ases siguen dentro del mazo y salen con normalidad. Si el as que necesitas continúa oculto, el Llavero de Ases permite recuperarlo entregando una figura, siempre que pueda colocarse inmediatamente. Cada atracción revisada permite dar corriente a otra. Si no puedes colocar ninguna carta, puedes probar un intercambio o registrar una incidencia para abrir un sector con el generador. Puede jugarse en pareja, con compañero o en solitario.",
     visible: (secrets) => secrets.perfect,
   },
   {
     title: "Poker Park 00:13",
-    body: "La jornada final junta espejo, tormenta y luces y concede 6 cambios. No hay límite de tiempo: la tormenta solo cierra una atracción durante ese turno. Para que una mala rotación no cierre una partida recuperable, el bloqueo espera dos rondas completas: dos turnos sin jugada en solitario o cuatro pases en los modos de dos jugadores.",
+    body: "La jornada final junta espejo, tormenta y luces y concede 6 cambios en Clásico o 7 en Fácil. No hay límite de tiempo: la tormenta solo cierra una atracción durante ese turno. Para que una mala rotación no cierre una partida recuperable, el bloqueo espera dos rondas completas: dos turnos sin jugada en solitario o cuatro pases en los modos de dos jugadores.",
     visible: (secrets) => masterTrialsComplete(secrets) || secrets.impossiblePerfect,
   },
 ];

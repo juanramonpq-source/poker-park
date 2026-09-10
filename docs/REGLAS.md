@@ -35,9 +35,15 @@ hasta que el progreso guardado haya desbloqueado el modo correspondiente.
    - Colocar una carta en una atracción, **o**
    - Un intercambio estructural dentro del límite compartido del modo.
 
-Hay 3 cambios en Clásico, 4 en Fácil y Festival, 5 en Noche, Espejo y
-Tormenta, y 6 en Poker Park 00:13. La primera carta de la Entrada se cierra
-cuando solo queda un cambio; la segunda, al agotar el límite.
+En dificultad **Clásico**, cada reto tiene su propio límite: 3 cambios en el
+parque de día, 4 en Festival, 5 en Noche, Espejo y Tormenta, y 6 en Poker Park
+00:13. La dificultad **Fácil** añade un cambio al límite del reto elegido. La
+primera carta de la Entrada se cierra cuando solo queda un cambio; la segunda,
+al agotar el límite.
+
+Completar las 7 atracciones desbloquea el mismo progreso y las mismas
+recompensas tanto en Fácil como en Clásico. Si se consigue en Clásico, se añade
+además a la portada una medalla propia de ese modo.
 
 La interfaz permite hacer la colocación tocando carta y destino o arrastrando
 la carta hasta un hueco válido. Son dos controles para la misma acción y no
@@ -146,8 +152,8 @@ pareja, cada integrante mantiene su mano independiente.
 
 ## Modos del Pase Maestro
 
-- **Festival de las Luces:** reglas clásicas y combo por alternar atracciones; 4 cambios.
-- **Parque Espejo:** dependencias de las siete atracciones en orden inverso; 5 cambios.
+- **Festival de las Luces:** reglas clásicas y combo por alternar atracciones; 4 cambios en dificultad Clásico.
+- **Parque Espejo:** dependencias de las siete atracciones en orden inverso; 5 cambios en dificultad Clásico.
 - Todos los retos se pueden jugar en solitario, en pareja o con el compañero automático.
-- **Día de Tormenta:** un sector cierra temporalmente y el siguiente se anuncia; 5 cambios y bloqueo tras dos turnos solitarios o cuatro pases en pareja.
-- **Poker Park 00:13:** combina Espejo, Tormenta y Festival; 6 cambios y el mismo margen meteorológico antes del bloqueo.
+- **Día de Tormenta:** un sector cierra temporalmente y el siguiente se anuncia; 5 cambios en Clásico y bloqueo tras dos turnos solitarios o cuatro pases en pareja.
+- **Poker Park 00:13:** combina Espejo, Tormenta y Festival; 6 cambios en Clásico y el mismo margen meteorológico antes del bloqueo.

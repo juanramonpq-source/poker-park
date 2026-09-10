@@ -174,7 +174,8 @@ export function isAttractionStormClosed(state: GameState, id: AttractionId): boo
 }
 
 export function exchangeLimit(state: Pick<GameState, "challenge" | "difficulty">): number {
-  switch (state.challenge ?? "classic") {
+  const classicLimit = (() => {
+    switch (state.challenge ?? "classic") {
     case "night":
       return 5;
     case "festival":
@@ -186,8 +187,10 @@ export function exchangeLimit(state: Pick<GameState, "challenge" | "difficulty">
       return 6;
     case "classic":
     default:
-      return state.difficulty === "easy" ? 4 : 3;
-  }
+      return 3;
+    }
+  })();
+  return classicLimit + (state.difficulty === "easy" ? 1 : 0);
 }
 
 export function passLimit(state: Pick<GameState, "challenge" | "mode">): number {

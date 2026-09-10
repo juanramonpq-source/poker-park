@@ -1,4 +1,4 @@
-import { BookOpen, Crown, FerrisWheel, MoonStar, Palette, ShieldCheck, Sparkles, User, Users, UserRound, Wrench, X } from "lucide-react";
+import { BookOpen, Crown, FerrisWheel, MoonStar, Palette, ShieldCheck, Sparkles, User, Users, Wrench, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { playLifetimeUnlock, playUi, startChallengeBed, startTitleBed, unlockAudio } from "@/lib/game/audio";
 import {
@@ -18,6 +18,10 @@ import { MasterGallery } from "@/components/game/MasterGallery";
 import { CHALLENGE_BACKGROUNDS } from "@/lib/game/challenges";
 import { MenuMascots } from "@/components/game/ParkMascots";
 import { LegalSheet } from "@/components/game/LegalSheet";
+import { SoloModeChooser } from "@/components/game/SoloModeChooser";
+import { PairStartChooser } from "@/components/game/PairStartChooser";
+import { DifficultySelector } from "@/components/game/DifficultySelector";
+import { ClassicMedals } from "@/components/game/ClassicMedals";
 
 function Motes() {
   return (
@@ -53,6 +57,7 @@ export function TitleScreen() {
     mirrorPerfect: false,
     stormPerfect: false,
     impossiblePerfect: false,
+    classicMedals: [],
   });
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialChoiceOpen, setTutorialChoiceOpen] = useState(false);
@@ -66,7 +71,9 @@ export function TitleScreen() {
   const [pendingMode, setPendingMode] = useState<Mode | null>(null);
   const [pendingChallenge, setPendingChallenge] = useState<GameChallenge>("classic");
   const [pendingDifficulty, setPendingDifficulty] = useState<GameDifficulty>("standard");
-  const [dayDifficulty, setDayDifficulty] = useState<GameDifficulty>("standard");
+  const [soloChoice, setSoloChoice] = useState<{ challenge: GameChallenge; initialDifficulty: GameDifficulty } | null>(null);
+  const [pairSetupOpen, setPairSetupOpen] = useState(false);
+  const [nightDifficulty, setNightDifficulty] = useState<GameDifficulty>("standard");
 
   useEffect(() => {
     setSecrets(loadSecrets());
@@ -90,7 +97,7 @@ export function TitleScreen() {
   const requestStart = (
     mode: Mode,
     challenge: GameChallenge = "classic",
-    difficulty: GameDifficulty = challenge === "classic" ? dayDifficulty : "standard",
+    difficulty: GameDifficulty = "standard",
   ) => {
     wake();
     if (tutorialSeen()) {
@@ -168,9 +175,24 @@ export function TitleScreen() {
     window.location.reload();
   };
 
-  const startMasterMode = (mode: Mode, challenge: GameChallenge) => {
+  const startMasterMode = (mode: Mode, challenge: GameChallenge, difficulty: GameDifficulty) => {
     setMasterPassOpen(false);
     requestStart(mode, challenge);
+  };
+
+  const openSoloChoice = (
+    challenge: GameChallenge = "classic",
+    initialDifficulty: GameDifficulty = "standard",
+  ) => {
+    wake();
+    setSoloChoice({ challenge, initialDifficulty });
+  };
+
+  const chooseSoloMode = (mode: Extract<Mode, "solo" | "ai">, difficulty: GameDifficulty) => {
+    if (!soloChoice) return;
+    const { challenge } = soloChoice;
+    setSoloChoice(null);
+    requestStart(mode, challenge, difficulty);
   };
 
   const cover = showcaseTheme === "classic"
@@ -195,13 +217,16 @@ export function TitleScreen() {
       </picture>
       <div className="title-vignette" />
       <Motes />
-      <button type="button" className="title-studio-badge" aria-label="Poker Park por Pentonúi Games" onClick={tapStudio}>
-        <img src="/brand/pentonui-games-icon.png" alt="" />
-        <span>
-          <small>Una producción de</small>
-          <strong>Pentonúi Games</strong>
-        </span>
-      </button>
+      <div className="title-studio-strip">
+        <button type="button" className="title-studio-badge" aria-label="Poker Park por Pentonúi Games" onClick={tapStudio}>
+          <img src="/brand/pentonui-games-icon.png" alt="" />
+          <span>
+            <small>Una producción de</small>
+            <strong>Pentonúi Games</strong>
+          </span>
+        </button>
+        <ClassicMedals earned={secrets.classicMedals} />
+      </div>
 
       <div className="title-shell">
         <div className="title-hero">
@@ -238,35 +263,13 @@ export function TitleScreen() {
         <div className="title-panel stagger-in">
           <p className="title-menu-kicker">Elige cómo recorrer el parque</p>
           <div className="title-actions">
-            <div className="day-difficulty-selector" role="group" aria-label="Dificultad de la jornada de día">
-              <button
-                type="button"
-                className={dayDifficulty === "standard" ? "is-selected" : undefined}
-                aria-pressed={dayDifficulty === "standard"}
-                onClick={() => setDayDifficulty("standard")}
-              >
-                <span>Clásico</span><small>3 cambios</small>
-              </button>
-              <button
-                type="button"
-                className={dayDifficulty === "easy" ? "is-selected" : undefined}
-                aria-pressed={dayDifficulty === "easy"}
-                onClick={() => setDayDifficulty("easy")}
-              >
-                <span>Fácil</span><small>4 cambios</small>
-              </button>
-            </div>
-            <Button size="lg" className="w-full" onClick={() => requestStart("hotseat")}>
+            <Button size="lg" className="w-full" onClick={() => setPairSetupOpen(true)}>
               <Users className="size-4" strokeWidth={1.75} />
               Jugar en pareja
             </Button>
-            <Button size="lg" variant="secondary" className="w-full" onClick={() => requestStart("ai")}>
-              <UserRound className="size-4" strokeWidth={1.75} />
-              Jugar con compañero
-            </Button>
-            <Button size="lg" variant="secondary" className="w-full" onClick={() => requestStart("solo")}>
+            <Button size="lg" variant="secondary" className="w-full" onClick={() => openSoloChoice()}>
               <User className="size-4" strokeWidth={1.75} />
-              Jugar en solitario
+              Modo solitario
             </Button>
             {secrets.perfect ? (
               <button type="button" className="night-challenge-button" onClick={() => setNightModeOpen(true)}>
@@ -322,13 +325,13 @@ export function TitleScreen() {
             <div className="night-mode-rules">
               <span><Wrench aria-hidden /> 2 atracciones abiertas</span>
               <span><Sparkles aria-hidden /> Nuevos sectores al completar</span>
-              <span><Crown aria-hidden /> 5 cambios compartidos</span>
+              <span><Crown aria-hidden /> {exchangeLimit({ challenge: "night", difficulty: nightDifficulty })} cambios compartidos</span>
               <span><img src="/images/ace-keyring.webp" alt="" /> Ases en el mazo · llavero de emergencia</span>
             </div>
             <div className="tutorial-choice-actions">
-              <Button size="lg" className="w-full" onClick={() => { setNightModeOpen(false); requestStart("hotseat", "night"); }}><Users /> Guardia en pareja</Button>
-              <Button size="lg" variant="secondary" className="w-full" onClick={() => { setNightModeOpen(false); requestStart("ai", "night"); }}><UserRound /> Guardia con compañero</Button>
-              <Button size="lg" variant="secondary" className="w-full" onClick={() => { setNightModeOpen(false); requestStart("solo", "night"); }}><User /> Guardia en solitario</Button>
+              <DifficultySelector challenge="night" value={nightDifficulty} onChange={setNightDifficulty} dark />
+              <Button size="lg" className="w-full" onClick={() => { setNightModeOpen(false); requestStart("hotseat", "night", nightDifficulty); }}><Users /> Guardia en pareja</Button>
+              <Button size="lg" variant="secondary" className="w-full" onClick={() => { setNightModeOpen(false); openSoloChoice("night", nightDifficulty); }}><User /> Modo solitario</Button>
             </div>
           </section>
         </div>
@@ -336,6 +339,8 @@ export function TitleScreen() {
       {masterPassOpen ? (
         <MasterPassOverlay secrets={secrets} onClose={() => setMasterPassOpen(false)} onStart={startMasterMode} />
       ) : null}
+      {pairSetupOpen ? <PairStartChooser onClose={() => setPairSetupOpen(false)} onStart={(difficulty) => { setPairSetupOpen(false); requestStart("hotseat", "classic", difficulty); }} /> : null}
+      {soloChoice ? <SoloModeChooser challenge={soloChoice.challenge} initialDifficulty={soloChoice.initialDifficulty} onClose={() => setSoloChoice(null)} onChoose={chooseSoloMode} /> : null}
       {developerOpen ? (
         <DeveloperMenu
           secrets={secrets}

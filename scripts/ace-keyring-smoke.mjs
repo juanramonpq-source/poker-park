@@ -36,7 +36,9 @@ try {
   await page.evaluate(() => localStorage.removeItem("poker-park.save.v7"));
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.getByRole("button", { name: /La Noche de Guardia/ }).click();
-  await page.getByRole("button", { name: "Guardia en solitario" }).click();
+  await page.getByRole("dialog", { name: "La Noche de Guardia" }).getByRole("button", { name: "Modo solitario", exact: true }).click();
+  await page.getByRole("button", { name: /Montar solo/ }).click();
+  await page.getByRole("button", { name: "Empezar montando solo" }).click();
   await page.getByRole("button", { name: "Abrir el plano ahora" }).click();
   await page.getByText("6 cartas · toca o arrastra").waitFor();
 

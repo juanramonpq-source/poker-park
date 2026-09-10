@@ -22,7 +22,9 @@ await page.addInitScript(() => localStorage.setItem("poker-park-tutorial-seen", 
 try {
   await mkdir("screenshots", { recursive: true });
   await page.goto(baseURL, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Jugar con compañero" }).click();
+  await page.getByRole("button", { name: "Modo solitario", exact: true }).click();
+  await page.getByRole("button", { name: /Con compañero virtual/ }).click();
+  await page.getByRole("button", { name: "Empezar con compañero virtual" }).click();
   await page.locator("[data-map-intro='visible']").waitFor({ state: "detached", timeout: 4000 });
   await page.waitForSelector(".hand-cards button");
 

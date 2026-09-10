@@ -30,7 +30,9 @@ describe("equilibrio de intercambios", () => {
     for (const [challenge, limit] of expected) {
       assert.equal(exchangeLimit({ challenge, difficulty: "standard" }), limit);
     }
-    assert.equal(exchangeLimit({ challenge: "classic", difficulty: "easy" }), 4);
+    for (const [challenge, limit] of expected) {
+      assert.equal(exchangeLimit({ challenge, difficulty: "easy" }), limit + 1);
+    }
   });
 
   it("cierra las entradas en relación con el límite real del modo", () => {
