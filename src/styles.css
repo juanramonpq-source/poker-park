@@ -3063,6 +3063,91 @@
 .machine-room-unlocked .card-back::after { content: ""; position: absolute; inset: 18%; border-radius: 50%; background: rgb(5 18 38 / 0.72) url('/brand/pentonui-games-icon.png') center / 80% no-repeat; box-shadow: 0 0 0 2px rgb(101 200 255 / .55), 0 0 16px rgb(101 200 255 / .6); pointer-events: none; }
 
 /* Pase Maestro: cuatro interfaces completas, legibles y claramente distintas. */
+/* A visit from sunrise to the secret night shift. Decorative layers never catch input. */
+.title-sunrise, .title-nightfall, .title-flying-cards { position: absolute; inset: 0; pointer-events: none; }
+.title-sunrise { background: radial-gradient(ellipse at 75% 12%, rgb(255 221 147 / .48), transparent 65%); opacity: 0; }
+.title-nightfall { background: linear-gradient(170deg, rgb(12 26 61 / .85), rgb(15 28 39 / .8)); opacity: 0; transition: opacity 650ms ease; }
+.title-screen[data-menu-night] .title-nightfall { opacity: 1; }
+.title-screen[data-entrance-pace="first"] .title-cover-picture { animation: welcome-pan 1400ms var(--ease-smooth) both; }
+.title-screen[data-entrance-pace="first"] .title-sunrise { animation: sunrise-pass 1500ms ease-out both; }
+.title-screen[data-entrance-pace="first"] .title-name { animation: welcome-sign 850ms 100ms var(--ease-smooth) both; }
+.title-screen[data-entrance-pace="first"] .title-description { animation: menu-arrive 600ms 300ms both; }
+.title-screen[data-entrance-pace="first"] .title-panel { animation: menu-arrive 650ms 450ms both; }
+.title-screen[data-entrance-pace="repeat"] .title-shell { animation: menu-arrive 240ms ease-out both; }
+.title-flying-cards { overflow: hidden; }
+.title-flying-cards span { position: absolute; top: 16%; left: 50%; display: grid; place-items: center; width: 2.5rem; height: 3.5rem; border-radius: .3rem; background: var(--color-surface); color: var(--color-suit-ink); font-size: 1.5rem; box-shadow: var(--shadow-soft); opacity: 0; }
+.title-flying-cards span:nth-child(even) { color: var(--color-suit-red); }
+.title-screen[data-entrance-pace="first"] .title-flying-cards span { animation: welcome-card 1050ms ease-out both; }
+.title-flying-cards span:nth-child(2) { animation-delay: 80ms !important; top: 22%; }
+.title-flying-cards span:nth-child(3) { animation-delay: 160ms !important; top: 12%; }
+.title-flying-cards span:nth-child(4) { animation-delay: 240ms !important; top: 25%; }
+.night-menu-entrance .night-mode-card { animation: lantern-arrive 650ms var(--ease-smooth) both; }
+.night-menu-entrance .night-mode-icon, .night-menu-entrance .night-mode-rules img { transform-origin: top center; animation: key-swing 850ms ease-out both; }
+.night-menu-entrance .night-mode-rules > span { animation: menu-arrive 450ms both; }
+.night-menu-entrance .night-mode-rules > span:nth-child(2) { animation-delay: 100ms; }
+.night-menu-entrance .night-mode-rules > span:nth-child(3) { animation-delay: 180ms; }
+.night-menu-entrance .night-mode-rules > span:nth-child(4) { animation-delay: 260ms; }
+.night-menu-entrance .night-mode-rules > span:nth-child(5) { animation-delay: 340ms; }
+.night-first-reveal { margin: auto; width: min(92vw, 30rem); max-height: 90dvh; overflow: auto; border: 1px solid #c3a767; border-radius: 1.5rem; padding: 1.5rem; color: #fff5db; background: #102332; text-align: center; animation: lantern-arrive 900ms both; }
+.night-first-reveal::backdrop { background: rgb(6 19 35 / .9); animation: nightfall-reveal 1200ms ease both; }
+.night-first-reveal section { display: grid; justify-items: center; gap: 1rem; }
+.night-first-reveal svg { width: 3rem; height: 3rem; color: #ffd05b; transform-origin: top center; animation: key-swing 1200ms both; }
+.night-first-reveal small { color: #ffd05b; text-transform: uppercase; letter-spacing: .08em; font-size: .65rem; }
+.night-first-reveal h2 { font-family: var(--font-display); font-size: 1.6rem; line-height: 1.2; }
+.night-first-reveal p { color: #c7d6e1; font-size: .85rem; line-height: 1.5; }
+.master-pass-card[data-entrance-pace="first"] { animation: secret-map-arrive 650ms var(--ease-smooth) both; }
+.master-pass-card[data-entrance-pace="repeat"] { animation: menu-arrive 220ms both; }
+.master-pass-card[data-entrance-pace="first"] .master-pass-seal { animation: seal-arrive 650ms both; }
+.master-pass-card[data-entrance-pace="first"] .master-mode-option { animation: menu-arrive 450ms both; }
+.master-pass-card[data-entrance-pace="first"] .master-mode-option:nth-child(2) { animation-delay: 70ms; }
+.master-pass-card[data-entrance-pace="first"] .master-mode-option:nth-child(3) { animation-delay: 140ms; }
+.master-pass-card[data-entrance-pace="first"] .master-mode-option:nth-child(4) { animation-delay: 210ms; }
+.master-detail-entrance { position: relative; isolation: isolate; animation: menu-arrive 260ms ease-out both; }
+.master-detail-entrance::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1; opacity: 0; }
+[data-master-mood="festival"] .master-detail-entrance::before { background: radial-gradient(ellipse at top, rgb(255 208 91 / .3), transparent 70%); animation: mood-light 750ms both; }
+[data-master-mood="mirror"] .master-detail-entrance::before { background: linear-gradient(110deg, transparent 20%, rgb(196 214 255 / .25), transparent 80%); animation: mirror-light 650ms both; }
+[data-master-mood="storm"] .master-detail-entrance::before { background: repeating-linear-gradient(115deg, transparent 0 18px, rgb(130 213 242 / .13) 19px 20px); animation: rain-light 700ms both; }
+[data-master-mood="impossible"] .master-detail-entrance::before { background: radial-gradient(ellipse at top, rgb(255 208 91 / .32), rgb(156 180 233 / .15) 45%, transparent 80%); animation: mood-light 900ms both; }
+[data-master-mood="impossible"] .master-mode-impossible.is-selected .master-mode-icon { animation: seal-arrive 600ms both; }
+.park-map-intro:not(.is-closing) { --entry-duration: 1600ms; animation-duration: var(--entry-duration); }
+.park-map-intro:not(.is-closing)[data-entrance-pace="repeat"] { --entry-duration: 550ms; }
+.park-map-intro:not(.is-closing) .map-intro-v2.park-map-intro-sheet { animation-duration: var(--entry-duration); }
+.park-map-intro:not(.is-closing) .map-intro-v2 .park-map-intro-fold { animation-duration: calc(var(--entry-duration) * .65); animation-delay: 0ms; }
+.park-entry-gates { position: absolute; inset: 0; pointer-events: none; z-index: 8; perspective: 1000px; }
+.park-entry-gates span { position: absolute; top: 0; bottom: 0; width: 50%; background: repeating-linear-gradient(90deg, transparent 0 16%, rgb(231 191 111 / .65) 16% 17%, transparent 17% 20%), linear-gradient(0deg, #193a3e, #193a3e99); border-block: 1rem solid #b79250; transform-origin: left; animation: gate-open calc(var(--entry-duration) * .65) ease-in both; }
+.park-entry-gates span:last-child { right: 0; transform-origin: right; animation-name: gate-open-right; }
+.park-entry-ticket { position: absolute; z-index: 9; left: 50%; top: 38%; display: grid; justify-items: center; gap: .35rem; width: min(80vw, 19rem); border: 1px dashed #ad823b; border-radius: .7rem; background: #fff3d6; color: #392919; padding: 1rem; text-align: center; pointer-events: none; animation: ticket-validate calc(var(--entry-duration) * .7) both; }
+.park-entry-ticket svg { width: 1.8rem; height: 1.8rem; }
+.park-entry-ticket strong { font-family: var(--font-display); font-size: 1.1rem; }
+.park-entry-ticket small { font-size: .6rem; text-transform: uppercase; letter-spacing: .13em; }
+.park-entry-ticket > span { color: #ae4834; letter-spacing: .6em; }
+[data-map-challenge="night"] .park-entry-ticket { background: #142f43; color: #ffe4a0; border-color: #bfa167; }
+.park-entry-lantern { position: absolute; inset: -30%; pointer-events: none; z-index: 5; background: radial-gradient(ellipse at 50% 30%, rgb(255 229 148 / .22), transparent 48%); animation: lantern-sweep var(--entry-duration) both; }
+.hand-arrival.is-waiting { visibility: hidden; }
+.hand-arrival.is-ready { animation: hand-arrive 350ms ease-out both; }
+.hand-arrival.is-ready .hand-card { animation-duration: 350ms; }
+@keyframes welcome-pan { from { transform: scale(1.055); opacity: .3; } to { transform: scale(1); opacity: 1; } }
+@keyframes sunrise-pass { 0% { opacity: .8; } 100% { opacity: 0; } }
+@keyframes welcome-sign { from { opacity: 0; transform: translateY(-12px) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes menu-arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes welcome-card { 0% { opacity: 0; transform: translate(-65vw, 3rem) rotate(-24deg); } 18%, 68% { opacity: .85; } 100% { opacity: 0; transform: translate(55vw, -2rem) rotate(22deg); } }
+@keyframes lantern-arrive { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes key-swing { 0% { transform: rotate(-18deg); } 35% { transform: rotate(12deg); } 70% { transform: rotate(-5deg); } 100% { transform: rotate(0); } }
+@keyframes nightfall-reveal { from { background: rgb(178 112 52 / .4); } to { background: rgb(6 19 35 / .9); } }
+@keyframes secret-map-arrive { from { opacity: 0; transform: perspective(1000px) rotateX(9deg) scale(.95); } to { opacity: 1; transform: none; } }
+@keyframes seal-arrive { from { transform: scale(.7) rotate(-25deg); opacity: .2; } to { transform: none; opacity: 1; } }
+@keyframes mood-light { 0%, 100% { opacity: 0; } 40% { opacity: 1; } }
+@keyframes mirror-light { from { opacity: .8; transform: scaleX(.15); } to { opacity: 0; transform: scaleX(1); } }
+@keyframes rain-light { from { opacity: .8; transform: translateY(-8px); } to { opacity: 0; transform: translateY(8px); } }
+@keyframes gate-open { 0%, 15% { opacity: 1; transform: rotateY(0); } 100% { opacity: 0; transform: rotateY(-100deg); } }
+@keyframes gate-open-right { 0%, 15% { opacity: 1; transform: rotateY(0); } 100% { opacity: 0; transform: rotateY(100deg); } }
+@keyframes ticket-validate { 0% { opacity: 0; transform: translate(-50%, 12px) rotate(-8deg); } 20%, 50% { opacity: 1; transform: translate(-50%, 0) rotate(-2deg); } 100% { opacity: 0; transform: translate(-50%, -35px) scale(1.12); } }
+@keyframes lantern-sweep { from { transform: translateX(-20%) rotate(-12deg); } to { transform: translateX(15%) rotate(8deg); } }
+@keyframes hand-arrive { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .title-flying-cards, .title-sunrise, .park-entry-gates, .park-entry-ticket, .park-entry-lantern, .master-detail-entrance::before { display: none; }
+  .title-screen *, .master-pass-card *, .night-first-reveal, .night-first-reveal *, .hand-arrival { animation-delay: 0ms !important; transition-delay: 0ms !important; }
+}
 .challenge-festival {
   --color-bg: #160f2e;
   --color-surface: #281c46;

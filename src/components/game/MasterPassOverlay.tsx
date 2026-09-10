@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { useEntranceMotion } from "@/components/game/useEntranceMotion";
 import type { Secrets } from "@/lib/game/persist";
 import { masterTrialsComplete } from "@/lib/game/persist";
 import type { GameChallenge, GameDifficulty, Mode } from "@/lib/game/types";
@@ -114,6 +115,7 @@ export function MasterPassOverlay({
   onStart: (mode: Mode, challenge: GameChallenge, difficulty: GameDifficulty) => void;
 }) {
   const impossibleOpen = masterTrialsComplete(secrets) || secrets.impossiblePerfect;
+  const entrancePace = useEntranceMotion("master-pass");
   const [selected, setSelected] = useState<MasterMode>("festival");
   const [soloChoiceOpen, setSoloChoiceOpen] = useState(false);
   const [pairChoiceOpen, setPairChoiceOpen] = useState(false);
@@ -123,7 +125,7 @@ export function MasterPassOverlay({
   return (
     <div className="master-pass-layer" role="dialog" aria-modal="true" aria-labelledby="master-pass-title">
       <button type="button" className="master-pass-backdrop" onClick={onClose} aria-label="Cerrar Pase Maestro" />
-      <section className="master-pass-card">
+      <section className="master-pass-card" data-master-mood={selected} data-entrance-pace={entrancePace}>
         <header>
           <span className="master-pass-seal" aria-hidden><FerrisWheel /></span>
           <span>
@@ -154,7 +156,7 @@ export function MasterPassOverlay({
             );
           })}
         </nav>
-        <div className="master-start-panel stagger-in">
+        <div key={selected} className="master-start-panel master-detail-entrance">
           {selectedMode ? (
             <>
             <div className="master-mode-summary">

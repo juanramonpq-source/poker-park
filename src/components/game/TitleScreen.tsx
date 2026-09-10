@@ -24,6 +24,7 @@ import { PairStartChooser } from "@/components/game/PairStartChooser";
 import { DifficultySelector } from "@/components/game/DifficultySelector";
 import { ClassicMedals } from "@/components/game/ClassicMedals";
 import { OnlineLobby } from "@/components/game/OnlineLobby";
+import { useEntranceMotion } from "@/components/game/useEntranceMotion";
 
 function Motes() {
   return (
@@ -38,6 +39,7 @@ function Motes() {
 const TUTORIAL_SEEN_KEY = "poker-park-tutorial-seen";
 
 export function TitleScreen() {
+  const entrancePace = useEntranceMotion("welcome");
   const start = useGameStore((s) => s.start);
   const resume = useGameStore((s) => s.resume);
   const game = useGameStore((s) => s.game);
@@ -221,6 +223,8 @@ export function TitleScreen() {
   return (
     <main
       className="title-screen fixed inset-0 h-dvh overflow-hidden bg-bg text-fg"
+      data-entrance-pace={entrancePace}
+      data-menu-night={nightModeOpen || soloChoice?.challenge === "night" || pairSetup?.challenge === "night" || undefined}
       onPointerDown={wake}
     >
       <picture className="title-cover-picture" aria-hidden="true">
@@ -232,6 +236,9 @@ export function TitleScreen() {
         />
       </picture>
       <div className="title-vignette" />
+      <div className="title-sunrise" aria-hidden />
+      <div className="title-nightfall" aria-hidden />
+      <div className="title-flying-cards" aria-hidden>{["♠", "♥", "♣", "♦"].map((suit) => <span key={suit}>{suit}</span>)}</div>
       <Motes />
       <div className="title-studio-strip">
         <button type="button" className="title-studio-badge" aria-label="Poker Park por Pentonúi Games" onClick={tapStudio}>
@@ -331,13 +338,13 @@ export function TitleScreen() {
         </div>
       </div>
       {nightModeOpen ? (
-        <div className="tutorial-overlay" role="dialog" aria-modal="true" aria-labelledby="night-mode-title">
+        <div className="tutorial-overlay night-menu-entrance" role="dialog" aria-modal="true" aria-labelledby="night-mode-title">
           <button className="tutorial-backdrop" type="button" aria-label="Cerrar reto nocturno" onClick={() => setNightModeOpen(false)} />
           <section className="tutorial-card night-mode-card">
             <div className="night-mode-icon"><MoonStar aria-hidden /></div>
             <p className="tutorial-kicker">Turno especial · 00:07</p>
             <h2 id="night-mode-title">La Noche de Guardia</h2>
-            <p className="tutorial-choice-copy">El parque ha cerrado. El personal de mantenimiento empieza con solo dos sectores encendidos y cada revisión devuelve la corriente a una nueva atracción.</p>
+            <p className="tutorial-choice-copy">El parque ha cerrado. Tu turno acaba de empezar. Solo dos sectores tienen corriente; cada revisión devuelve la luz a una nueva atracción.</p>
             <div className="night-mode-rules">
               <span><Wrench aria-hidden /> 2 atracciones abiertas</span>
               <span><Sparkles aria-hidden /> Nuevos sectores al completar</span>

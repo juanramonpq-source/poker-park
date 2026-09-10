@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from "react";
-import { ArrowLeftRight, Compass, Map as MapIcon, Route } from "lucide-react";
+import { ArrowLeftRight, Compass, KeyRound, Map as MapIcon, Route, Ticket } from "lucide-react";
+import { useEntranceMotion } from "@/components/game/useEntranceMotion";
 import {
   ParkMapArtwork,
   ParkMapArtworkSymbols,
@@ -85,6 +86,7 @@ export function ParkMapIntro({
   const dismissMapIntro = useGameStore((state) => state.dismissMapIntro);
   const finishMapOutro = useGameStore((state) => state.finishMapOutro);
   const challenge = game.challenge ?? "classic";
+  const pace = useEntranceMotion(`map-${direction}-${challenge}`);
   const copy = INTRO_COPY[challenge];
   const soloOpening = game.mode === "solo";
   const finish = direction === "closing" ? finishMapOutro : dismissMapIntro;
@@ -95,9 +97,11 @@ export function ParkMapIntro({
       : "landscape";
 
   useEffect(() => {
-    const fallback = window.setTimeout(finish, 3000);
+    if (pace === "pending") return;
+    const duration = direction === "closing" ? 3000 : pace === "reduced" ? 0 : pace === "repeat" ? 600 : 1650;
+    const fallback = window.setTimeout(finish, duration);
     return () => window.clearTimeout(fallback);
-  }, [finish]);
+  }, [finish, pace, direction]);
 
   return (
     <div
@@ -112,12 +116,23 @@ export function ParkMapIntro({
       data-map-intro={direction === "opening" ? "visible" : undefined}
       data-map-outro={direction === "closing" ? "visible" : undefined}
       data-map-challenge={challenge}
+      data-entrance-pace={pace}
       onAnimationEnd={(event) => {
         if (event.target === event.currentTarget) finish();
       }}
     >
       <ParkMapArtworkSymbols id={symbolId} orientation={orientation} />
       <div className="map-intro-table" aria-hidden />
+      {direction === "opening" ? <>
+        <div className="park-entry-gates" aria-hidden><span /><span /></div>
+        <div className="park-entry-ticket" aria-hidden>
+          {challenge === "night" ? <KeyRound /> : <Ticket />}
+          <small>{challenge === "night" ? "Turno 00:07" : "Entrada validada"}</small>
+          <strong>{challenge === "night" ? "Tu guardia comienza" : "Bienvenido a Poker Park"}</strong>
+          <span>♠ ♥ ♣ ♦</span>
+        </div>
+        {challenge === "night" ? <div className="park-entry-lantern" aria-hidden /> : null}
+      </> : null}
       <section className="park-map-intro-sheet map-intro-v2" aria-hidden>
         <MapPanel side="left" challenge={challenge} symbolId={symbolId} orientation={orientation} />
         <MapPanel side="center" challenge={challenge} symbolId={symbolId} orientation={orientation}>

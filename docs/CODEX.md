@@ -323,6 +323,16 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
 
 ## 8. UI (contrato visual)
 
+- La portada presenta una llegada de luz, rótulo y cartas francesas. Los
+  indicadores `poker-park.motion.*` solo recuerdan las animaciones vistas;
+  no forman parte del progreso ni de la partida. La primera apertura del
+  mapa dura ~1,6 s y las siguientes ~0,55 s, con acceso directo para omitir.
+  En movimiento reducido se abre inmediatamente. La mano se revela después.
+- La selección nocturna oscurece temporalmente la portada sin cambiar el tema
+  guardado. El primer parque clásico perfecto revela una llave en un diálogo
+  que se puede cerrar con su botón o Escape; el desbloqueo usa las reglas
+  existentes. El Pase Maestro despliega sus entradas y distingue los modos
+  mediante breves reflejos decorativos que no bloquean los botones.
 - Al comenzar una partida nueva en cualquier modo se despliega brevemente un
   plano ilustrado de parque de tres pliegues. El mapa continuo contiene
   caminos, jardines, agua y representaciones de las siete atracciones. Es una

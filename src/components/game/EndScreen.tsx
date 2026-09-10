@@ -1,4 +1,4 @@
-import { CloudLightning, Crown, Download, FerrisWheel, FlipHorizontal2, Lightbulb, MoonStar, Radio, ShieldCheck, Sparkles } from "lucide-react";
+import { CloudLightning, Crown, Download, FerrisWheel, FlipHorizontal2, KeyRound, Lightbulb, MoonStar, Radio, ShieldCheck, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   completedAttractions,
@@ -24,6 +24,23 @@ const NIGHT_SCALE = [
   "Sin corriente", "Primera comprobación", "Sector asegurado", "Guardia en marcha",
   "Turno estable", "Parque bajo control", "Apertura casi lista", "Apertura autorizada",
 ];
+
+function NightFirstReveal({ onClose }: { onClose: () => void }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    dialog.current?.showModal();
+    return () => dialog.current?.close();
+  }, []);
+  return <dialog ref={dialog} className="night-first-reveal" aria-labelledby="night-reveal-title" onCancel={onClose} onClose={onClose}>
+    <section>
+      <KeyRound aria-hidden />
+      <small>Un nuevo turno te espera · 00:07</small>
+      <h2 id="night-reveal-title">El parque ha cerrado.<br />Tu turno acaba de empezar.</h2>
+      <p>Has desbloqueado La Noche de Guardia. Solo dos sectores siguen encendidos. El parque cuenta contigo para devolverle la luz.</p>
+      <Button autoFocus onClick={onClose}>Recoger la llave</Button>
+    </section>
+  </dialog>;
+}
 
 const MASTER_SCALES: Partial<Record<GameChallenge, string[]>> = {
   festival: ["Luces apagadas", "Primera bombilla", "Guirnalda encendida", "Plaza brillante", "Noche luminosa", "Festival radiante", "Cielo de color", "Todas las luces"],
@@ -223,6 +240,8 @@ export function EndScreen() {
   const [lifetime, setLifetime] = useState(() => loadSecrets().lifetime);
   const [nightReward, setNightReward] = useState(() => loadSecrets().nightPerfect);
   const [secrets, setSecrets] = useState(() => loadSecrets());
+  const [nightWasLocked] = useState(() => !loadSecrets().perfect);
+  const [nightRevealDismissed, setNightRevealDismissed] = useState(false);
   const done = game ? completedAttractions(game) : [];
   const challenge = game?.challenge ?? "classic";
   const difficulty = game?.difficulty ?? "standard";
@@ -355,6 +374,9 @@ export function EndScreen() {
 
   return (
     <main className="end-tally relative min-h-dvh overflow-y-auto bg-bg pb-10 text-fg">
+      {challenge === "classic" && perfect && resolved && nightWasLocked && !nightRevealDismissed ? (
+        <NightFirstReveal onClose={() => setNightRevealDismissed(true)} />
+      ) : null}
       {perfect && resolved ? <div className="fireworks" aria-hidden /> : null}
       {lifetimeReveal ? (
         <div className="lifetime-unlock-fx" role="status" aria-live="assertive">
