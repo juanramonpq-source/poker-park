@@ -41,7 +41,9 @@ async function playFirstLegal(page) {
 try {
   await host.goto(baseUrl);
   await host.waitForTimeout(500);
+  await host.getByRole("button", { name: /Jugar en pareja/ }).click();
   await host.getByRole("button", { name: /Jugar online/ }).click();
+  await host.getByRole("button", { name: /Preparar sala online/ }).click();
   await host.getByRole("button", { name: /Crear una sala/ }).click();
   await host.getByLabel("Tu nombre").fill("Ana");
   await host.getByRole("button", { name: "Crear sala privada" }).click();

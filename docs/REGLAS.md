@@ -66,6 +66,13 @@ Los jugadores pueden hablar libremente.
   la jornada por bloqueo. En Tormenta y 00:13 se esperan dos turnos bloqueados
   consecutivos para permitir que el siguiente frente abra una jugada.
 
+### En pareja
+
+- Está disponible en los seis retos. Después de elegir el reto y la dificultad,
+  la pareja decide si comparte un dispositivo o juega online en una sala privada.
+- En online cada persona conserva su propia mano y ve en su tablero la animación
+  de la carta que acaba de colocar la otra persona.
+
 ## Figuras
 
 J, Q y K **no cuentan como números ni como palos**.

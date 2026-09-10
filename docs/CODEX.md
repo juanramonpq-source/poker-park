@@ -38,7 +38,9 @@ Sin backend. Persistencia en localStorage.
 
 Una o dos personas construyen un parque con una baraja. Cada atracción es
 un esquema de huecos con palos, ases y formas fijas. Se juega al móvil, a
-turno, en solitario, en el mismo teléfono (hotseat) o contra un compañero automático.
+turno, en solitario, en el mismo teléfono (hotseat), online con sala privada o
+contra un compañero automático. El acceso online vive dentro de «Jugar en
+pareja» en todos los retos, no como opción independiente en la portada.
 
 No hay puntuación competitiva. Al cerrar el día se recuenta cuántas
 atracciones se completaron y se nombra el día.

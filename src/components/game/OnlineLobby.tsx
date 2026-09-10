@@ -11,29 +11,19 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { DifficultySelector } from "@/components/game/DifficultySelector";
 import { CHALLENGE_NAMES } from "@/lib/game/challenges";
 import { normalizeCode, useOnlineGame } from "@/lib/multiplayer/online-game";
 import type { GameChallenge, GameDifficulty } from "@/lib/game/types";
-import { masterTrialsComplete, type Secrets } from "@/lib/game/persist";
 
-const CHALLENGES: GameChallenge[] = [
-  "classic",
-  "night",
-  "festival",
-  "mirror",
-  "storm",
-  "impossible",
-];
-
-function challengeAvailable(challenge: GameChallenge, secrets: Secrets) {
-  if (challenge === "classic") return true;
-  if (challenge === "night") return secrets.perfect;
-  if (challenge === "impossible") return masterTrialsComplete(secrets) || secrets.impossiblePerfect;
-  return secrets.nightPerfect;
-}
-
-export function OnlineLobby({ secrets, onClose }: { secrets: Secrets; onClose: () => void }) {
+export function OnlineLobby({
+  onClose,
+  initialChallenge = "classic",
+  initialDifficulty = "standard",
+}: {
+  onClose: () => void;
+  initialChallenge?: GameChallenge;
+  initialDifficulty?: GameDifficulty;
+}) {
   const online = useOnlineGame();
   const invitedCode = useMemo(() => {
     if (typeof window === "undefined") return "";
@@ -42,8 +32,8 @@ export function OnlineLobby({ secrets, onClose }: { secrets: Secrets; onClose: (
   const [view, setView] = useState<"choose" | "create" | "join">(invitedCode ? "join" : "choose");
   const [name, setName] = useState("");
   const [code, setCode] = useState(invitedCode);
-  const [challenge, setChallenge] = useState<GameChallenge>("classic");
-  const [difficulty, setDifficulty] = useState<GameDifficulty>("standard");
+  const [challenge] = useState<GameChallenge>(initialChallenge);
+  const [difficulty] = useState<GameDifficulty>(initialDifficulty);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -178,30 +168,11 @@ export function OnlineLobby({ secrets, onClose }: { secrets: Secrets; onClose: (
 
                 {connected && online.role === "host" ? (
                   <div className="online-setup">
-                    <label>
-                      <span>Reto</span>
-                      <select
-                        value={challenge}
-                        onChange={(event) => setChallenge(event.target.value as GameChallenge)}
-                      >
-                        {CHALLENGES.map((item) => (
-                          <option
-                            key={item}
-                            value={item}
-                            disabled={!challengeAvailable(item, secrets)}
-                          >
-                            {CHALLENGE_NAMES[item]}
-                            {challengeAvailable(item, secrets) ? "" : " · bloqueado"}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <DifficultySelector
-                      challenge={challenge}
-                      value={difficulty}
-                      onChange={setDifficulty}
-                      dark
-                    />
+                    <div className="online-selected-mode">
+                      <span>Partida preparada</span>
+                      <strong>{CHALLENGE_NAMES[challenge]}</strong>
+                      <small>Dificultad {difficulty === "easy" ? "Fácil" : "Clásico"}</small>
+                    </div>
                     <Button
                       size="lg"
                       className="w-full"

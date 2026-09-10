@@ -18,6 +18,7 @@ import type { GameChallenge, GameDifficulty, Mode } from "@/lib/game/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SoloModeChooser } from "@/components/game/SoloModeChooser";
+import { PairStartChooser } from "@/components/game/PairStartChooser";
 import { DifficultySelector } from "@/components/game/DifficultySelector";
 
 type MasterMode = Exclude<GameChallenge, "classic" | "night">;
@@ -98,6 +99,7 @@ export function MasterPassOverlay({
   const impossibleOpen = masterTrialsComplete(secrets) || secrets.impossiblePerfect;
   const [selected, setSelected] = useState<MasterMode | null>(null);
   const [soloChoiceOpen, setSoloChoiceOpen] = useState(false);
+  const [pairChoiceOpen, setPairChoiceOpen] = useState(false);
   const [difficulty, setDifficulty] = useState<GameDifficulty>("standard");
   const selectedMode = MASTER_MODES.find((mode) => mode.id === selected);
 
@@ -166,7 +168,7 @@ export function MasterPassOverlay({
             ) : null}
             <DifficultySelector challenge={selectedMode.id} value={difficulty} onChange={setDifficulty} dark />
             <div className="master-start-actions">
-              <Button size="lg" onClick={() => onStart("hotseat", selectedMode.id, difficulty)}><Users /> En pareja</Button>
+              <Button size="lg" onClick={() => setPairChoiceOpen(true)}><Users /> En pareja</Button>
               <Button size="lg" variant="secondary" onClick={() => setSoloChoiceOpen(true)}><User /> Modo solitario</Button>
             </div>
           </div>
@@ -178,6 +180,15 @@ export function MasterPassOverlay({
           challenge={selectedMode.id}
           initialDifficulty={difficulty}
           onChoose={(mode, chosenDifficulty) => onStart(mode, selectedMode.id, chosenDifficulty)}
+        />
+      ) : null}
+      {pairChoiceOpen && selectedMode ? (
+        <PairStartChooser
+          onClose={() => setPairChoiceOpen(false)}
+          challenge={selectedMode.id}
+          initialDifficulty={difficulty}
+          onStart={(chosenDifficulty) => onStart("hotseat", selectedMode.id, chosenDifficulty)}
+          onOnline={(chosenDifficulty) => onStart("online", selectedMode.id, chosenDifficulty)}
         />
       ) : null}
     </div>

@@ -1,4 +1,4 @@
-import { BookOpen, Crown, FerrisWheel, Globe2, MoonStar, Palette, ShieldCheck, Sparkles, User, Users, Wrench, X } from "lucide-react";
+import { BookOpen, Crown, FerrisWheel, MoonStar, Palette, ShieldCheck, Sparkles, User, Users, Wrench, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { playLifetimeUnlock, playUi, startChallengeBed, startTitleBed, unlockAudio } from "@/lib/game/audio";
 import {
@@ -73,14 +73,14 @@ export function TitleScreen() {
   const [pendingChallenge, setPendingChallenge] = useState<GameChallenge>("classic");
   const [pendingDifficulty, setPendingDifficulty] = useState<GameDifficulty>("standard");
   const [soloChoice, setSoloChoice] = useState<{ challenge: GameChallenge; initialDifficulty: GameDifficulty } | null>(null);
-  const [pairSetupOpen, setPairSetupOpen] = useState(false);
+  const [pairSetup, setPairSetup] = useState<{ challenge: GameChallenge; initialDifficulty: GameDifficulty } | null>(null);
   const [nightDifficulty, setNightDifficulty] = useState<GameDifficulty>("standard");
-  const [onlineOpen, setOnlineOpen] = useState(false);
+  const [onlineSetup, setOnlineSetup] = useState<{ challenge: GameChallenge; difficulty: GameDifficulty } | null>(null);
 
   useEffect(() => {
     setSecrets(loadSecrets());
     setTutorialComplete(window.localStorage.getItem(TUTORIAL_SEEN_KEY) === "true");
-    if (new URL(window.location.href).searchParams.has("sala")) setOnlineOpen(true);
+    if (new URL(window.location.href).searchParams.has("sala")) setOnlineSetup({ challenge: "classic", difficulty: "standard" });
   }, []);
 
   const wake = () => {
@@ -180,7 +180,19 @@ export function TitleScreen() {
 
   const startMasterMode = (mode: Mode, challenge: GameChallenge, difficulty: GameDifficulty) => {
     setMasterPassOpen(false);
-    requestStart(mode, challenge);
+    if (mode === "online") {
+      setOnlineSetup({ challenge, difficulty });
+      return;
+    }
+    requestStart(mode, challenge, difficulty);
+  };
+
+  const openPairSetup = (
+    challenge: GameChallenge = "classic",
+    initialDifficulty: GameDifficulty = "standard",
+  ) => {
+    wake();
+    setPairSetup({ challenge, initialDifficulty });
   };
 
   const openSoloChoice = (
@@ -266,17 +278,13 @@ export function TitleScreen() {
         <div className="title-panel stagger-in">
           <p className="title-menu-kicker">Elige cómo recorrer el parque</p>
           <div className="title-actions">
-            <Button size="lg" className="w-full" onClick={() => setPairSetupOpen(true)}>
+            <Button size="lg" className="w-full" onClick={() => openPairSetup()}>
               <Users className="size-4" strokeWidth={1.75} />
               Jugar en pareja
             </Button>
             <Button size="lg" variant="secondary" className="w-full" onClick={() => openSoloChoice()}>
               <User className="size-4" strokeWidth={1.75} />
               Modo solitario
-            </Button>
-            <Button size="lg" variant="secondary" className="w-full title-online-button" onClick={() => setOnlineOpen(true)}>
-              <Globe2 className="size-4" strokeWidth={1.75} />
-              Jugar online <small>Beta</small>
             </Button>
             {secrets.perfect ? (
               <button type="button" className="night-challenge-button" onClick={() => setNightModeOpen(true)}>
@@ -337,7 +345,7 @@ export function TitleScreen() {
             </div>
             <div className="tutorial-choice-actions">
               <DifficultySelector challenge="night" value={nightDifficulty} onChange={setNightDifficulty} dark />
-              <Button size="lg" className="w-full" onClick={() => { setNightModeOpen(false); requestStart("hotseat", "night", nightDifficulty); }}><Users /> Guardia en pareja</Button>
+              <Button size="lg" className="w-full" onClick={() => { setNightModeOpen(false); openPairSetup("night", nightDifficulty); }}><Users /> Guardia en pareja</Button>
               <Button size="lg" variant="secondary" className="w-full" onClick={() => { setNightModeOpen(false); openSoloChoice("night", nightDifficulty); }}><User /> Modo solitario</Button>
             </div>
           </section>
@@ -346,7 +354,7 @@ export function TitleScreen() {
       {masterPassOpen ? (
         <MasterPassOverlay secrets={secrets} onClose={() => setMasterPassOpen(false)} onStart={startMasterMode} />
       ) : null}
-      {pairSetupOpen ? <PairStartChooser onClose={() => setPairSetupOpen(false)} onStart={(difficulty) => { setPairSetupOpen(false); requestStart("hotseat", "classic", difficulty); }} /> : null}
+      {pairSetup ? <PairStartChooser challenge={pairSetup.challenge} initialDifficulty={pairSetup.initialDifficulty} onClose={() => setPairSetup(null)} onStart={(difficulty) => { const { challenge } = pairSetup; setPairSetup(null); requestStart("hotseat", challenge, difficulty); }} onOnline={(difficulty) => { const { challenge } = pairSetup; setPairSetup(null); setOnlineSetup({ challenge, difficulty }); }} /> : null}
       {soloChoice ? <SoloModeChooser challenge={soloChoice.challenge} initialDifficulty={soloChoice.initialDifficulty} onClose={() => setSoloChoice(null)} onChoose={chooseSoloMode} /> : null}
       {developerOpen ? (
         <DeveloperMenu
@@ -411,7 +419,7 @@ export function TitleScreen() {
         </div>
       ) : null}
       <LegalSheet open={legalOpen} onClose={() => setLegalOpen(false)} />
-      {onlineOpen ? <OnlineLobby secrets={secrets} onClose={() => setOnlineOpen(false)} /> : null}
+      {onlineSetup ? <OnlineLobby initialChallenge={onlineSetup.challenge} initialDifficulty={onlineSetup.difficulty} onClose={() => setOnlineSetup(null)} /> : null}
       <MenuMascots />
     </main>
   );

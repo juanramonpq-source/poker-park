@@ -27,6 +27,7 @@
     "test:difficulty-medals": "node scripts/difficulty-medals-smoke.mjs",
     "test:map-outro": "node scripts/map-outro-smoke.mjs",
     "test:online": "node scripts/online-mode-smoke.mjs",
+    "test:online-entries": "node scripts/online-entry-modes-smoke.mjs",
     "test:drag": "node scripts/drag-smoke.mjs",
     "test:rules-gating": "node scripts/rules-gating-smoke.mjs",
     "check:auth": "node scripts/check-auth-invariant.mjs",
