@@ -410,7 +410,7 @@ export class P2PRoom {
     // ready. It also works when ICE cannot find a route between their networks.
     if (kind === "relay") {
       const ack = typeof payload === "object" && payload !== null && "ack" in payload && payload.ack === true;
-      if (!ack) await this.sendSignal(from, "relay", { ack: true });
+      if (!ack && !await this.sendSignal(from, "relay", { ack: true })) return;
       if (this.closed) return;
       slot.relayActive = true;
       slot.terminal = false;
@@ -483,19 +483,19 @@ export class P2PRoom {
    * Signals are serialized per remote peer (a candidate must never overtake
    * its SDP into the DB) and retried on failure with short backoff.
    */
-  private sendSignal(to: string, kind: SignalKind, payload: unknown): Promise<void> {
+  private sendSignal(to: string, kind: SignalKind, payload: unknown): Promise<boolean> {
     const prev = this.signalQueues.get(to) ?? Promise.resolve();
     const next = prev.then(() => this.postSignal(to, kind, payload));
     this.signalQueues.set(
       to,
-      next.catch(() => {}),
+      next.then(() => {}, () => {}),
     );
     return next;
   }
 
-  private async postSignal(to: string, kind: SignalKind, payload: unknown): Promise<void> {
+  private async postSignal(to: string, kind: SignalKind, payload: unknown): Promise<boolean> {
     for (let attempt = 0; ; attempt++) {
-      if (this.closed) return;
+      if (this.closed) return false;
       try {
         const res = await fetch("/api/rtc", {
           method: "POST",
@@ -510,7 +510,7 @@ export class P2PRoom {
             payload,
           }),
         });
-        if (res.ok) return;
+        if (res.ok) return true;
         throw new Error(`signal POST failed: ${res.status}`);
       } catch (err) {
         if (attempt >= SIGNAL_RETRY_DELAYS_MS.length) {
@@ -518,7 +518,7 @@ export class P2PRoom {
           // the watchdog rebuilds it). Logged once so failures are visible.
           console.warn(`[p2p] signal ${kind} to ${to} failed after retries`, err);
           this.opts.onError?.("No se ha podido enviar la conexión o la jugada. Comprueba internet y vuelve a entrar en la sala.");
-          return;
+          return false;
         }
         await new Promise((r) => setTimeout(r, SIGNAL_RETRY_DELAYS_MS[attempt]));
       }
