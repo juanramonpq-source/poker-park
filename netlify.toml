@@ -4,3 +4,9 @@
 
 [build.environment]
   NODE_VERSION = "22"
+
+[[redirects]]
+  from = "/api/rtc"
+  to = "https://poker-park-production.up.railway.app/api/rtc"
+  status = 200
+  force = true
