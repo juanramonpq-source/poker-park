@@ -1,5 +1,5 @@
 import { CloudLightning, Crown, Download, FerrisWheel, FlipHorizontal2, Lightbulb, MoonStar, Radio, ShieldCheck, Sparkles } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   completedAttractions,
   dayBadges,
@@ -38,6 +38,94 @@ const MASTER_REWARDS: Partial<Record<GameChallenge, { title: string; body: strin
   storm: { title: "Nube Dorada", body: "Ni una tormenta pudo cerrar la jornada. El reverso de lluvia queda desbloqueado." },
   impossible: { title: "Guardianes de Poker Park", body: "La hora imposible ha terminado. El final verdadero ha aparecido y el Reverso DUAL queda en la colección." },
 };
+
+type RewardDownloadState = "ready" | "busy" | "done";
+
+function RewardDownloadButton({
+  href,
+  filename,
+  title,
+  children,
+}: {
+  href: string;
+  filename: string;
+  title: string;
+  children: ReactNode;
+}) {
+  const [asset, setAsset] = useState<Blob | null>(null);
+  const [state, setState] = useState<RewardDownloadState>("ready");
+  const resetTimer = useRef(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch(href, { signal: controller.signal })
+      .then(response => {
+        if (!response.ok) throw new Error(`No se pudo preparar la recompensa (${response.status})`);
+        return response.blob();
+      })
+      .then(setAsset)
+      .catch(() => {
+        // The safe new-tab fallback remains available if preloading fails.
+      });
+    return () => {
+      controller.abort();
+      window.clearTimeout(resetTimer.current);
+    };
+  }, [href]);
+
+  const markDone = () => {
+    setState("done");
+    window.clearTimeout(resetTimer.current);
+    resetTimer.current = window.setTimeout(() => setState("ready"), 2200);
+  };
+
+  const downloadWithoutLeavingGame = (blob: Blob | null) => {
+    const link = document.createElement("a");
+    const objectUrl = blob ? URL.createObjectURL(blob) : null;
+    link.href = objectUrl ?? href;
+    link.download = filename;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.style.display = "none";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    if (objectUrl) window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+  };
+
+  const saveReward = async () => {
+    if (state === "busy") return;
+    setState("busy");
+    if (!asset) {
+      downloadWithoutLeavingGame(null);
+      markDone();
+      return;
+    }
+    try {
+      const file = new File([asset], filename, { type: asset.type || "application/octet-stream" });
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title });
+      } else {
+        downloadWithoutLeavingGame(asset);
+      }
+      markDone();
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        setState("ready");
+        return;
+      }
+      downloadWithoutLeavingGame(asset);
+      markDone();
+    }
+  };
+
+  return (
+    <button type="button" className="reward-download-button" onClick={saveReward} disabled={state === "busy"}>
+      {children}
+      {state === "busy" ? "Preparando…" : state === "done" ? "Recompensa lista" : title}
+    </button>
+  );
+}
 
 function masterCopy(challenge: GameChallenge, count: number, solo: boolean) {
   if (count === 7) return MASTER_REWARDS[challenge] ?? ratingCopy("perfect");
@@ -311,7 +399,7 @@ export function EndScreen() {
               <section className="night-reward-card">
                 <div><ShieldCheck aria-hidden /><span><small>Secreto completado</small><strong>La octava luz</strong></span></div>
                 <p>Tu acreditación de Guardián del Alba incluye dos recompensas.</p>
-                <a href="/images/poker-park-night-wallpaper.webp" download="Poker-Park-Guardianes-del-Alba.webp"><Download aria-hidden /> Descargar fondo para móvil</a>
+                <RewardDownloadButton href="/images/poker-park-night-wallpaper.webp" filename="Poker-Park-Guardianes-del-Alba.webp" title="Descargar fondo para móvil"><Download aria-hidden /></RewardDownloadButton>
                 <button type="button" onClick={toggleNightTheme}><MoonStar aria-hidden /> {nightTheme ? "Desactivar interfaz nocturna" : "Activar interfaz nocturna"}</button>
               </section>
             ) : isNight && done.length >= 6 && difficulty === "easy" && hasMasterPass(secrets) ? (
@@ -327,8 +415,8 @@ export function EndScreen() {
                 {challenge === "impossible" ? (
                   <div className="true-ending-downloads">
                     <div className="impossible-reveal"><Sparkles /> Reverso DUAL desbloqueado en la Galería Maestro</div>
-                    <a href="/images/park-impossible.webp" download="Poker-Park-0013.webp"><Download /> Fondo del parque imposible</a>
-                    <a href="/rewards/pase-maestro.svg" download="Certificado-Pase-Maestro.svg"><ShieldCheck /> Certificado Pase Maestro</a>
+                    <RewardDownloadButton href="/images/park-impossible.webp" filename="Poker-Park-0013.webp" title="Fondo del parque imposible"><Download /></RewardDownloadButton>
+                    <RewardDownloadButton href="/rewards/pase-maestro.svg" filename="Certificado-Pase-Maestro.svg" title="Certificado Pase Maestro"><ShieldCheck /></RewardDownloadButton>
                   </div>
                 ) : null}
               </section>

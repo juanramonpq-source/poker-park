@@ -3037,6 +3037,7 @@
 .night-reward-card > a,
 .night-reward-card > button { display: flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: 0.45rem; margin-top: 0.55rem; border-radius: var(--radius-md); font-size: 0.7rem; font-weight: 850; }
 .night-reward-card > a { background: #ffc857; color: #13243b; }
+.night-reward-card > button.reward-download-button { border: 0; background: #ffc857; color: #13243b; }
 .night-reward-card > button { border: 1px solid #47759a; background: rgb(255 255 255 / 0.06); color: #f4f8ff; }
 .night-reward-card svg { width: 0.95rem; height: 0.95rem; }
 
@@ -3488,8 +3489,10 @@
 .master-reward-card.is-true-ending { border-color: #d4aa49; background: radial-gradient(circle at 80% 0, rgb(255 208 91 / .18), transparent 35%), linear-gradient(145deg, #292052, #0b0d27); }
 .true-ending-downloads { display: grid; gap: .45rem; margin-top: .7rem; }
 .true-ending-downloads .impossible-reveal { margin-top: 0; }
-.true-ending-downloads a { display: flex; min-height: 2.7rem; align-items: center; justify-content: center; gap: .4rem; border-radius: .75rem; background: #ffd05b; color: #241632; font-size: .66rem; font-weight: 900; }
-.true-ending-downloads a:last-child { border: 1px solid #725e92; background: rgb(255 255 255 / .05); color: #fff; }
+.true-ending-downloads a,
+.true-ending-downloads button { display: flex; min-height: 2.7rem; align-items: center; justify-content: center; gap: .4rem; border-radius: .75rem; background: #ffd05b; color: #241632; font-size: .66rem; font-weight: 900; }
+.true-ending-downloads a:last-child,
+.true-ending-downloads button:last-child { border: 1px solid #725e92; background: rgb(255 255 255 / .05); color: #fff; }
 .true-ending-downloads svg { width: .85rem; }
 
 @media (max-height: 740px) {

@@ -28,6 +28,7 @@
     "test:map-outro": "node scripts/map-outro-smoke.mjs",
     "test:recovery": "node --experimental-strip-types scripts/recovery-smoke.mjs",
     "test:easy-aids": "node --experimental-strip-types scripts/easy-aids-smoke.mjs",
+    "test:reward-download": "node --experimental-strip-types scripts/reward-download-smoke.mjs",
     "test:online": "node scripts/online-mode-smoke.mjs",
     "test:online-entries": "node scripts/online-entry-modes-smoke.mjs",
     "test:drag": "node scripts/drag-smoke.mjs",
