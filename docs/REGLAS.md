@@ -4,7 +4,8 @@ Fuente de verdad de diseño. La implementación canónica está en `src/lib/game
 
 ## Jugadores
 
-2. Mismo dispositivo (hotseat) o uno contra la IA.
+1–2. En solitario, dos personas en el mismo dispositivo (hotseat) o una
+persona con la IA.
 
 ## Componentes
 
@@ -14,14 +15,15 @@ Fuente de verdad de diseño. La implementación canónica está en `src/lib/game
 
 1. Barajar.
 2. 2 cartas boca arriba al centro: **Entrada del parque**.
-3. 3 cartas a cada jugador.
+3. 3 cartas a cada jugador. En solitario, una única mano de 5 cartas.
 4. El resto es el mazo de robo.
 5. Espacio para las 7 atracciones.
 
 ## Objetivo
 
-Montar en todas las atracciones posibles durante una jornada en pareja,
-guiados por la baraja francesa. No hay que hacerlo perfecto. Hay que recorrerlo.
+Montar en todas las atracciones posibles durante una jornada, en compañía o
+en solitario, guiados por la baraja francesa. No hay que hacerlo perfecto. Hay
+que recorrerlo.
 
 En la ayuda de la portada, las reglas de los modos secretos permanecen ocultas
 hasta que el progreso guardado haya desbloqueado el modo correspondiente.
@@ -44,6 +46,19 @@ alteran ninguna regla.
 Tras un intercambio el turno **no acaba**: se coloca la carta recibida.
 
 Los jugadores pueden hablar libremente.
+
+### Solitario
+
+- Se juega con una única mano de 5 cartas iniciales; al abrir el primer turno
+  se roba una sexta carta, igual que en los demás modos.
+- Después de colocar, el turno vuelve a la misma mano y se roba de nuevo si
+  quedan cartas en el mazo.
+- Está disponible en Clásico, Noche de Guardia, Festival, Espejo, Tormenta y
+  Poker Park 00:13.
+- Se mantiene el límite de intercambios del modo elegido.
+- Si la única mano no puede colocar ni intercambiar, una confirmación termina
+  la jornada por bloqueo. En Tormenta y 00:13 se esperan dos turnos bloqueados
+  consecutivos para permitir que el siguiente frente abra una jugada.
 
 ## Figuras
 
@@ -87,10 +102,14 @@ Cuando ya no se puede ampliar ninguna atracción (o el parque está completo), l
 ## Final
 
 - Se agotan mazo y manos, o
-- bloqueo irresoluble (dos pases seguidos; cuatro en modos con tormenta), o
+- bloqueo irresoluble (una confirmación en solitario y dos pases en pareja; en
+  Tormenta/00:13 son dos turnos en solitario o cuatro pases en pareja), o
 - el parque está resuelto y se elige **Cerrar el parque**.
 
-En **Poker Park 00:13** no hay límite de tiempo: la tormenta solo cierra una atracción durante un turno. El bloqueo exige dos rondas completas —cuatro pases seguidos— para no confundir una mala rotación del clima con una partida imposible.
+En **Poker Park 00:13** no hay límite de tiempo: la tormenta solo cierra una
+atracción durante un turno. El bloqueo exige dos rondas completas —dos turnos
+en solitario o cuatro pases en pareja— para no confundir una mala rotación del
+clima con una partida imposible.
 
 ## Evaluación
 
@@ -103,16 +122,20 @@ En **Poker Park 00:13** no hay límite de tiempo: la tormenta solo cierra una at
 - 6 Día inolvidable
 - 7 Fuegos sobre el parque
 
-No hay ganador. Solo el parque que habéis sido capaces de crear juntos.
+No hay ganador. Solo el parque que habéis sido capaces de crear.
 
 ## Reto desbloqueable: La Noche de Guardia
 
-Al completar las 7 atracciones del parque clásico se desbloquea este segundo reto. Los jugadores pasan a ser el personal de mantenimiento del parque y mantienen sus manos independientes.
+Al completar las 7 atracciones del parque clásico se desbloquea este segundo
+reto. Puede jugarse en solitario, en pareja o con el compañero automático. En
+pareja, cada integrante mantiene su mano independiente.
 
 - La partida empieza con Restaurante y Aseos disponibles; los otros cinco sectores están sin suministro.
-- Antes del reparto se reservan los cuatro ases en el **Llavero de Ases**. Una
-  figura puede cambiarse por un as que encaje inmediatamente en un sector con
-  suministro; la figura vuelve al mazo y se consume uno de los 5 cambios.
+- Los cuatro ases se barajan, se reparten y se roban con normalidad. El
+  **Llavero de Ases** es una ayuda de emergencia: una figura puede cambiarse
+  por un as que todavía siga oculto en el mazo y encaje inmediatamente en un
+  sector con suministro. La figura vuelve al mazo y se consume uno de los 5
+  cambios.
 - La primera elección de suministro siempre ofrece Montaña Rusa y Bosque
   Encantado, para que los recorridos largos no aparezcan demasiado tarde.
 - Al completar una atracción, se elige entre dos sectores cuál recibe corriente a continuación.
@@ -125,5 +148,6 @@ Al completar las 7 atracciones del parque clásico se desbloquea este segundo re
 
 - **Festival de las Luces:** reglas clásicas y combo por alternar atracciones; 4 cambios.
 - **Parque Espejo:** dependencias de las siete atracciones en orden inverso; 5 cambios.
-- **Día de Tormenta:** un sector cierra temporalmente y el siguiente se anuncia; 5 cambios y cuatro pases antes del bloqueo.
-- **Poker Park 00:13:** combina Espejo, Tormenta y Festival; 6 cambios y cuatro pases antes del bloqueo.
+- Todos los retos se pueden jugar en solitario, en pareja o con el compañero automático.
+- **Día de Tormenta:** un sector cierra temporalmente y el siguiente se anuncia; 5 cambios y bloqueo tras dos turnos solitarios o cuatro pases en pareja.
+- **Poker Park 00:13:** combina Espejo, Tormenta y Festival; 6 cambios y el mismo margen meteorológico antes del bloqueo.

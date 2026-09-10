@@ -116,8 +116,10 @@ export function chooseAiMove(state: GameState): AiMove {
   if (swapped && bestMove.type !== "pass") return bestMove;
 
   if (!swapped) {
+    const hasDirectPlacement = hand.some((card) => legalPlacements(state, card.id).length > 0);
     for (const card of hand) {
       for (const target of legalExchanges(state, card.id)) {
+        if (target.kind === "ace-rack" && hasDirectPlacement) continue;
         let score = 20;
         if (target.kind === "slot") {
           const slots = state.attractions[target.attractionId].slots.slice();

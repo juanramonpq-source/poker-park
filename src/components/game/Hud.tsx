@@ -30,7 +30,7 @@ export function Hud() {
   const mustPlaceSwap = Boolean(game.swappedCardId);
   const exchangeDisabled = aforo || locked || mustPlaceSwap || !selectedCanExchange;
   const exchangeReady = Boolean(selectedCardId) && selectedCanExchange && !exchangeMode;
-  const currentName = game.mode === "ai" && game.currentPlayer === 0
+  const currentName = (game.mode === "ai" && game.currentPlayer === 0) || game.mode === "solo"
     ? "Tu turno"
     : game.names[game.currentPlayer];
   const isNight = game.challenge === "night";
@@ -66,7 +66,7 @@ export function Hud() {
         <div className="player-chip" aria-live="polite">
           <span className="player-avatar" aria-hidden>{isNight ? <Wrench /> : <UserRound />}</span>
           <span className="player-copy">
-            <small>{aiMoveFx ? "Última revisión" : aiThinking ? "Comprobando" : game.mode === "ai" && game.currentPlayer === 0 ? "Ahora" : isNight ? "Guardia" : "Turno"}</small>
+            <small>{aiMoveFx ? "Última revisión" : aiThinking ? "Comprobando" : (game.mode === "ai" && game.currentPlayer === 0) || game.mode === "solo" ? "Ahora" : isNight ? "Guardia" : "Turno"}</small>
             <strong>{aiMoveFx ? game.names[1] : currentName}</strong>
           </span>
         </div>

@@ -1,4 +1,4 @@
-import { canVisitAnything, hasRequiredAction, parkSolved } from "@/lib/game/engine";
+import { canVisitAnything, hasRequiredAction, parkSolved, passLimit } from "@/lib/game/engine";
 import { Button } from "@/components/ui/button";
 import { useGameStore } from "@/store/game-store";
 
@@ -17,7 +17,9 @@ export function BlockedSheet() {
 
   const visits = canVisitAnything(game);
   const solved = parkSolved(game);
-  const lastPass = game.consecutivePasses >= 1;
+  const isSolo = game.mode === "solo";
+  const weatherSolo = isSolo && (game.challenge === "storm" || game.challenge === "impossible");
+  const lastPass = game.consecutivePasses >= passLimit(game) - 1;
 
   return (
     <div className="absolute inset-0 z-30 flex items-end justify-center p-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
@@ -53,7 +55,15 @@ export function BlockedSheet() {
             <h2 className="mt-2 font-display text-2xl font-medium tracking-tight text-fg">
               Estás bloqueado, no puedes montar en nada
             </h2>
-            {lastPass ? (
+            {isSolo ? (
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                {weatherSolo && !lastPass
+                  ? "Tu mano está bloqueada por este frente. Deja que avance la tormenta: el siguiente sector puede abrir una jugada."
+                  : weatherSolo
+                    ? "Tu mano sigue sin poder colocar ni intercambiar después de dos frentes. Confirma el bloqueo para pasar al recuento."
+                    : "Tu única mano no puede colocar ni intercambiar ninguna carta. Confirma el bloqueo para pasar al recuento."}
+              </p>
+            ) : lastPass ? (
               <p className="mt-2 text-sm leading-relaxed text-muted">
                 Tu compañero tampoco pudo. Fin de la jornada en el parque.
               </p>
@@ -62,8 +72,14 @@ export function BlockedSheet() {
                 Pasa el turno: tu compañero puede desbloquear el día colocando o cambiando una carta.
               </p>
             )}
-            <Button size="lg" className="mt-5 w-full" onClick={lastPass ? closePark : pass}>
-              {lastPass ? "Cerrar el parque" : "Pasar turno"}
+            <Button size="lg" className="mt-5 w-full" onClick={lastPass && !isSolo ? closePark : pass}>
+              {isSolo
+                ? weatherSolo && !lastPass
+                  ? "Esperar al siguiente frente"
+                  : "Terminar la jornada"
+                : lastPass
+                  ? "Cerrar el parque"
+                  : "Pasar turno"}
             </Button>
           </>
         )}

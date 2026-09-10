@@ -16,32 +16,32 @@ const INTRO_COPY: Record<
 > = {
   classic: {
     eyebrow: "Plano oficial del parque",
-    title: "Elegid vuestra ruta",
-    detail: "La baraja francesa os guiará de atracción en atracción.",
+    title: "Elige tu ruta",
+    detail: "La baraja francesa guía el recorrido de atracción en atracción.",
     stamp: "Edición de día",
   },
   night: {
     eyebrow: "Plano de mantenimiento",
     title: "Comienza la inspección",
-    detail: "Revisad los sectores encendidos y devolved la corriente al parque.",
+    detail: "Revisa los sectores encendidos y devuelve la corriente al parque.",
     stamp: "Turno 00:07",
   },
   festival: {
     eyebrow: "Plano de iluminación",
-    title: "Encended la ruta",
-    detail: "Alternad atracciones para que el brillo recorra todo el parque.",
+    title: "Enciende la ruta",
+    detail: "Alterna atracciones para que el brillo recorra todo el parque.",
     stamp: "Festival de las Luces",
   },
   mirror: {
     eyebrow: "Plano reflejado",
-    title: "Leed el mapa al revés",
+    title: "Lee el mapa al revés",
     detail: "Las rutas conocidas empiezan ahora desde el otro lado.",
     stamp: "Copia especular",
   },
   storm: {
     eyebrow: "Plano impermeable",
-    title: "Seguid el pronóstico",
-    detail: "Elegid la siguiente parada antes de que la tormenta cierre el paso.",
+    title: "Sigue el pronóstico",
+    detail: "Elige la siguiente parada antes de que la tormenta cierre el paso.",
     stamp: "Alerta meteorológica",
   },
   impossible: {
@@ -86,6 +86,7 @@ export function ParkMapIntro({
   const finishMapOutro = useGameStore((state) => state.finishMapOutro);
   const challenge = game.challenge ?? "classic";
   const copy = INTRO_COPY[challenge];
+  const soloOpening = game.mode === "solo";
   const finish = direction === "closing" ? finishMapOutro : dismissMapIntro;
   const symbolId = `park-map-intro-${challenge}-${direction}`;
   const orientation: MapOrientation =
@@ -127,7 +128,9 @@ export function ParkMapIntro({
             <small>
               {direction === "closing"
                 ? "Guardamos el plano y preparamos el recuento de la jornada."
-                : copy.detail}
+                : soloOpening
+                  ? `${copy.detail} Cinco cartas iniciales y una sola mano.`
+                  : copy.detail}
             </small>
           </header>
           <span className="map-intro-entrance"><ArrowLeftRight aria-hidden /> Entrada</span>

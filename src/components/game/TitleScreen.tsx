@@ -1,4 +1,4 @@
-import { BookOpen, Crown, FerrisWheel, MoonStar, Palette, ShieldCheck, Sparkles, Users, UserRound, Wrench, X } from "lucide-react";
+import { BookOpen, Crown, FerrisWheel, MoonStar, Palette, ShieldCheck, Sparkles, User, Users, UserRound, Wrench, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { playLifetimeUnlock, playUi, startChallengeBed, startTitleBed, unlockAudio } from "@/lib/game/audio";
 import {
@@ -214,9 +214,9 @@ export function TitleScreen() {
             Poker Park
           </h1>
           <p className="title-description">
-            Montad en las atracciones del parque, guiados por la baraja francesa y en compañía.
+            Recorre las atracciones del parque, a solas o en compañía, guiado por la baraja francesa.
           </p>
-          <p className="title-detail">Cooperativo · 2 jugadores · Una baraja</p>
+          <p className="title-detail">1–2 jugadores · Una baraja</p>
           {secrets.lifetime ? (
             <div className="title-lifetime-badge" role="status" aria-label="Insignia conseguida: Pase de por vida">
               <span className="title-lifetime-seal"><FerrisWheel aria-hidden /></span>
@@ -263,6 +263,10 @@ export function TitleScreen() {
             <Button size="lg" variant="secondary" className="w-full" onClick={() => requestStart("ai")}>
               <UserRound className="size-4" strokeWidth={1.75} />
               Jugar con compañero
+            </Button>
+            <Button size="lg" variant="secondary" className="w-full" onClick={() => requestStart("solo")}>
+              <User className="size-4" strokeWidth={1.75} />
+              Jugar en solitario
             </Button>
             {secrets.perfect ? (
               <button type="button" className="night-challenge-button" onClick={() => setNightModeOpen(true)}>
@@ -314,16 +318,17 @@ export function TitleScreen() {
             <div className="night-mode-icon"><MoonStar aria-hidden /></div>
             <p className="tutorial-kicker">Turno especial · 00:07</p>
             <h2 id="night-mode-title">La Noche de Guardia</h2>
-            <p className="tutorial-choice-copy">El parque ha cerrado. Ahora sois el personal de mantenimiento: empezáis con solo dos sectores encendidos y cada revisión devuelve la corriente a una nueva atracción.</p>
+            <p className="tutorial-choice-copy">El parque ha cerrado. El personal de mantenimiento empieza con solo dos sectores encendidos y cada revisión devuelve la corriente a una nueva atracción.</p>
             <div className="night-mode-rules">
               <span><Wrench aria-hidden /> 2 atracciones abiertas</span>
               <span><Sparkles aria-hidden /> Nuevos sectores al completar</span>
               <span><Crown aria-hidden /> 5 cambios compartidos</span>
-              <span><img src="/images/ace-keyring.webp" alt="" /> Llavero de Ases</span>
+              <span><img src="/images/ace-keyring.webp" alt="" /> Ases en el mazo · llavero de emergencia</span>
             </div>
             <div className="tutorial-choice-actions">
               <Button size="lg" className="w-full" onClick={() => { setNightModeOpen(false); requestStart("hotseat", "night"); }}><Users /> Guardia en pareja</Button>
               <Button size="lg" variant="secondary" className="w-full" onClick={() => { setNightModeOpen(false); requestStart("ai", "night"); }}><UserRound /> Guardia con compañero</Button>
+              <Button size="lg" variant="secondary" className="w-full" onClick={() => { setNightModeOpen(false); requestStart("solo", "night"); }}><User /> Guardia en solitario</Button>
             </div>
           </section>
         </div>
@@ -383,9 +388,9 @@ export function TitleScreen() {
               </Button>
             </div>
             <ol className="tutorial-steps">
-              <li><span>1</span><p><strong>Robad y hablad.</strong> Es un juego colaborativo: cada jugador tiene su propia mano y decidís juntos dónde encaja cada carta.</p></li>
-              <li><span>2</span><p><strong>Tocad o arrastrad.</strong> Podéis elegir una carta y tocar su destino, o llevarla directamente hasta una posición iluminada.</p></li>
-              <li><span>3</span><p><strong>Guardad los cambios.</strong> Esta partida permite {exchangeLimit({ challenge: pendingChallenge, difficulty: pendingDifficulty })} cambios; usadlos cuando desbloqueen una atracción.</p></li>
+              <li><span>1</span><p>{pendingMode === "solo" ? <><strong>Empieza con cinco cartas.</strong> Robas una más al abrir el primer turno y recorres el parque con una única mano.</> : <><strong>Robad y hablad.</strong> Es un juego colaborativo: cada jugador tiene su propia mano y decidís juntos dónde encaja cada carta.</>}</p></li>
+              <li><span>2</span><p>{pendingMode === "solo" ? <><strong>Toca o arrastra.</strong> Elige una carta y toca su destino, o llévala directamente hasta una posición iluminada.</> : <><strong>Tocad o arrastrad.</strong> Podéis elegir una carta y tocar su destino, o llevarla directamente hasta una posición iluminada.</>}</p></li>
+              <li><span>3</span><p>{pendingMode === "solo" ? <><strong>Administra los cambios.</strong> Esta partida permite {exchangeLimit({ challenge: pendingChallenge, difficulty: pendingDifficulty })}; si tu mano se bloquea por completo, termina la jornada.</> : <><strong>Guardad los cambios.</strong> Esta partida permite {exchangeLimit({ challenge: pendingChallenge, difficulty: pendingDifficulty })} cambios; usadlos cuando desbloqueen una atracción.</>}</p></li>
             </ol>
             <Button size="lg" className="mt-5 w-full" onClick={finishTutorial}>
               {pendingMode ? "Empezar partida" : "¡Entendido!"}

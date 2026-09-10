@@ -19,7 +19,12 @@ import {
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import { cardName, isRed } from "@/lib/game/deck";
-import { isAttractionStormClosed, isAttractionUnlocked, legalExchanges } from "@/lib/game/engine";
+import {
+  isAttractionStormClosed,
+  isAttractionUnlocked,
+  legalExchanges,
+  nightAceCandidates,
+} from "@/lib/game/engine";
 import {
   CHALLENGE_BACKGROUNDS,
   CHALLENGE_NAMES,
@@ -263,6 +268,7 @@ function EntranceTile({
   const exchange = useGameStore((s) => s.exchange);
   const { exchanges } = useLegalForSelected();
   const swapFx = useGameStore((s) => s.swapFx);
+  const hiddenAces = nightAceCandidates(game);
 
   return (
     <section
@@ -301,11 +307,11 @@ function EntranceTile({
             type="button"
             className="ace-keyring-trigger"
             onClick={onOpenAceRack}
-            aria-label={`Abrir Llavero de Ases; quedan ${game.night?.aceRack?.length ?? 0}`}
+            aria-label={`Abrir Llavero de Ases; ${hiddenAces.length} ases siguen ocultos en el mazo`}
           >
             <img src="/images/ace-keyring.webp" alt="" />
             <small>Llavero de Ases</small>
-            <span>{game.night?.aceRack?.length ?? 0}</span>
+            <span>{hiddenAces.length}</span>
           </button>
         ) : null}
       </div>
@@ -327,7 +333,7 @@ function AceRackSheet({ game, onClose }: { game: GameState; onClose: () => void 
   const exchangeMode = useGameStore((s) => s.exchangeMode);
   const selectedCardId = useGameStore((s) => s.selectedCardId);
   const { exchanges } = useLegalForSelected();
-  const rack = game.night?.aceRack ?? [];
+  const rack = nightAceCandidates(game);
   const selectedCard = game.hands[game.currentPlayer].find((card) => card.id === selectedCardId);
   const rackTargets = exchanges.filter((target) => target.kind === "ace-rack");
 
@@ -342,7 +348,7 @@ function AceRackSheet({ game, onClose }: { game: GameState; onClose: () => void 
           <button type="button" onClick={onClose} aria-label="Cerrar"><X aria-hidden /></button>
         </header>
         <p>
-          Entrega una jota, reina o rey para tomar un as que pueda colocarse ahora. El cambio consume una maniobra y la figura vuelve al mazo.
+          Los ases forman parte del mazo y pueden salir con normalidad. Si el que necesitas sigue oculto, entrega una jota, reina o rey para recuperarlo. El cambio consume una maniobra y la figura vuelve al mazo.
         </p>
         <div className="ace-rack-hooks">
           {ACE_SUIT_ORDER.map((suit) => {
@@ -369,8 +375,8 @@ function AceRackSheet({ game, onClose }: { game: GameState; onClose: () => void 
           {rackTargets.length > 0
             ? `Puedes cambiar ${selectedCard ? cardName(selectedCard) : "la figura elegida"} por ${rackTargets.length === 1 ? "el as iluminado" : "uno de los ases iluminados"}.`
             : exchangeMode && selectedCard
-              ? "Ningún as disponible encaja todavía en un sector abierto."
-              : "Para usarlo: elige una figura de tu mano y pulsa Cambiar."}
+              ? "Ningún as que siga oculto en el mazo encaja todavía en un sector abierto."
+              : "Ayuda de emergencia: elige una figura de tu mano y pulsa Cambiar."}
         </div>
       </section>
     </div>,
@@ -390,7 +396,9 @@ export function Park({ game }: { game: GameState }) {
     selectedCardId && !game.swappedCardId && legalExchanges(game, selectedCardId).length,
   );
   const turnLabel =
-    game.mode === "ai"
+    game.mode === "solo"
+      ? "Tu turno"
+      : game.mode === "ai"
       ? game.currentPlayer === 0
         ? "Tu turno"
         : "Turno del compañero"

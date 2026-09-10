@@ -9,7 +9,7 @@ Si continúas este proyecto en Codex: lee este archivo entero antes de tocar có
 
 ## 1. Qué es
 
-**Poker Park** es un juego de cartas cooperativo para **2 jugadores** (hotseat en el mismo móvil, o un humano vs IA). Usa una **baraja francesa de 52**. No hay ganador: se construye un parque de atracciones con las cartas y se evalúa el día juntos.
+**Poker Park** es un juego de cartas para **1–2 jugadores** (solitario, hotseat en el mismo móvil o un humano vs IA). Usa una **baraja francesa de 52**. No hay ganador: se construye un parque de atracciones con las cartas y se evalúa el recorrido.
 
 Estética: feria alegre, colores pastel, sol de tarde. Nunca tenebroso.
 
@@ -20,7 +20,7 @@ Estética: feria alegre, colores pastel, sol de tarde. Nunca tenebroso.
 ### Preparación
 1. Barajar 52 cartas.
 2. 2 cartas boca arriba en el centro = **Entrada**.
-3. 3 cartas a cada jugador.
+3. 3 cartas a cada jugador; en solitario, una única mano de 5 cartas.
 4. El resto es el mazo de robo.
 
 ### Turno
@@ -30,6 +30,10 @@ Estética: feria alegre, colores pastel, sol de tarde. Nunca tenebroso.
    - Un **intercambio estructural**.
 
 Tras un intercambio el turno **no termina**: hay que colocar la carta que acaba de entrar (`swappedCardId`). Los jugadores pueden hablar libremente.
+
+En solitario, después de cada colocación vuelve a jugar la misma mano. Si no
+puede colocar ni intercambiar, una confirmación termina la jornada por bloqueo;
+en Tormenta y 00:13 se esperan dos turnos para permitir que cambie el frente.
 
 ### Intercambios (aforo)
 - Máximo **3 en toda la partida**, compartidos.
@@ -49,7 +53,8 @@ Cuando ya no se puede completar ninguna atracción más, las figuras restantes p
 ### Final
 La partida termina si:
 - se agotan mazo y manos, **o**
-- bloqueo que no se resuelve con intercambio (ambos pasan), **o**
+- bloqueo que no se resuelve con intercambio (una confirmación en solitario o
+  ambos pasan en pareja; con tormenta, dos turnos solitarios o cuatro pases), **o**
 - el parque está **resuelto** (7/7) y el jugador cierra el día.
 
 Si un jugador no puede colocar ni intercambiar: overlay **«Estás bloqueado, no puedes montar en nada»** + **Pasar turno**. El otro puede desbloquear. Si también está bloqueado: **Fin de la jornada**.
@@ -232,8 +237,8 @@ Si se porta a un Vite+React SPA limpio, basta con:
 ## 8. Prompt listo para pegar en Codex
 
 ```
-Eres el agente de código de Poker Park, un juego de cartas cooperativo
-en español para 2 jugadores. Lee CODEX.md y no cambies las reglas de
+Eres el agente de código de Poker Park, un juego de cartas en español para
+1 o 2 jugadores. Lee CODEX.md y no cambies las reglas de
 src/lib/game/attractions.ts sin actualizar tests.
 
 Stack: React 19, Zustand, Tailwind v4, audio Web Audio procedural.

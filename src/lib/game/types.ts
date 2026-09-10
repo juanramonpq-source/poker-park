@@ -16,7 +16,7 @@ export type AttractionId =
   | "restaurant"
   | "restrooms";
 
-export type Mode = "hotseat" | "ai";
+export type Mode = "hotseat" | "ai" | "solo";
 export type GameDifficulty = "standard" | "easy";
 export type GameChallenge = "classic" | "night" | "festival" | "mirror" | "storm" | "impossible";
 
@@ -32,6 +32,7 @@ export interface NightShiftState {
   route: AttractionId[];
   pendingUnlock: boolean;
   emergencyUses: number;
+  /** Compatibilidad con partidas nocturnas guardadas antes de que los ases volvieran al mazo. */
   aceRack?: Card[];
 }
 
@@ -90,6 +91,7 @@ export type DayRating =
 
 export const MAX_EXCHANGES = 3;
 export const HAND_START = 3;
+export const SOLO_HAND_START = HAND_START + 2;
 
 export const ATTRACTION_IDS: AttractionId[] = [
   "coaster",

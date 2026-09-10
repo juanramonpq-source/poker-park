@@ -1252,8 +1252,7 @@
 
 @keyframes park-map-outro-dismiss {
   0% { opacity: 0; }
-  12%, 83% { opacity: 1; }
-  100% { opacity: 0; }
+  12%, 100% { opacity: 1; }
 }
 
 @keyframes map-v2-closing-label {
@@ -3211,6 +3210,7 @@
 .master-start-panel small { color: #a79abe; font-size: .48rem; font-weight: 900; text-transform: uppercase; }
 .master-start-panel strong { color: #fff; font-size: .72rem; }
 .master-start-actions { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .6rem; }
+.master-start-solo { grid-column: 1 / -1; }
 .festival-briefing { margin-top: .65rem; border: 1px solid rgb(255 208 91 / .26); border-radius: .8rem; background: rgb(9 6 28 / .2); padding: .6rem; color: #e9ddec; }
 .festival-briefing > p { font-size: .61rem; line-height: 1.42; }
 .festival-briefing > p strong { color: #fff3b5; }

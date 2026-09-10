@@ -1,4 +1,5 @@
-import type { GameChallenge, GameState } from "./types";
+import { shuffle } from "./deck.ts";
+import type { Card, GameChallenge, GameState } from "./types.ts";
 
 const SAVE_KEY = "poker-park.save.v7";
 const SETTINGS_KEY = "poker-park.settings.v1";
@@ -47,9 +48,21 @@ export function loadGame(): GameState | null {
     const parsed = JSON.parse(raw) as GameState;
     if (parsed.version !== SAVE_VERSION) return null;
     if (parsed.ended) return null;
-    if (parsed.challenge === "night" && parsed.night && !Array.isArray(parsed.night.aceRack)) {
-      parsed.night.aceRack = parsed.deck.filter((card) => card.rank === 1);
-      parsed.deck = parsed.deck.filter((card) => card.rank !== 1);
+    if (parsed.challenge === "night" && parsed.night && Array.isArray(parsed.night.aceRack)) {
+      const cardsInPlay: Card[] = [
+        ...parsed.deck,
+        ...parsed.hands[0],
+        ...parsed.hands[1],
+        ...parsed.entrance,
+        ...Object.values(parsed.attractions).flatMap((attraction) => [
+          ...attraction.slots.filter((card): card is Card => Boolean(card)),
+          ...attraction.visitors,
+        ]),
+      ];
+      const knownIds = new Set(cardsInPlay.map((card) => card.id));
+      const unseenAces = parsed.night.aceRack.filter((card) => !knownIds.has(card.id));
+      if (unseenAces.length > 0) parsed.deck = shuffle([...parsed.deck, ...unseenAces]);
+      delete parsed.night.aceRack;
     }
     return parsed;
   } catch {

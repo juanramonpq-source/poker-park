@@ -17,25 +17,26 @@ Montad en las atracciones de un parque guiados por la baraja francesa.
 
 ## Subtítulo sugerido
 
-Cartas y atracciones en pareja
+Cartas y atracciones, solo o en pareja
 
 ## Descripción para tiendas
 
-Poker Park es un juego de cartas cooperativo para dos personas. Montad en las
-atracciones de un parque guiados por la baraja francesa. Compartid las
-decisiones, pero conservad manos independientes, y completad siete atracciones
-antes de que termine la jornada.
+Poker Park es un juego de cartas para una o dos personas. Recorre en solitario
+o montad juntos en las atracciones de un parque guiados por la baraja francesa.
+En pareja conserváis manos independientes y compartís las decisiones; en
+solitario dispones de una única mano ampliada. Intentad completar siete
+atracciones antes de que termine la jornada.
 
 Cada atracción tiene su propia lógica: levantad la Montaña Rusa en orden,
 completad el corazón del Túnel del Amor, preparad la torre de las Sillas
-Voladoras y reservad cada as para su lugar especial. No hay un ganador contra el
-otro: el resultado pertenece al parque que habéis creado juntos.
+Voladoras y reservad cada as para su lugar especial. No hay competición: el
+resultado pertenece al parque que has creado a solas o habéis creado juntos.
 
 La primera partida es sencilla, pero Poker Park guarda sorpresas: una Noche de
 Guardia, desafíos avanzados, recompensas visuales, nuevas ambientaciones,
 reversos de carta y secretos de Pentonúi Games.
 
-- Juega en el mismo dispositivo o con un compañero controlado por el juego.
+- Juega todos los retos en solitario, en el mismo dispositivo o con un compañero controlado por el juego.
 - Controla las cartas tocando o arrastrando.
 - Disfruta de música y efectos originales generados por el propio juego.
 - Juega sin cuentas, anuncios ni compras.

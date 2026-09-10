@@ -10,7 +10,11 @@ const SECTIONS: Array<{
 }> = [
   {
     title: "Objetivo",
-    body: "Montar en todas las atracciones posibles durante una jornada en pareja, guiados por la baraja francesa. No hay ganador: solo el parque que seáis capaces de recorrer y crear juntos.",
+    body: "Montar en todas las atracciones posibles, en pareja, con un compañero automático o en solitario, guiados por la baraja francesa. No hay rival: solo el parque que seáis capaces de recorrer.",
+  },
+  {
+    title: "Modo solitario",
+    body: "Puedes jugar así en cualquier modo. Usas una sola mano y empiezas con 5 cartas en vez de 3; al abrir el turno robas una más. Después de cada colocación vuelves a jugar tú y conservas el límite de cambios del reto elegido. Un bloqueo cierra la jornada con una confirmación, salvo en Tormenta y 00:13: allí se esperan dos turnos bloqueados para dar tiempo a que cambie el frente.",
   },
   {
     title: "Turno",
@@ -38,12 +42,12 @@ const SECTIONS: Array<{
   },
   {
     title: "La Noche de Guardia",
-    body: "Se desbloquea al completar las siete atracciones. Sois el personal de mantenimiento, empezáis con dos sectores encendidos y disponéis de 5 cambios. Cada atracción revisada permite dar corriente a otra. El Llavero de Ases permite entregar una figura por un as que pueda colocarse inmediatamente. Si no podéis colocar ninguna carta, podéis probar un intercambio o registrar una incidencia para abrir un sector con el generador. El informe final cuenta revisiones e incidencias.",
+    body: "Se desbloquea al completar las siete atracciones. El personal de mantenimiento empieza con dos sectores encendidos y dispone de 5 cambios. Los cuatro ases siguen dentro del mazo y salen con normalidad. Si el as que necesitas continúa oculto, el Llavero de Ases permite recuperarlo entregando una figura, siempre que pueda colocarse inmediatamente. Cada atracción revisada permite dar corriente a otra. Si no puedes colocar ninguna carta, puedes probar un intercambio o registrar una incidencia para abrir un sector con el generador. Puede jugarse en pareja, con compañero o en solitario.",
     visible: (secrets) => secrets.perfect,
   },
   {
     title: "Poker Park 00:13",
-    body: "La jornada final junta espejo, tormenta y luces y concede 6 cambios. No hay límite de tiempo: la tormenta solo cierra una atracción durante ese turno. Para que una mala rotación no cierre una partida recuperable, el bloqueo solo se declara tras dos rondas completas —cuatro pases seguidos— sin poder colocar ni intercambiar.",
+    body: "La jornada final junta espejo, tormenta y luces y concede 6 cambios. No hay límite de tiempo: la tormenta solo cierra una atracción durante ese turno. Para que una mala rotación no cierre una partida recuperable, el bloqueo espera dos rondas completas: dos turnos sin jugada en solitario o cuatro pases en los modos de dos jugadores.",
     visible: (secrets) => masterTrialsComplete(secrets) || secrets.impossiblePerfect,
   },
 ];

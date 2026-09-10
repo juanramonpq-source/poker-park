@@ -32,10 +32,10 @@ const MASTER_SCALES: Partial<Record<GameChallenge, string[]>> = {
 };
 
 const MASTER_REWARDS: Partial<Record<GameChallenge, { title: string; body: string }>> = {
-  festival: { title: "Fuegos de Feria", body: "Habéis mantenido encendida cada luz. Un nuevo reverso luminoso queda añadido a vuestra colección." },
-  mirror: { title: "Plata de Luna", body: "Habéis leído el parque desde el otro lado. La insignia espejo ya brilla en vuestro Pase Maestro." },
+  festival: { title: "Fuegos de Feria", body: "Cada luz ha quedado encendida. Un nuevo reverso luminoso se añade a la colección." },
+  mirror: { title: "Plata de Luna", body: "El parque ha sido leído desde el otro lado. La insignia espejo ya brilla en el Pase Maestro." },
   storm: { title: "Nube Dorada", body: "Ni una tormenta pudo cerrar la jornada. El reverso de lluvia queda desbloqueado." },
-  impossible: { title: "Guardianes de Poker Park", body: "La hora imposible ha terminado. Habéis encontrado el final verdadero y el Reverso DUAL queda en vuestra colección." },
+  impossible: { title: "Guardianes de Poker Park", body: "La hora imposible ha terminado. El final verdadero ha aparecido y el Reverso DUAL queda en la colección." },
 };
 
 function challengeSecretKey(challenge: GameChallenge): keyof Secrets {
@@ -47,24 +47,26 @@ function challengeSecretKey(challenge: GameChallenge): keyof Secrets {
   return "perfect";
 }
 
-function masterCopy(challenge: GameChallenge, count: number) {
+function masterCopy(challenge: GameChallenge, count: number, solo: boolean) {
   if (count === 7) return MASTER_REWARDS[challenge] ?? ratingCopy("perfect");
   const name = CHALLENGE_NAMES[challenge];
   if (count >= 5) return { title: "Casi extraordinario", body: `${name} estuvo a punto de revelar todos sus secretos.` };
-  if (count >= 3) return { title: "El mapa se transforma", body: `Ya habéis descubierto una parte importante de ${name}.` };
+  if (count >= 3) return { title: "El mapa se transforma", body: solo ? `Ya has descubierto una parte importante de ${name}.` : `Ya habéis descubierto una parte importante de ${name}.` };
   if (count >= 1) return { title: "Primera sorpresa", body: "Una atracción basta para demostrar que este parque no era lo que parecía." };
-  return { title: "La puerta sigue ahí", body: "El modo secreto espera otra jornada. Ahora ya conocéis la entrada." };
+  return { title: "La puerta sigue ahí", body: solo ? "El modo secreto espera otra jornada. Ahora ya conoces la entrada." : "El modo secreto espera otra jornada. Ahora ya conocéis la entrada." };
 }
 
-function nightCopy(count: number) {
+function nightCopy(count: number, solo: boolean) {
   if (count === 7) return {
     title: "La octava luz",
-    body: "Todas las atracciones responden. Cuando el cielo empieza a aclarar, la noria enciende una luz que no figura en ningún plano: el parque os reconoce como sus Guardianes del Alba.",
+    body: solo
+      ? "Todas las atracciones responden. Cuando el cielo empieza a aclarar, la noria enciende una luz que no figura en ningún plano: el parque te reconoce como Guardián del Alba."
+      : "Todas las atracciones responden. Cuando el cielo empieza a aclarar, la noria enciende una luz que no figura en ningún plano: el parque os reconoce como sus Guardianes del Alba.",
   };
-  if (count >= 5) return { title: "Parque bajo control", body: "El parte de mantenimiento queda casi completo. Habéis dejado la apertura de mañana muy cerca." };
+  if (count >= 5) return { title: "Parque bajo control", body: solo ? "El parte de mantenimiento queda casi completo. Has dejado la apertura de mañana muy cerca." : "El parte de mantenimiento queda casi completo. Habéis dejado la apertura de mañana muy cerca." };
   if (count >= 3) return { title: "Guardia en marcha", body: "Varias zonas vuelven a latir en la oscuridad. El equipo del amanecer sabrá por dónde continuar." };
   if (count >= 1) return { title: "Primera comprobación", body: "Una luz encendida basta para demostrar que la noche todavía puede remontar." };
-  return { title: "Sin corriente", body: "El turno fue difícil. El parque descansará esta noche y volveréis con nuevas herramientas." };
+  return { title: "Sin corriente", body: solo ? "El turno fue difícil. El parque descansará esta noche y volverás con nuevas herramientas." : "El turno fue difícil. El parque descansará esta noche y volveréis con nuevas herramientas." };
 }
 
 function endingCopy(game: GameState) {
@@ -75,6 +77,18 @@ function endingCopy(game: GameState) {
         body: "No quedaban cartas ni en el mazo ni en las manos. La jornada termina aquí.",
       };
     case "block":
+      if (game.mode === "solo") {
+        if (game.challenge === "storm" || game.challenge === "impossible") {
+          return {
+            label: "Dos frentes sin jugada",
+            body: "La tormenta cambió de sector, pero tu mano siguió sin ninguna colocación ni intercambio posible durante dos turnos seguidos.",
+          };
+        }
+        return {
+          label: "Tu mano quedó bloqueada",
+          body: "No quedaba ninguna colocación ni intercambio posible en tu única mano. La jornada termina con el parque tal como está.",
+        };
+      }
       if (passLimit(game) === 4) {
         return {
           label: "Dos rondas sin jugada",
@@ -87,7 +101,7 @@ function endingCopy(game: GameState) {
       };
     case "closed":
       return {
-        label: "Habéis cerrado la jornada",
+        label: game.mode === "solo" ? "Has cerrado la jornada" : "Habéis cerrado la jornada",
         body: "Se eligió Cerrar y se guarda este recuento. No hace falta completar las siete atracciones para terminar.",
       };
     default:
@@ -130,13 +144,17 @@ export function EndScreen() {
   const [secrets, setSecrets] = useState(() => loadSecrets());
   const done = game ? completedAttractions(game) : [];
   const challenge = game?.challenge ?? "classic";
+  const isSolo = game?.mode === "solo";
   const isNight = game?.challenge === "night";
   const isMasterMode = challenge === "festival" || challenge === "mirror" || challenge === "storm" || challenge === "impossible";
   const rating = dayRating(done.length);
-  const copy = isNight ? nightCopy(done.length) : isMasterMode ? masterCopy(challenge, done.length) : ratingCopy(rating);
+  const copy = isNight ? nightCopy(done.length, isSolo) : isMasterMode ? masterCopy(challenge, done.length, isSolo) : ratingCopy(rating, isSolo);
   const badges = game ? (isNight ? maintenanceBadges(done.length, game.night?.emergencyUses ?? 0) : dayBadges(game)) : [];
   const perfect = rating === "perfect";
-  const scale = isNight ? NIGHT_SCALE : MASTER_SCALES[challenge] ?? RATING_SCALE.map((row) => row.title);
+  const baseScale = isNight ? NIGHT_SCALE : MASTER_SCALES[challenge] ?? RATING_SCALE.map((row) => row.title);
+  const scale = isSolo && challenge === "impossible"
+    ? baseScale.map((title) => title === "El parque os recuerda" ? "El parque te recuerda" : title)
+    : baseScale;
 
   useEffect(() => {
     const t = window.setTimeout(() => setStep("tally"), 1600);
@@ -219,7 +237,7 @@ export function EndScreen() {
         {perfect ? <div className="fireworks" aria-hidden /> : null}
         <div className="stagger-in relative z-10 max-w-sm">
           <p className="font-display text-3xl font-medium tracking-tight">Fin</p>
-          <p className="mt-2 text-lg text-muted">{isNight ? "El parque puede dormir tranquilo." : challenge === "impossible" && perfect ? "Habéis llegado al final verdadero." : "Gracias por jugar."}</p>
+          <p className="mt-2 text-lg text-muted">{isNight ? "El parque puede dormir tranquilo." : challenge === "impossible" && perfect ? isSolo ? "Has llegado al final verdadero." : "Habéis llegado al final verdadero." : "Gracias por jugar."}</p>
           <MascotParade place="credits" />
           <button type="button" className="end-brand end-brand-button" onClick={onBrandTap} aria-label="Pentonúi Games">
             <img src="/brand/pentonui-games-logo.webp" alt="Pentonúi Games" />
@@ -257,7 +275,7 @@ export function EndScreen() {
           <FerrisWheel aria-hidden />
           <small>Acceso secreto concedido</small>
           <strong>Pase de por vida</strong>
-          <p>La noria ya recuerda vuestro nombre.</p>
+          <p>La noria ya recuerda {isSolo ? "tu nombre" : "vuestro nombre"}.</p>
         </div>
       ) : null}
       <div className="relative mx-auto max-w-md px-5 pt-[max(2.5rem,env(safe-area-inset-top))]">
@@ -313,7 +331,7 @@ export function EndScreen() {
                   </div>
                 ) : null}
               </section>
-            ) : !isNight && !isMasterMode ? (lifetime ? <p className="mt-4 text-center text-[12px] text-accent">Secreto: pase de por vida. La noria no se olvida de vosotros.</p> : <p className="mt-4 text-center text-[10px] text-faint">Pista secreta: toca siete veces el número del recuento.</p>) : null}
+            ) : !isNight && !isMasterMode ? (lifetime ? <p className="mt-4 text-center text-[12px] text-accent">Secreto: pase de por vida. La noria no se olvida {isSolo ? "de ti" : "de vosotros"}.</p> : <p className="mt-4 text-center text-[10px] text-faint">Pista secreta: toca siete veces el número del recuento.</p>) : null}
             <Button size="lg" className="mt-6 w-full" onClick={() => setStep("credits")}>Ver créditos</Button>
           </div>
         ) : <p className="mt-8 text-center text-sm text-muted">{isNight ? "Sellando el parte…" : "Redoble…"}</p>}

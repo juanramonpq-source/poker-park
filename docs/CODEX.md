@@ -4,7 +4,7 @@ Copia este archivo entero al proyecto (o pégalo como instrucciones de Codex).
 El código de referencia vive en `src/lib/game/`, `src/components/game/` y `src/store/game-store.ts`.
 
 **Estudio:** Pentonúi Games
-**Producto:** PWA móvil cooperativa, en español, 2 jugadores, para montar en las atracciones de un parque guiados por una baraja francesa de 52 cartas.
+**Producto:** PWA móvil, en español, para 1–2 jugadores, que permite montar en las atracciones de un parque guiados por una baraja francesa de 52 cartas.
 **Tono:** feria alegre (algodón, noria, atardecer). Nunca gótico ni siniestro.
 
 ---
@@ -12,8 +12,8 @@ El código de referencia vive en `src/lib/game/`, `src/components/game/` y `src/
 ## Prompt corto para Codex
 
 ```
-Eres el mantenedor de Poker Park, un juego de cartas cooperativo para 2
-jugadores (hotseat o IA), PWA móvil, UI en español, estética de parque de
+Eres el mantenedor de Poker Park, un juego de cartas para 1 o 2 jugadores
+(solitario, hotseat o IA), PWA móvil, UI en español, estética de parque de
 atracciones alegre.
 
 El motor es puro y está en src/lib/game/ (types, deck, attractions, engine,
@@ -36,9 +36,9 @@ Sin backend. Persistencia en localStorage.
 
 ## 1. Qué es
 
-Dos personas construyen juntas un parque con una baraja. Cada atracción es
+Una o dos personas construyen un parque con una baraja. Cada atracción es
 un esquema de huecos con palos, ases y formas fijas. Se juega al móvil, a
-turno, en el mismo teléfono (hotseat) o contra un compañero automático.
+turno, en solitario, en el mismo teléfono (hotseat) o contra un compañero automático.
 
 No hay puntuación competitiva. Al cerrar el día se recuenta cuántas
 atracciones se completaron y se nombra el día.
@@ -105,11 +105,11 @@ AttractionId =
 AttractionState { slots: (Card|null)[], visitors: Card[] }
 
 GameState.version = 7
-  mode: hotseat | ai
+  mode: hotseat | ai | solo
   difficulty?: standard | easy
   challenge?: classic | night | festival | mirror | storm | impossible
   night?: sectores con suministro, ruta pendiente, elección de apertura,
-          incidencias y aceRack (los cuatro ases)
+          incidencias y aceRack? (solo compatibilidad con partidas antiguas)
   names, deck, hands[2], entrance[2], entranceFaceDown[2]
   attractions, exchangesUsed (límite según modo), currentPlayer
   drawnThisTurn, consecutivePasses
@@ -120,16 +120,18 @@ GameState.version = 7
 
 `MAX_EXCHANGES = 3` conserva el valor clásico. `exchangeLimit(state)` devuelve:
 Clásico 3, Fácil/Festival 4, Noche/Espejo/Tormenta 5 y 00:13 6. Mano
-inicial: 3 cartas. Entrada del parque: 2 cartas boca arriba.
+inicial: 3 cartas por jugador; en solitario, una mano de 5. Entrada del parque:
+2 cartas boca arriba.
 
 ---
 
 ## 5. Flujo de una partida
 
 ### Preparación
-Barajar 52. 2 cartas → Entrada. 3 a cada jugador. Resto = mazo. En la Noche
-de Guardia, los cuatro ases se separan antes del reparto y quedan visibles en
-el Llavero de Ases.
+Barajar 52. 2 cartas → Entrada. 3 a cada jugador, o 5 a la única mano en
+solitario. Resto = mazo. En la Noche de Guardia, los cuatro ases permanecen en
+la baraja y pueden salir en la Entrada, en las manos o mediante el robo normal.
+El Llavero de Ases solo puede recuperar uno que todavía siga oculto en el mazo.
 
 ### Turno
 1. Al empezar turno se roba 1 del mazo (si queda).
@@ -142,7 +144,11 @@ el Llavero de Ases.
    confeti + `RideFinale` ~3200 ms, **después** `advanceTurn`.
    Si no se completa, pasa el turno al instante.
 
-Los jugadores pueden hablar.
+Los jugadores pueden hablar. En solitario, después de cada colocación vuelve a
+jugar la misma mano. El solitario está disponible en los seis retos. Si no
+puede colocar ni intercambiar, una confirmación termina la jornada por bloqueo,
+salvo en Tormenta y 00:13: se esperan dos turnos bloqueados para que el frente
+pueda cambiar.
 
 ### Intercambios (aforo)
 - Compartidos y limitados por `exchangeLimit(state)`.
@@ -152,9 +158,10 @@ Los jugadores pueden hablar.
 - La primera carta de la Entrada se cierra al quedar una maniobra; la segunda,
   al agotar el límite. Aforo completo: no más cambios.
 - Completadas: no se intercambia en ellas.
-- En Noche, una figura también puede cambiarse por un as del llavero solo si
-  ese as puede colocarse inmediatamente en un sector con suministro. La figura
-  vuelve al mazo y el intercambio consume una maniobra.
+- En Noche, una figura también puede cambiarse mediante el llavero por un as
+  que todavía siga oculto en el mazo, solo si ese as puede colocarse
+  inmediatamente en un sector con suministro. La figura vuelve al mazo y el
+  intercambio consume una maniobra.
 
 ### Figuras
 J, Q, K **no rellenan** montaña rusa, terror, túnel, bosque ni restaurante.
@@ -173,9 +180,10 @@ atracciones **completas**. Es **opcional**.
   “El parque está resuelto” + **Cerrar el parque** + opcional
   “Dejar un visitante”.
 - Si está atascado de verdad: “Estás bloqueado, no puedes montar en nada”
-  + **Pasar turno**. En los modos sin tormenta bastan dos pases consecutivos.
-  Tormenta y 00:13 esperan cuatro pases (dos rondas completas) para no cerrar
-  por una rotación meteorológica recuperable.
+  + **Pasar turno**. En solitario, una confirmación declara el bloqueo. En los
+  modos de dos jugadores sin tormenta bastan dos pases consecutivos.
+  Tormenta y 00:13 esperan dos rondas completas: dos turnos solitarios o cuatro
+  pases en pareja, para no cerrar por una rotación meteorológica recuperable.
 - También acaba si se vacían mazo y manos.
 
 ### Pantallas
@@ -323,7 +331,8 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
 - HUD: chip de mazo, botón de cambios con el saldo real del modo, reglas,
   mute y salir.
 - La Entrada nocturna incluye el objeto ilustrado **Llavero de Ases**, con aro,
-  cadenita, cuatro colgantes y el estado real de cada as.
+  cadenita, cuatro colgantes y el estado real de los ases que siguen ocultos en
+  el mazo. Los que ya han salido aparecen como «En circulación».
 - Intercambio: overlay de dos cartas que cruzan (`swapFx`).
 
 ---
@@ -371,7 +380,8 @@ Todo sintético en `src/lib/game/audio.ts` (Web Audio). Sin mp3.
 - límites por modo y cierre relativo de la Entrada
 - Llavero de Ases, intercambio de figura y A♠ condicionado
 - generador nocturno aun con cambios disponibles
-- cuatro pases antes del bloqueo en Tormenta/00:13
+- dos turnos solitarios o cuatro pases en pareja antes del bloqueo en Tormenta/00:13
+- una única mano ampliada en los seis retos solitarios
 
 Al portar, ejecuta esos tests primero.
 

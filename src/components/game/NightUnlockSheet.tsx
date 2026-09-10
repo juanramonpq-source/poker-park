@@ -18,6 +18,7 @@ export function NightUnlockSheet() {
   const canExchange = emergency && game.hands[game.currentPlayer].some(
     (card) => legalExchanges(game, card.id).length > 0,
   );
+  const solo = game.mode === "solo";
 
   return (
     <div className="night-unlock-layer" role="dialog" aria-modal="true" aria-labelledby="night-unlock-title">
@@ -36,8 +37,12 @@ export function NightUnlockSheet() {
         </h2>
         <p className="night-unlock-copy">
           {emergency
-            ? `${game.names[game.currentPlayer]} no puede colocar ahora. Podéis registrar una incidencia y alimentar un sector, o gastar antes uno de los cambios disponibles.`
-            : "Como personal de mantenimiento, elegid qué atracción comprobaréis a continuación."}
+            ? solo
+              ? "No puedes colocar ahora. Puedes registrar una incidencia y alimentar un sector, o gastar antes uno de los cambios disponibles."
+              : `${game.names[game.currentPlayer]} no puede colocar ahora. Podéis registrar una incidencia y alimentar un sector, o gastar antes uno de los cambios disponibles.`
+            : solo
+              ? "Como personal de mantenimiento, elige qué atracción comprobarás a continuación."
+              : "Como personal de mantenimiento, elegid qué atracción comprobaréis a continuación."}
         </p>
         <div className="night-sector-options">
           {choices.map((id) => (

@@ -7,6 +7,7 @@ import {
   Lightbulb,
   LockKeyhole,
   Sparkles,
+  User,
   UserRound,
   Users,
   X,
@@ -23,7 +24,7 @@ type MasterMode = Exclude<GameChallenge, "classic" | "night">;
 const FESTIVAL_BRIEFING = [
   "La meta sigue siendo completar las 7 atracciones, con exactamente las mismas reglas que en una jornada normal.",
   "Cada carta colocada legalmente en una atracción distinta de la anterior aumenta el combo: ×1, ×2, ×3…",
-  "Si repetís la misma atracción en dos colocaciones seguidas, el combo vuelve a ×1. Las bombillas indican el brillo conseguido; no cambian qué cartas son válidas.",
+  "Repetir la misma atracción en dos colocaciones seguidas devuelve el combo a ×1. Las bombillas indican el brillo conseguido; no cambian qué cartas son válidas.",
 ];
 
 const MIRROR_BRIEFING = [
@@ -76,7 +77,7 @@ const MASTER_MODES: {
     id: "impossible",
     title: "Poker Park 00:13",
     kicker: "El parque imposible",
-    rule: "Espejo, tormenta y combos de luz en una única jornada final. No tiene cronómetro: solo acaba si cerráis el parque, se agotan las cartas o ambos os bloqueáis.",
+    rule: "Espejo, tormenta y combos de luz en una única jornada final. No tiene cronómetro: solo acaba al cerrar el parque, agotar las cartas o confirmar el bloqueo.",
     reward: "Final verdadero, Reverso DUAL y Galería Maestro",
     changes: 6,
     icon: Crown,
@@ -148,7 +149,7 @@ export function MasterPassOverlay({
                 <ol>
                   <li><span>1</span>Se termina al pulsar <strong>Cerrar</strong>.</li>
                   <li><span>2</span>Se termina si ya no queda ninguna carta en el mazo ni en las manos.</li>
-                  <li><span>3</span>Con tormenta solo se declara bloqueo tras dos rondas completas —cuatro pases seguidos— sin poder colocar ni intercambiar.</li>
+                  <li><span>3</span>Con tormenta el bloqueo espera dos rondas: dos turnos sin jugada en solitario o cuatro pases en pareja.</li>
                 </ol>
               </section>
             ) : null}
@@ -163,6 +164,7 @@ export function MasterPassOverlay({
             <div className="master-start-actions">
               <Button size="lg" onClick={() => onStart("hotseat", selectedMode.id)}><Users /> En pareja</Button>
               <Button size="lg" variant="secondary" onClick={() => onStart("ai", selectedMode.id)}><UserRound /> Con compañero</Button>
+              <Button size="lg" variant="secondary" className="master-start-solo" onClick={() => onStart("solo", selectedMode.id)}><User /> En solitario</Button>
             </div>
           </div>
         ) : <p className="master-select-hint">Toca una entrada para consultar su recompensa y empezar.</p>}

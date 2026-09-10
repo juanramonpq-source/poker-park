@@ -21,7 +21,7 @@ import type {
   GameState,
   Mode,
 } from "./types.ts";
-import { ATTRACTION_IDS } from "./types.ts";
+import { ATTRACTION_IDS, HAND_START, SOLO_HAND_START } from "./types.ts";
 
 function clone<T>(value: T): T {
   return structuredClone(value);
@@ -42,24 +42,25 @@ export function createGame(
   challenge: GameChallenge = "classic",
   difficulty: GameDifficulty = "standard",
 ): GameState {
-  const fullDeck = shuffle(makeDeck());
-  const aceRack = challenge === "night"
-    ? fullDeck
-        .filter(isAce)
-        .sort((a, b) => ["hearts", "spades", "diamonds", "clubs"].indexOf(a.suit) - ["hearts", "spades", "diamonds", "clubs"].indexOf(b.suit))
-    : [];
-  const shuffled = challenge === "night" ? fullDeck.filter((card) => !isAce(card)) : fullDeck;
+  const solo = mode === "solo";
+  const shuffled = shuffle(makeDeck());
   const entrance0 = shuffled.pop()!;
   const entrance1 = shuffled.pop()!;
-  const hand0: Card[] = [shuffled.pop()!, shuffled.pop()!, shuffled.pop()!];
-  const hand1: Card[] = [shuffled.pop()!, shuffled.pop()!, shuffled.pop()!];
+  const hand0Size = solo ? SOLO_HAND_START : HAND_START;
+  const hand0: Card[] = Array.from({ length: hand0Size }, () => shuffled.pop()!);
+  const hand1: Card[] = solo
+    ? []
+    : Array.from({ length: HAND_START }, () => shuffled.pop()!);
 
   const attractions = Object.fromEntries(
     ATTRACTION_IDS.map((id) => [id, emptyAttraction(id)]),
   ) as GameState["attractions"];
 
-  const defaultNames: [string, string] =
-    mode === "ai" ? ["Tú", "Compañero"] : ["Jugador 1", "Jugador 2"];
+  const defaultNames: [string, string] = mode === "ai"
+    ? ["Tú", "Compañero"]
+    : solo
+      ? ["Tú", ""]
+      : ["Jugador 1", "Jugador 2"];
 
   const state: GameState = {
     version: 7,
@@ -77,7 +78,6 @@ export function createGame(
             ],
             pendingUnlock: false,
             emergencyUses: 0,
-            aceRack,
           }
         : undefined,
     festival: challenge === "festival" || challenge === "impossible"
@@ -98,16 +98,24 @@ export function createGame(
     consecutivePasses: 0,
     lastMessage:
       challenge === "night"
-        ? "Comienza la guardia. Dos sectores tienen corriente."
+        ? solo
+          ? "Comienza tu guardia. Dos sectores tienen corriente."
+          : "Comienza la guardia. Dos sectores tienen corriente."
         : challenge === "festival"
-          ? "Festival de las Luces: alternad atracciones para encadenar bombillas."
+          ? solo
+            ? "Festival de las Luces: alterna atracciones para encadenar bombillas."
+            : "Festival de las Luces: alternad atracciones para encadenar bombillas."
           : challenge === "mirror"
             ? "El parque se refleja. Los recorridos empiezan al otro lado."
             : challenge === "storm"
-              ? "Se acerca tormenta. Consultad el pronóstico antes de jugar."
+              ? solo
+                ? "Se acerca tormenta. Consulta el pronóstico antes de jugar."
+                : "Se acerca tormenta. Consultad el pronóstico antes de jugar."
               : challenge === "impossible"
                 ? "Son las 00:13. Todas las reglas secretas están activas."
-                : "El parque abre. El sol está alto.",
+                : solo
+                  ? "El parque abre para ti. Cinco cartas preparan tu primera ruta."
+                  : "El parque abre. El sol está alto.",
     lastCompleted: null,
     swappedCardId: null,
     pendingAdvance: false,
@@ -142,11 +150,19 @@ function removeFromHand(state: GameState, cardId: string): Card {
 }
 
 export function remainingCards(state: GameState): Card[] {
-  return [...state.hands[0], ...state.hands[1], ...state.deck, ...(state.night?.aceRack ?? [])];
+  return [...state.hands[0], ...state.hands[1], ...state.deck];
 }
 
 export function isNightShift(state: GameState): boolean {
   return state.challenge === "night" && Boolean(state.night);
+}
+
+export function nightAceCandidates(state: GameState): Card[] {
+  if (!isNightShift(state)) return [];
+  const suitOrder = ["hearts", "spades", "diamonds", "clubs"];
+  return state.deck
+    .filter(isAce)
+    .sort((a, b) => suitOrder.indexOf(a.suit) - suitOrder.indexOf(b.suit));
 }
 
 export function isAttractionUnlocked(state: GameState, id: AttractionId): boolean {
@@ -174,8 +190,19 @@ export function exchangeLimit(state: Pick<GameState, "challenge" | "difficulty">
   }
 }
 
-export function passLimit(state: Pick<GameState, "challenge">): number {
+export function passLimit(state: Pick<GameState, "challenge" | "mode">): number {
+  if (state.mode === "solo") {
+    return state.challenge === "storm" || state.challenge === "impossible" ? 2 : 1;
+  }
   return state.challenge === "storm" || state.challenge === "impossible" ? 4 : 2;
+}
+
+function advanceCurrentPlayer(state: GameState) {
+  if (state.mode === "solo") {
+    state.currentPlayer = 0;
+    return;
+  }
+  state.currentPlayer = state.currentPlayer === 0 ? 1 : 0;
 }
 
 export function nightUnlockChoices(state: GameState): AttractionId[] {
@@ -263,7 +290,7 @@ export function legalExchanges(state: GameState, cardId: string): ExchangeTarget
   }
 
   if (isNightShift(state) && isFace(card)) {
-    for (const ace of state.night?.aceRack ?? []) {
+    for (const ace of nightAceCandidates(state)) {
       if (placementOptionsForCard(state, ace).length > 0) {
         targets.push({ kind: "ace-rack", cardId: ace.id });
       }
@@ -360,7 +387,7 @@ function finishAction(prev: GameState, next: GameState, message: string): GameSt
   next.pendingAdvance = false;
   const ended = maybeEnd(next);
   if (ended.ended) return ended;
-  ended.currentPlayer = ended.currentPlayer === 0 ? 1 : 0;
+  advanceCurrentPlayer(ended);
   return beginTurn(ended);
 }
 
@@ -403,13 +430,12 @@ export function advanceTurn(state: GameState): GameState {
   next.pendingAdvance = false;
   next.lastCompleted = null;
   next.drawnThisTurn = false;
-  next.currentPlayer = next.currentPlayer === 0 ? 1 : 0;
+  advanceCurrentPlayer(next);
   return beginTurn(next);
 }
 
 function maybeEnd(state: GameState): GameState {
-  const cardsLeft =
-    state.deck.length + state.hands[0].length + state.hands[1].length + (state.night?.aceRack?.length ?? 0);
+  const cardsLeft = state.deck.length + state.hands[0].length + state.hands[1].length;
   if (cardsLeft === 0) {
     state.ended = true;
     state.endReason = "empty";
@@ -493,10 +519,9 @@ export function exchangeCard(state: GameState, cardId: string, target: ExchangeT
     taken = next.attractions[target.attractionId].slots[target.index]!;
     next.attractions[target.attractionId].slots[target.index] = handCard;
   } else {
-    const rack = next.night?.aceRack ?? [];
-    const rackIndex = rack.findIndex((card) => card.id === target.cardId);
-    if (rackIndex < 0) throw new Error("Ese as ya no está en el llavero");
-    [taken] = rack.splice(rackIndex, 1);
+    const deckIndex = next.deck.findIndex((card) => card.id === target.cardId);
+    if (deckIndex < 0) throw new Error("Ese as ya ha salido del mazo");
+    [taken] = next.deck.splice(deckIndex, 1);
     next.deck = shuffle([...next.deck, handCard]);
   }
   hand[handIndex] = taken;
@@ -513,7 +538,7 @@ export function exchangeCard(state: GameState, cardId: string, target: ExchangeT
         ? " La primera entrada se cierra."
         : "";
   next.lastMessage = target.kind === "ace-rack"
-    ? `Llavero de Ases ${next.exchangesUsed}/${limit}.${aforo} Coloca ahora el as recibido.`
+    ? `Llavero de Ases ${next.exchangesUsed}/${limit}.${aforo} El as seguía oculto en el mazo: colócalo ahora.`
     : `Intercambio ${next.exchangesUsed}/${limit}.${aforo} Coloca la carta nueva.`;
   return next;
 }
@@ -527,10 +552,12 @@ export function passTurn(state: GameState, force = false): GameState {
   advanceStorm(next);
   next.consecutivePasses += 1;
   next.drawnThisTurn = false;
-  next.lastMessage = `${next.names[next.currentPlayer]} no puede colocar.`;
+  next.lastMessage = next.mode === "solo"
+    ? "No puedes colocar ninguna carta."
+    : `${next.names[next.currentPlayer]} no puede colocar.`;
   const ended = maybeEnd(next);
   if (ended.ended) return ended;
-  ended.currentPlayer = ended.currentPlayer === 0 ? 1 : 0;
+  advanceCurrentPlayer(ended);
   return beginTurn(ended);
 }
 
@@ -562,7 +589,7 @@ export const RATING_SCALE: { count: number; rating: DayRating; title: string }[]
   { count: 7, rating: "perfect", title: "Fuegos sobre el parque" },
 ];
 
-export function ratingCopy(rating: DayRating): { title: string; body: string } {
+export function ratingCopy(rating: DayRating, solo = false): { title: string; body: string } {
   switch (rating) {
     case "empty":
       return {
@@ -577,7 +604,9 @@ export function ratingCopy(rating: DayRating): { title: string; body: string } {
     case "improvised":
       return {
         title: "Día improvisado",
-        body: "No siempre da tiempo a todo. Lo importante es haber decidido juntos.",
+        body: solo
+          ? "No siempre da tiempo a todo. Lo importante es haber elegido tu ruta."
+          : "No siempre da tiempo a todo. Lo importante es haber decidido juntos.",
       };
     case "fair":
       return {
@@ -592,7 +621,9 @@ export function ratingCopy(rating: DayRating): { title: string; body: string } {
     case "round":
       return {
         title: "Día redondo",
-        body: "Casi el mapa entero. Os conocéis el parque de memoria.",
+        body: solo
+          ? "Casi el mapa entero. Ya conoces el parque de memoria."
+          : "Casi el mapa entero. Os conocéis el parque de memoria.",
       };
     case "unforgettable":
       return {
@@ -602,7 +633,9 @@ export function ratingCopy(rating: DayRating): { title: string; body: string } {
     case "perfect":
       return {
         title: "Fuegos sobre el parque",
-        body: "Todas las atracciones. Todas las vueltas. El parque es vuestro.",
+        body: solo
+          ? "Todas las atracciones. Todas las vueltas. El parque es tuyo."
+          : "Todas las atracciones. Todas las vueltas. El parque es vuestro.",
       };
   }
 }
@@ -617,21 +650,22 @@ export interface DayBadge {
 export function dayBadges(state: GameState): DayBadge[] {
   const done = completedAttractions(state);
   const n = done.length;
+  const solo = state.mode === "solo";
   const badges: DayBadge[] = [];
   if (n >= 1) badges.push({ id: "ticket", name: "Ticket de entrada", hint: "Al menos una vuelta." });
   if (n >= 2) badges.push({ id: "cotton", name: "Algodón de azúcar", hint: "El día ya huele a feria." });
   if (n >= 3) badges.push({ id: "band", name: "Pulsera de feria", hint: "Tres atracciones, tres recuerdos." });
-  if (n >= 4) badges.push({ id: "map", name: "Mapa doblado", hint: "Ya conocéis los recovecos." });
+  if (n >= 4) badges.push({ id: "map", name: "Mapa doblado", hint: solo ? "Ya conoces los recovecos." : "Ya conocéis los recovecos." });
   if (n >= 5) badges.push({ id: "gold", name: "Ticket dorado", hint: "Un día que se cuenta." });
   if (n >= 6) badges.push({ id: "key", name: "Llave de la noria", hint: "Casi el parque entero." });
-  if (n >= 7) badges.push({ id: "crown", name: "Dueños del parque", hint: "Todas las vueltas. Todas." });
+  if (n >= 7) badges.push({ id: "crown", name: solo ? "Dueño del parque" : "Dueños del parque", hint: "Todas las vueltas. Todas." });
 
   if (done.includes("coaster"))
     badges.push({ id: "coaster", name: "Grito en la cima", hint: "La montaña rusa, entera.", secret: true });
   if (done.includes("love"))
     badges.push({ id: "love", name: "Cumbre del corazón", hint: "El arco se cerró.", secret: true });
   if (done.includes("haunted"))
-    badges.push({ id: "boo", name: "Susto de feria", hint: "Salisteis riendo.", secret: true });
+    badges.push({ id: "boo", name: "Susto de feria", hint: solo ? "Saliste riendo." : "Salisteis riendo.", secret: true });
   if (done.includes("chairs"))
     badges.push({ id: "chairs", name: "Vuelo corto", hint: "La torre aguantó.", secret: true });
   if (done.includes("forest") && done.includes("love") && done.includes("chairs"))
