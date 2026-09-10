@@ -96,6 +96,65 @@ try {
   assert.equal((await saved()).night.jokerUsed, true);
   await page.screenshot({ path: "screenshots/night-tools-mobile.png" });
 
+  // Both selection orders must work, including a box-only emergency exchange.
+  for (const emergency of [false, true]) {
+    const swap = fixture("night");
+    swap.difficulty = "standard";
+    swap.night.jackBox = [c("clubs-11")];
+    swap.entrance = [c("clubs-2"), c("hearts-3")];
+    if (emergency) {
+      swap.hands = [[], []];
+      swap.night.unlocked = ["restaurant", "restrooms"];
+      swap.night.route = ["coaster", "forest", "chairs", "love", "haunted"];
+    }
+    await load(swap);
+    const beforeSwap = await saved();
+    if (emergency) await page.getByRole("button", { name: "Usar un cambio antes" }).click();
+    await page.getByRole("button", { name: /Caseta de guardia/ }).click();
+    const jackDialog = page.getByRole("dialog", { name: "Caseta de guardia", exact: true });
+    if (!emergency) {
+      for (const width of [390, 1280]) {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 800 });
+        await page.screenshot({ path: `screenshots/jack-exchange-box-${width}.png` });
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+      }
+      await page.setViewportSize({ width: 390, height: 844 });
+    }
+    await jackDialog.getByRole("button", { name: "J de tréboles", exact: true }).click();
+    if (!emergency) await page.getByRole("button", { name: /Intercambiar la carta seleccionada/ }).click();
+    await page.locator(".park-entrance").getByRole("button", { name: "2 de tréboles", exact: true }).click();
+    const exchanged = await saved();
+    assert.equal(exchanged.entrance[0].id, "clubs-11");
+    assert.equal(exchanged.night.jackBox.length, 0);
+    assert.equal(exchanged.swappedCardId, "clubs-2");
+    assert.equal(exchanged.exchangesUsed, 1);
+    assert.equal(exchanged.hands[0].length, beforeSwap.hands[0].length + 1);
+    assert.deepEqual(exchanged.deck, beforeSwap.deck);
+    await page.reload();
+    await page.getByRole("button", { name: "Continuar la guardia", exact: true }).click();
+    assert.equal((await saved()).swappedCardId, "clubs-2");
+    await page.locator("footer").getByRole("button", { name: "2 de tréboles", exact: true }).click();
+    await slot("restaurant", 0);
+    assert.equal((await saved()).attractions.restaurant.slots[0].id, "clubs-2");
+  }
+
+  const wideHand = fixture("night");
+  wideHand.hands = [[
+    c("spades-2"), c("clubs-2"), c("diamonds-2"), c("hearts-2"), c("spades-3"),
+    c("clubs-3"), c("diamonds-3"), c("hearts-3"), c("spades-4"), c("clubs-4"),
+  ], []];
+  wideHand.night.jackBox = [];
+  await load(wideHand);
+  const handCards = page.locator(".hand-cards .playing-card");
+  assert.equal(await handCards.count(), 10);
+  assert.equal(await page.locator(".hand-cards.is-compact").getAttribute("data-hand-count"), "10");
+  const bounds = await handCards.evaluateAll(cards => cards.map(card => card.getBoundingClientRect()).map(rect => ({ left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom, viewportWidth: innerWidth, viewportHeight: innerHeight })));
+  assert.ok(bounds.every(rect => rect.left >= 0 && rect.right <= rect.viewportWidth && rect.top >= 0 && rect.bottom <= rect.viewportHeight));
+  assert.ok(bounds.every(rect => rect.right - rect.left >= 44 && rect.bottom - rect.top >= 44));
+  await handCards.nth(9).click();
+  assert.equal(await page.locator(".hand-card-on").count(), 1);
+  await page.screenshot({ path: "screenshots/night-expanded-hand-mobile.png" });
+
   const six = fixture("night");
   const full = {
     haunted: ["spades-2", "spades-3", "spades-4", "spades-5", "spades-1"],
@@ -118,5 +177,5 @@ try {
   await page.getByRole("button", { name: /Pase Maestro/ }).waitFor();
   assert.equal(await page.getByRole("button", { name: "Activar interfaz nocturna", exact: true }).count(), 0);
   assert.deepEqual(errors, []);
-  console.log(JSON.stringify({ ok: true, reconsider: true, confirmOnce: true, jackBox: true, joker: true, resume: true, sixUnlock: true, errors }));
+  console.log(JSON.stringify({ ok: true, reconsider: true, confirmOnce: true, jackBox: true, jackExchange: true, jackEmergency: true, expandedHand: true, joker: true, resume: true, sixUnlock: true, errors }));
 } finally { await browser.close(); }

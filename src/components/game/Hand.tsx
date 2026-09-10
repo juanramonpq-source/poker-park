@@ -95,6 +95,11 @@ export function Hand() {
   const hand = game.hands[viewer];
   const locked = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance || (game.mode === "ai" && game.currentPlayer === 1) || (game.mode === "online" && (!onlineConnected || onlineLocalPlayer !== game.currentPlayer));
   const selectedCard = selectedCardId ? playableCard(game, selectedCardId) : undefined;
+  const displayedCards = [
+    ...hand,
+    ...(selectedCard && !hand.some(c => c.id === selectedCard.id) ? [selectedCard] : []),
+  ];
+  const compactHand = displayedCards.length > 6;
   const selectedCanExchange = Boolean(
     selectedCard && !game.swappedCardId && legalExchanges(game, selectedCard.id).length,
   );
@@ -227,10 +232,15 @@ export function Hand() {
             </button>
           ) : null}
         </div>
-        <div className="hand-cards" role="group" aria-label={`Tu mano: ${hand.length} cartas`}>
-          {[...hand, ...(selectedCard && !hand.some(c => c.id === selectedCard.id) ? [selectedCard] : [])].map((card, i) => {
+        <div
+          className={cn("hand-cards", compactHand && "is-compact")}
+          role="group"
+          aria-label={`Tu mano: ${hand.length} cartas`}
+          data-hand-count={displayedCards.length}
+        >
+          {displayedCards.map((card, i) => {
             const selected = selectedCardId === card.id;
-            const tilt = (i - (hand.length - 1) / 2) * 5.5;
+            const tilt = (i - (displayedCards.length - 1) / 2) * (compactHand ? 3.7 : 5.5);
             return (
               <span
                 key={card.id}
@@ -244,7 +254,7 @@ export function Hand() {
               >
                 <PlayingCard
                   card={card}
-                  size="md"
+                  size={compactHand ? "sm" : "md"}
                   selected={selected}
                   dimmed={Boolean(selectedCardId) && !selected}
                   className={swapFx?.incoming.id === card.id ? "card-swap-in" : undefined}

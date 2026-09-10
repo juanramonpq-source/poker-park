@@ -2,6 +2,7 @@ import { ArrowLeftRight, BatteryCharging, LockKeyhole, MoonStar, Wrench } from "
 import { ATTRACTION_DEFS } from "@/lib/game/attractions";
 import { legalExchanges, nightEmergencyAvailable, nightUnlockChoices } from "@/lib/game/engine";
 import { useGameStore } from "@/store/game-store";
+import { playableCards } from "@/lib/game/night-tools";
 
 export function NightUnlockSheet() {
   const game = useGameStore((state) => state.game);
@@ -18,7 +19,7 @@ export function NightUnlockSheet() {
   if (!game.night.pendingUnlock && !emergency) return null;
   const choices = nightUnlockChoices(game);
   if (choices.length === 0) return null;
-  const canExchange = emergency && game.hands[game.currentPlayer].some(
+  const canExchange = emergency && playableCards(game).some(
     (card) => legalExchanges(game, card.id).length > 0,
   );
   const solo = game.mode === "solo";

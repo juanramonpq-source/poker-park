@@ -148,6 +148,10 @@ En guardia solitaria, `storeNightJacks` aparta las Jotas de la mano a `jackBox`
 y roba un reemplazo por cada una. Se aplica al reparto, robo, intercambio y
 carga de un guardado anterior. Las Jotas de la Entrada no se apartan hasta
 recibirse. Se colocan desde la caseta en Sillas mediante la acción normal.
+También se intercambian desde la caseta con la Entrada: la Jota sale de
+`jackBox`, ocupa esa entrada y la recibida pasa a la mano con `swappedCardId`.
+Se conserva el límite de cambios y el turno; no se roba por sacar una Jota
+de la caseta. La caseta no habilita cambios con huecos ni con el llavero.
 En solitario Fácil hay un comodín adicional (`night-joker:palo:valor`): se
 prepara en el llavero, se selecciona sin consumirlo y `placeCard` fija su carta
 y marca `jokerUsed`. Un intercambio posterior conserva ese valor y palo.

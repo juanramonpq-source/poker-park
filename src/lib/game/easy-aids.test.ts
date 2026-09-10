@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { createGame, exchangeCard, hasRequiredAction, legalPlacements, placeCard, remainingCards } from "./engine.ts";
+import { createGame, exchangeCard, exchangeLimit, hasRequiredAction, legalExchanges, legalPlacements, placeCard, remainingCards } from "./engine.ts";
 import { makeDeck } from "./deck.ts";
 import { hasMirrorRules } from "./challenges.ts";
 import { hasJackBox, jokerAvailable, jokerOptions, storeNightJacks } from "./night-tools.ts";
@@ -58,6 +58,74 @@ describe("caseta y comodín nocturnos", () => {
     assert.equal(next.swappedCardId, "clubs-2");
     assert.equal(next.night!.jackBox![0].id, "clubs-11");
     assert.equal(next.exchangesUsed, 1);
+  });
+  it("cambia una Jota de la caseta por la Entrada sin robar ni perder cartas", () => {
+    for (const difficulty of ["easy", "standard"] as const) {
+      const g = createGame("solo", undefined, "night", difficulty);
+      g.night!.jackBox = [card("clubs-11")];
+      g.entrance = [card("clubs-2"), card("hearts-3")];
+      hand(g, ["hearts-12"]);
+      const before = structuredClone(g);
+      assert.deepEqual(legalExchanges(g, "clubs-11"), [{ kind: "entrance", index: 0 }, { kind: "entrance", index: 1 }]);
+      const next = exchangeCard(g, "clubs-11", { kind: "entrance", index: 0 });
+      assert.deepEqual(g, before);
+      assert.equal(next.entrance[0].id, "clubs-11");
+      assert.equal(next.night!.jackBox!.length, 0);
+      assert.deepEqual(next.hands[0].map(c => c.id), ["hearts-12", "clubs-2"]);
+      assert.equal(next.swappedCardId, "clubs-2");
+      assert.equal(next.exchangesUsed, 1);
+      assert.equal(next.currentPlayer, g.currentPlayer);
+      assert.equal(next.drawnThisTurn, g.drawnThisTurn);
+      assert.deepEqual(next.deck, g.deck);
+      assert.ok(isGameState(next));
+      const cards = [...remainingCards(next), ...next.entrance];
+      assert.equal(cards.length, 52);
+      assert.equal(new Set(cards.map(c => c.id)).size, 52);
+      assert.doesNotThrow(() => placeCard(next, "clubs-2", "restaurant", 0));
+    }
+  });
+  it("respeta entradas cerradas, aforo y carta pendiente al cambiar desde la caseta", () => {
+    const g = createGame("solo", undefined, "night");
+    g.night!.jackBox = [card("clubs-11")];
+    g.exchangesUsed = exchangeLimit(g) - 1;
+    g.entranceFaceDown = [true, false];
+    assert.deepEqual(legalExchanges(g, "clubs-11"), [{ kind: "entrance", index: 1 }]);
+    assert.throws(() => exchangeCard(g, "clubs-11", { kind: "entrance", index: 0 }));
+    const next = exchangeCard(g, "clubs-11", { kind: "entrance", index: 1 });
+    assert.deepEqual(next.entranceFaceDown, [true, true]);
+    g.swappedCardId = "hearts-2";
+    assert.deepEqual(legalExchanges(g, "clubs-11"), []);
+    g.swappedCardId = null; g.exchangesUsed = exchangeLimit(g);
+    assert.deepEqual(legalExchanges(g, "clubs-11"), []);
+    assert.throws(() => exchangeCard(g, "clubs-11", { kind: "entrance", index: 1 }));
+  });
+  it("reemplaza otra Jota recibida y reconoce la caseta como salida al bloqueo", () => {
+    const g = createGame("solo", undefined, "night");
+    g.night!.jackBox = [card("clubs-11")];
+    g.night!.route = []; g.night!.unlocked = [...ATTRACTION_IDS];
+    g.hands = [[], []]; g.deck = [];
+    g.entrance = [card("hearts-11"), card("clubs-2")];
+    assert.equal(hasRequiredAction(g), true);
+    g.entranceFaceDown = [true, true];
+    assert.equal(hasRequiredAction(g), false);
+    g.entranceFaceDown = [false, false];
+    g.deck = [card("clubs-3")];
+    const next = exchangeCard(g, "clubs-11", { kind: "entrance", index: 0 });
+    assert.equal(next.entrance[0].id, "clubs-11");
+    assert.deepEqual(next.night!.jackBox!.map(c => c.id), ["hearts-11"]);
+    assert.equal(next.swappedCardId, "clubs-3");
+    assert.deepEqual(next.hands[0].map(c => c.id), ["clubs-3"]);
+    assert.equal(next.deck.length, 0);
+  });
+  it("no permite intercambiar un comodín sin colocar ni casetas de otros modos", () => {
+    const g = createGame("solo", undefined, "night", "easy");
+    assert.deepEqual(legalExchanges(g, "night-joker:clubs:11"), []);
+    g.night!.jackBox = [card("clubs-11")];
+    g.hands = [[], []];
+    for (const mode of ["online", "ai", "hotseat"] as const) {
+      g.mode = mode;
+      assert.deepEqual(legalExchanges(g, "clubs-11"), []);
+    }
   });
   it("limita caseta y comodín a sus modos y dificultades", () => {
     for (const mode of ["solo", "hotseat", "ai", "online"] as const) {

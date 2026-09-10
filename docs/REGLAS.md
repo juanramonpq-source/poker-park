@@ -169,7 +169,10 @@ pareja, cada integrante mantiene su mano independiente.
   otra Jota. Las Jotas de la Entrada permanecen allí hasta recibirse.
 - Las Jotas de la caseta se pueden colocar en Sillas cuando su torre esté lista.
   Guardarlas no gasta turno ni cambio; colocarlas consume la colocación del
-  turno, seguida del robo normal. La caseta no es una fuente de intercambios.
+  turno, seguida del robo normal. También pueden cambiarse desde la caseta por
+  una carta visible de la Entrada: la Jota pasa a la Entrada y la carta recibida
+  a la mano. Consume un cambio del límite habitual, no termina el turno y no
+  roba un reemplazo adicional (salvo si la carta recibida es otra Jota).
 - En solitario Fácil, el llavero incluye un **comodín de un solo uso** adicional
   a las 52 cartas. Se eligen valor y palo; quedan fijados al colocarlo. Consume
   la colocación, no un intercambio. Respeta suministro, orden y dependencias.

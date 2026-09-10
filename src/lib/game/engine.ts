@@ -275,7 +275,7 @@ export function legalVisits(state: GameState, cardId: string): AttractionId[] {
 
 export function legalExchanges(state: GameState, cardId: string): ExchangeTarget[] {
   if (state.ended || state.exchangesUsed >= exchangeLimit(state) || state.swappedCardId) return [];
-  const card = state.hands[state.currentPlayer].find((c) => c.id === cardId);
+  const card = playableCards(state).find((c) => c.id === cardId);
   if (!card) return [];
   const targets: ExchangeTarget[] = [];
 
@@ -285,6 +285,9 @@ export function legalExchanges(state: GameState, cardId: string): ExchangeTarget
     if (parkCard.id === card.id) return;
     targets.push({ kind: "entrance", index });
   });
+
+  // Stored Jacks retain their Entrance exchange without becoming hand cards.
+  if (hasJackBox(state) && state.night?.jackBox?.some(c => c.id === cardId)) return targets;
 
   for (const id of ATTRACTION_IDS) {
     if (!isAttractionUnlocked(state, id)) continue;
@@ -521,7 +524,7 @@ export function exchangeCard(state: GameState, cardId: string, target: ExchangeT
   const next = clone(state);
   const hand = next.hands[next.currentPlayer];
   const handIndex = hand.findIndex((c) => c.id === cardId);
-  const handCard = hand[handIndex]!;
+  const handCard = handIndex >= 0 ? hand[handIndex]! : removeFromHand(next, cardId);
   let taken: Card;
 
   if (target.kind === "entrance") {
@@ -536,7 +539,8 @@ export function exchangeCard(state: GameState, cardId: string, target: ExchangeT
     [taken] = next.deck.splice(deckIndex, 1);
     next.deck = shuffle([...next.deck, handCard]);
   }
-  hand[handIndex] = taken;
+  if (handIndex >= 0) hand[handIndex] = taken;
+  else hand.push(taken);
   next.exchangesUsed += 1;
   next.swappedCardId = taken.id;
   storeNightJacks(next);

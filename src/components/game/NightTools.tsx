@@ -4,7 +4,7 @@ import { BriefcaseBusiness, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PlayingCard } from "./PlayingCard";
 import { hasJackBox, jokerAvailable, jokerOptions } from "@/lib/game/night-tools";
-import { legalPlacements } from "@/lib/game/engine";
+import { legalExchanges, legalPlacements } from "@/lib/game/engine";
 import { rankLabel } from "@/lib/game/deck";
 import { useGameStore } from "@/store/game-store";
 import type { GameState, Suit, Rank } from "@/lib/game/types";
@@ -13,6 +13,7 @@ export function NightJackBox({ game, locked }: { game: GameState; locked: boolea
   const [open, setOpen] = useState(false);
   const select = useGameStore(s => s.selectCard);
   const selected = useGameStore(s => s.selectedCardId);
+  const exchangeMode = useGameStore(s => s.exchangeMode);
   if (!hasJackBox(game)) return null;
   const box = game.night?.jackBox ?? [];
   return <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -24,9 +25,9 @@ export function NightJackBox({ game, locked }: { game: GameState; locked: boolea
       <Dialog.Content className="game-help-dialog">
         <Dialog.Close className="game-help-close" aria-label="Cerrar caseta"><X /></Dialog.Close>
         <Dialog.Title>Caseta de guardia</Dialog.Title>
-        <Dialog.Description>Solo Jotas. Al llegar a tu mano, descansan aquí y robas otra carta si queda mazo. Puedes colocarlas en las Sillas cuando la torre esté lista: cuenta como tu colocación del turno.</Dialog.Description>
+        <Dialog.Description>Solo Jotas. Al llegar a tu mano, descansan aquí y robas otra carta si queda mazo. Puedes colocarlas en las Sillas cuando la torre esté lista, o seleccionar una y pulsar Cambiar para recibir una carta de la Entrada. El cambio consume una maniobra; después colocas la carta recibida.</Dialog.Description>
         <div className="night-jack-cards">{box.map(card => <PlayingCard key={card.id} card={card} size="sm"
-          legal={legalPlacements(game, card.id).length > 0} selected={selected === card.id}
+          legal={(exchangeMode ? legalExchanges(game, card.id) : legalPlacements(game, card.id)).length > 0} selected={selected === card.id}
           onClick={locked ? undefined : () => { select(card.id); setOpen(false); }} />)}</div>
         {!box.length ? <p>Las Jotas que robes aparecerán aquí.</p> : null}
       </Dialog.Content>

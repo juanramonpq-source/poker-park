@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { placementWarning, type PlacementWarning } from "@/lib/game/placement-warning";
-import { playableCard } from "@/lib/game/night-tools";
+import { playableCard, playableCards } from "@/lib/game/night-tools";
 import { chooseAiMove } from "@/lib/game/ai";
 import * as audio from "@/lib/game/audio";
 import {
@@ -521,9 +521,7 @@ export const useGameStore = create<GameStore>((set, get) => {
         audio.playSelect();
         audio.tapHaptic("select");
       }
-      set({ selectedCardId: next, placementCaution: null,
-        ...(get().game?.night?.jackBox?.some(card => card.id === next) ? { exchangeMode: false } : {}),
-      });
+      set({ selectedCardId: next, placementCaution: null });
     },
     toggleExchange: () => {
       if (!canAct()) return;
@@ -577,7 +575,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const { game, selectedCardId, exchangeMode } = get();
       if (!game || !selectedCardId || !exchangeMode || get().aiThinking) return;
       try {
-        const outgoing = game.hands[game.currentPlayer].find((c) => c.id === selectedCardId);
+        const outgoing = playableCard(game, selectedCardId);
         const next = exchangeCard(game, selectedCardId, target);
         juice(game, next, get().pulse);
         persist(next);
@@ -701,7 +699,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (!canAct()) return;
       const game = get().game;
       if (!game || !nightEmergencyAvailable(game)) return;
-      const canExchange = game.hands[game.currentPlayer].some(
+      const canExchange = playableCards(game).some(
         (card) => legalExchanges(game, card.id).length > 0,
       );
       if (!canExchange) return;
