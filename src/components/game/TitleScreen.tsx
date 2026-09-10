@@ -1,5 +1,5 @@
 import { BookOpen, Crown, FerrisWheel, MoonStar, Palette, ShieldCheck, Sparkles, User, Users, Wrench, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { playLifetimeUnlock, playUi, startChallengeBed, startTitleBed, unlockAudio } from "@/lib/game/audio";
 import {
   clearGame,
@@ -24,7 +24,8 @@ import { PairStartChooser } from "@/components/game/PairStartChooser";
 import { DifficultySelector } from "@/components/game/DifficultySelector";
 import { ClassicMedals } from "@/components/game/ClassicMedals";
 import { OnlineLobby } from "@/components/game/OnlineLobby";
-import { useEntranceMotion } from "@/components/game/useEntranceMotion";
+import { OpeningSequence } from "@/components/game/OpeningSequence";
+import { useOpeningSequence } from "@/components/game/useOpeningSequence";
 
 function Motes() {
   return (
@@ -39,7 +40,13 @@ function Motes() {
 const TUTORIAL_SEEN_KEY = "poker-park-tutorial-seen";
 
 export function TitleScreen() {
-  const entrancePace = useEntranceMotion("welcome");
+  const opening = useOpeningSequence();
+  const titleAction = useRef<HTMLButtonElement>(null);
+  const menuAction = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (opening.stage === "title") titleAction.current?.focus({ preventScroll: true });
+    if (opening.stage === "ready" && !new URL(location.href).searchParams.has("sala")) menuAction.current?.querySelector("button")?.focus({ preventScroll: true });
+  }, [opening.stage]);
   const start = useGameStore((s) => s.start);
   const resume = useGameStore((s) => s.resume);
   const game = useGameStore((s) => s.game);
@@ -223,7 +230,7 @@ export function TitleScreen() {
   return (
     <main
       className="title-screen fixed inset-0 h-dvh overflow-hidden bg-bg text-fg"
-      data-entrance-pace={entrancePace}
+      data-opening={opening.stage}
       data-menu-night={nightModeOpen || soloChoice?.challenge === "night" || pairSetup?.challenge === "night" || undefined}
       onPointerDown={wake}
     >
@@ -236,11 +243,10 @@ export function TitleScreen() {
         />
       </picture>
       <div className="title-vignette" />
-      <div className="title-sunrise" aria-hidden />
+      {opening.stage === "sun" ? <><div className="opening-park-fade" aria-hidden /><div className="opening-sunbeam" aria-hidden /></> : null}
       <div className="title-nightfall" aria-hidden />
-      <div className="title-flying-cards" aria-hidden>{["♠", "♥", "♣", "♦"].map((suit) => <span key={suit}>{suit}</span>)}</div>
       <Motes />
-      <div className="title-studio-strip">
+      <div className="title-studio-strip" inert={opening.stage !== "ready" || undefined}>
         <button type="button" className="title-studio-badge" aria-label="Poker Park por Pentonúi Games" onClick={tapStudio}>
           <img src="/brand/pentonui-games-icon.png" alt="" />
           <span>
@@ -251,7 +257,7 @@ export function TitleScreen() {
         <ClassicMedals earned={secrets.classicMedals} />
       </div>
 
-      <div className="title-shell">
+      <div className="title-shell" inert={!["title", "landing", "ready"].includes(opening.stage) || undefined}>
         <div className="title-hero">
           <div className="title-eyebrow">
             <FerrisWheel className={secrets.perfect ? "size-5 text-accent" : "size-5"} strokeWidth={1.5} />
@@ -259,7 +265,7 @@ export function TitleScreen() {
           </div>
 
           <h1 className="title-name">
-            Poker Park
+            {opening.stage === "title" ? <button ref={titleAction} type="button" className="opening-title-action" onClick={() => { wake(); opening.setStage("landing"); }}>Poker Park<span>Toca para entrar</span></button> : "Poker Park"}
           </h1>
           <p className="title-description">
             Vive un día en un parque de atracciones, guiado por una baraja francesa.
@@ -283,14 +289,14 @@ export function TitleScreen() {
           ) : null}
         </div>
 
-        <div className="title-panel stagger-in">
+        <div className="title-panel" inert={opening.stage !== "ready" || undefined}>
           <p className="title-menu-kicker">Elige cómo recorrer el parque</p>
-          <div className="title-actions">
-            <Button size="lg" className="w-full" onClick={() => openPairSetup()}>
+          <div ref={menuAction} className="title-actions">
+            <Button size="lg" className="w-full title-start-button" onClick={() => openPairSetup()}>
               <Users className="size-4" strokeWidth={1.75} />
               Jugar en pareja
             </Button>
-            <Button size="lg" variant="secondary" className="w-full" onClick={() => openSoloChoice()}>
+            <Button size="lg" variant="secondary" className="w-full title-start-button" onClick={() => openSoloChoice()}>
               <User className="size-4" strokeWidth={1.75} />
               Modo solitario
             </Button>
@@ -316,7 +322,7 @@ export function TitleScreen() {
               </button>
             ) : null}
             {canResume ? (
-              <Button size="md" variant="ghost" className="w-full" onClick={resume}>
+              <Button size="md" variant="ghost" className="w-full title-resume-button" onClick={resume}>
                 {game?.challenge === "night" ? "Continuar la guardia" : "Continuar la jornada"}
               </Button>
             ) : null}
@@ -334,9 +340,11 @@ export function TitleScreen() {
                 Privacidad
               </button>
             </div>
+            <button type="button" className="title-text-action opening-replay" onClick={opening.replay}>Ver secuencia de apertura</button>
           </div>
         </div>
       </div>
+      <OpeningSequence stage={opening.stage} setStage={opening.setStage} wake={wake} skip={opening.skip} reduced={opening.reduced} />
       {nightModeOpen ? (
         <div className="tutorial-overlay night-menu-entrance" role="dialog" aria-modal="true" aria-labelledby="night-mode-title">
           <button className="tutorial-backdrop" type="button" aria-label="Cerrar reto nocturno" onClick={() => setNightModeOpen(false)} />

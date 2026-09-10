@@ -54,7 +54,7 @@ async function playFirstLegal(page) {
 
 try {
   await host.goto(baseUrl);
-  await host.waitForTimeout(500);
+  await host.getByRole("button", { name: "Omitir apertura" }).click();
   await host.getByRole("button", { name: /Jugar en pareja/ }).click();
   await host.getByRole("button", { name: /Jugar online/ }).click();
   await host.getByRole("button", { name: /Preparar sala online/ }).click();
@@ -65,6 +65,7 @@ try {
   if (!code) throw new Error("No se generó el código de sala");
 
   await guest.goto(baseUrl);
+  await guest.getByRole("button", { name: "Omitir apertura" }).click();
   await guest.getByRole("button", { name: /Jugar en pareja/ }).click();
   await guest.getByRole("button", { name: /Jugar online/ }).click();
   await guest.getByRole("button", { name: /Preparar sala online/ }).click();

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { beforeEach, describe, it } from "node:test";
-import { loadGame, loadSettings, loadSecrets, saveGame, recordPerfectCompletion } from "./persist.ts";
+import { loadGame, loadSettings, loadSecrets, saveGame, recordPerfectCompletion, resetPokerParkProgress } from "./persist.ts";
 import { createGame } from "./engine.ts";
 import { isGameState } from "./state-validation.ts";
 
@@ -16,6 +16,14 @@ Object.defineProperty(globalThis, "localStorage", {
 
 describe("recuperación de datos", () => {
   beforeEach(() => values.clear());
+
+  it("el reinicio permite volver a ver la apertura sin borrar datos ajenos", () => {
+    values.set("poker-park.opening-seen.v1", "seen");
+    values.set("other-app", "keep");
+    resetPokerParkProgress();
+    assert.equal(values.has("poker-park.opening-seen.v1"), false);
+    assert.equal(values.get("other-app"), "keep");
+  });
 
   it("conserva las partidas válidas de todos los modos y retos", () => {
     for (const mode of ["solo", "hotseat", "ai", "online"] as const) {
