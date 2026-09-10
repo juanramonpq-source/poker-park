@@ -326,8 +326,8 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
 - La portada presenta una llegada de luz, rótulo y cartas francesas. Los
   indicadores `poker-park.motion.*` solo recuerdan las animaciones vistas;
   no forman parte del progreso ni de la partida. La primera apertura del
-  mapa dura ~3,2 s en todas las partidas, con acceso directo para omitir;
-  el cierre dura ~5,1 s. En movimiento reducido ambas son inmediatas.
+  mapa dura ~5,1 s en todas las partidas, con acceso directo para omitir;
+  el cierre dura ~3,2 s. En movimiento reducido ambas son inmediatas.
   La mano conserva su balanceo original de 3,4 s y no se remonta al abrir el mapa.
 - La selección nocturna oscurece temporalmente la portada sin cambiar el tema
   guardado. El primer parque clásico perfecto revela una llave en un diálogo

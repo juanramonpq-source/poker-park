@@ -23,12 +23,14 @@ try {
     localStorage.removeItem("poker-park.save.v7");
   });
   await page.goto(url, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Omitir apertura", exact: true }).click();
   await page.getByRole("button", { name: "Modo solitario", exact: true }).click();
-  await page.getByRole("button", { name: /Montar solo/ }).click();
   await page.getByRole("button", { name: "Empezar montando solo" }).click();
   const openMapNow = page.getByRole("button", { name: "Abrir el plano ahora" });
   const openingMap = page.locator(".park-map-intro:not(.is-closing)");
   await openingMap.waitFor();
+  const openingDuration = await openingMap.evaluate(el => getComputedStyle(el).animationDuration);
+  if (openingDuration !== "5.1s") throw new Error(`duración de apertura incorrecta: ${openingDuration}`);
   const openingFrame = await openingMap.evaluate((element) => {
     const frame = getComputedStyle(element.querySelector(".park-map-intro-sheet"), "::after");
     return { display: frame.display, opacity: Number.parseFloat(frame.opacity) };
@@ -45,11 +47,13 @@ try {
 
   const closingMap = page.locator(".park-map-intro.is-closing");
   await closingMap.waitFor();
+  const closingDuration = await closingMap.evaluate(el => getComputedStyle(el).animationDuration);
+  if (closingDuration !== "3.2s") throw new Error(`duración de cierre incorrecta: ${closingDuration}`);
   // Freeze the visual frame so screenshot timing cannot capture the next screen.
   await closingMap.evaluate((element) => {
     for (const animation of element.getAnimations({ subtree: true })) {
       animation.pause();
-      animation.currentTime = 2350;
+      animation.currentTime = 1475;
     }
   });
   const closingFrame = await closingMap.evaluate((element) => {
@@ -77,7 +81,7 @@ try {
   await page.screenshot({ path: "screenshots/map-outro-tally-mobile.png" });
 
   if (errors.length > 0) throw new Error(`errores de navegador: ${errors.join(" | ")}`);
-  console.log(JSON.stringify({ ok: true, openingFrame, closingFrame, boardVisibleAfterClose, errors }, null, 2));
+  console.log(JSON.stringify({ ok: true, openingDuration, closingDuration, openingFrame, closingFrame, boardVisibleAfterClose, errors }, null, 2));
 } finally {
   await browser.close();
 }

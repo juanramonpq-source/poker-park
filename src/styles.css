@@ -369,6 +369,14 @@
   text-shadow: 0 1px 5px rgb(65 35 0 / .55);
   animation: lifetime-badge-glow 3.2s ease-in-out infinite;
 }
+.title-achievement-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+.title-achievement-row .title-lifetime-badge { margin: 0; }
 .title-lifetime-badge::after {
   position: absolute;
   inset: 0;
@@ -469,6 +477,15 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
 }
+
+.title-utility-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: 0.35rem;
+}
+.title-utility-actions .title-resume-button,
+.title-utility-actions .opening-replay { min-width: 0; margin: 0; padding-inline: 0.3rem; font-size: 0.66rem; line-height: 1.15; }
 
 .title-text-action {
   display: inline-flex;
@@ -1264,28 +1281,29 @@
 .map-intro-crease.is-right { left: calc(66.666% - 0.55rem); transform: scaleX(-1); }
 
 .park-map-intro.is-closing {
-  animation: park-map-outro-dismiss 5.1s var(--ease-smooth) both;
+  --exit-duration: 3200ms;
+  animation: park-map-outro-dismiss var(--exit-duration) var(--ease-smooth) both;
 }
 
 .park-map-intro.is-closing .map-intro-v2.park-map-intro-sheet {
-  animation: map-v2-sheet-close 5.1s var(--ease-smooth) both;
+  animation: map-v2-sheet-close var(--exit-duration) var(--ease-smooth) both;
 }
 
 .park-map-intro.is-closing .map-intro-fold-left {
-  animation: map-v2-fold-left-close 3.4s 0.84s cubic-bezier(0.64, 0, 0.78, 0) both;
+  animation: map-v2-fold-left-close calc(var(--exit-duration) * 3.4 / 5.1) calc(var(--exit-duration) * .84 / 5.1) cubic-bezier(0.64, 0, 0.78, 0) both;
 }
 
 .park-map-intro.is-closing .map-intro-fold-center {
-  animation: map-v2-fold-center-close 4.1s 0.56s cubic-bezier(0.64, 0, 0.78, 0) both;
+  animation: map-v2-fold-center-close calc(var(--exit-duration) * 4.1 / 5.1) calc(var(--exit-duration) * .56 / 5.1) cubic-bezier(0.64, 0, 0.78, 0) both;
 }
 
 .park-map-intro.is-closing .map-intro-fold-right {
-  animation: map-v2-fold-right-close 3.4s 0.84s cubic-bezier(0.64, 0, 0.78, 0) both;
+  animation: map-v2-fold-right-close calc(var(--exit-duration) * 3.4 / 5.1) calc(var(--exit-duration) * .84 / 5.1) cubic-bezier(0.64, 0, 0.78, 0) both;
 }
 
 .park-map-intro.is-closing .map-intro-heading,
 .park-map-intro.is-closing .map-intro-entrance {
-  animation: map-v2-copy-close 0.76s ease-in both;
+  animation: map-v2-copy-close calc(var(--exit-duration) * .76 / 5.1) ease-in both;
 }
 
 .map-intro-closing-copy {
@@ -1300,7 +1318,7 @@
   text-shadow: 0 2px 12px #000;
   transform: translateX(-50%);
   white-space: nowrap;
-  animation: map-v2-closing-label 4.2s ease both;
+  animation: map-v2-closing-label calc(var(--exit-duration) * 4.2 / 5.1) ease both;
 }
 
 @keyframes map-v2-sheet-open {
@@ -2946,7 +2964,7 @@
   min-height: 2.75rem;
   align-items: center;
   gap: 0.4rem;
-  margin-top: 0.65rem;
+  margin-top: 0;
   border: 1px solid rgb(255 255 255 / 0.22);
   border-radius: 999px;
   background: rgb(5 20 42 / 0.44);
@@ -3105,12 +3123,15 @@
 @media (max-width: 520px) and (max-height: 740px) {
   .title-screen:has(.master-pass-button) .title-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
   .title-screen:has(.master-pass-button) .title-actions > :nth-child(n+3) { grid-column: 1 / -1; }
-  .title-screen:has(.master-pass-button) .title-actions > .master-gallery-button,
-  .title-screen:has(.master-pass-button) .title-actions > .title-resume-button { grid-column: auto; }
   .title-screen:has(.master-pass-button) .title-actions > .title-start-button,
   .title-screen:has(.master-pass-button) .title-actions > .title-resume-button { padding-inline: .35rem; font-size: .72rem; }
   .title-screen:has(.master-pass-button) .title-description { max-width: 100%; }
   .title-screen:has(.master-pass-button) .title-lifetime-badge { margin-top: .3rem; }
+}
+@media (min-width: 521px) and (max-height: 880px) {
+  .title-screen:has(.master-pass-button) .title-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .title-screen:has(.master-pass-button) .title-actions > :nth-child(n+3) { grid-column: 1 / -1; }
+  .title-screen:has(.master-pass-button) .title-start-button { padding-inline: .5rem; font-size: .85rem; }
 }
 @keyframes opening-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes opening-black-fade { from { opacity: 1; } to { opacity: 0; } }
@@ -3167,7 +3188,7 @@
 [data-master-mood="storm"] .master-detail-entrance::before { background: repeating-linear-gradient(115deg, transparent 0 18px, rgb(130 213 242 / .13) 19px 20px); animation: rain-light 700ms both; }
 [data-master-mood="impossible"] .master-detail-entrance::before { background: radial-gradient(ellipse at top, rgb(255 208 91 / .32), rgb(156 180 233 / .15) 45%, transparent 80%); animation: mood-light 900ms both; }
 [data-master-mood="impossible"] .master-mode-impossible.is-selected .master-mode-icon { animation: seal-arrive 600ms both; }
-.park-map-intro:not(.is-closing) { --entry-duration: 3200ms; animation-duration: var(--entry-duration); }
+.park-map-intro:not(.is-closing) { --entry-duration: 5100ms; animation-duration: var(--entry-duration); }
 .park-map-intro:not(.is-closing) .map-intro-v2.park-map-intro-sheet { animation-duration: var(--entry-duration); }
 .park-map-intro:not(.is-closing) .map-intro-v2 .park-map-intro-fold { animation-duration: calc(var(--entry-duration) * .65); animation-delay: 0ms; }
 .park-entry-gates { position: absolute; inset: 0; pointer-events: none; z-index: 8; perspective: 1000px; }

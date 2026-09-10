@@ -98,7 +98,7 @@ export function ParkMapIntro({
 
   useEffect(() => {
     if (pace === "pending") return;
-    const duration = pace === "reduced" ? 0 : direction === "closing" ? 5400 : 3500;
+    const duration = pace === "reduced" ? 0 : direction === "closing" ? 3500 : 5400;
     const fallback = window.setTimeout(finish, duration);
     return () => window.clearTimeout(fallback);
   }, [finish, pace, direction]);

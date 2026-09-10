@@ -271,22 +271,24 @@ export function TitleScreen() {
             Vive un día en un parque de atracciones, guiado por una baraja francesa.
           </p>
           <p className="title-detail">1–2 jugadores · Una baraja</p>
-          {secrets.lifetime ? (
-            <div className="title-lifetime-badge" role="status" aria-label="Insignia conseguida: Pase de por vida">
-              <span className="title-lifetime-seal"><FerrisWheel aria-hidden /></span>
-              <span>
-                <small>Insignia conseguida</small>
-                <strong>Pase de por vida</strong>
-              </span>
-              <Sparkles aria-hidden />
-            </div>
-          ) : null}
-          {secrets.nightPerfect ? (
-            <button type="button" className="title-night-toggle" onClick={toggleNightTheme}>
-              <MoonStar aria-hidden />
-              {nightTheme ? "Volver a la luz del día" : "Activar interfaz nocturna"}
-            </button>
-          ) : null}
+          {secrets.lifetime || secrets.nightPerfect ? <div className="title-achievement-row">
+            {secrets.lifetime ? (
+              <div className="title-lifetime-badge" role="status" aria-label="Insignia conseguida: Pase de por vida">
+                <span className="title-lifetime-seal"><FerrisWheel aria-hidden /></span>
+                <span>
+                  <small>Insignia conseguida</small>
+                  <strong>Pase de por vida</strong>
+                </span>
+                <Sparkles aria-hidden />
+              </div>
+            ) : null}
+            {secrets.nightPerfect ? (
+              <button type="button" className="title-night-toggle" onClick={toggleNightTheme}>
+                <MoonStar aria-hidden />
+                {nightTheme ? "Volver a la luz del día" : "Activar interfaz nocturna"}
+              </button>
+            ) : null}
+          </div> : null}
         </div>
 
         <div className="title-panel" inert={opening.stage !== "ready" || undefined}>
@@ -321,11 +323,12 @@ export function TitleScreen() {
                 <Palette aria-hidden /> Galería Maestro
               </button>
             ) : null}
-            {canResume ? (
+            {canResume ? <div className="title-utility-actions">
               <Button size="md" variant="ghost" className="w-full title-resume-button" onClick={resume}>
                 {game?.challenge === "night" ? "Continuar la guardia" : "Continuar la jornada"}
               </Button>
-            ) : null}
+              <button type="button" className="title-text-action opening-replay" onClick={opening.replay}>Ver secuencia de apertura</button>
+            </div> : null}
             <div className="title-secondary-actions">
               <button type="button" onClick={() => setTutorialOpen(true)} className="title-text-action">
                 <Sparkles className="size-4" strokeWidth={1.7} />
@@ -340,7 +343,7 @@ export function TitleScreen() {
                 Privacidad
               </button>
             </div>
-            <button type="button" className="title-text-action opening-replay" onClick={opening.replay}>Ver secuencia de apertura</button>
+            {!canResume ? <button type="button" className="title-text-action opening-replay" onClick={opening.replay}>Ver secuencia de apertura</button> : null}
           </div>
         </div>
       </div>
