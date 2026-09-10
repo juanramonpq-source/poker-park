@@ -13,7 +13,21 @@ const guestContext = await browser.newContext({ viewport: { width: 390, height: 
 const host = await hostContext.newPage();
 const guest = await guestContext.newPage();
 const errors = [];
+const forceRelay = process.env.POKER_PARK_FORCE_RELAY === "1";
+let relayedGames = 0;
 for (const page of [host, guest]) {
+  if (forceRelay) await page.addInitScript(() => {
+    const NativePeerConnection = window.RTCPeerConnection;
+    window.RTCPeerConnection = class extends NativePeerConnection {
+      constructor(config) { super({ ...config, iceServers: [], iceTransportPolicy: "relay" }); }
+    };
+  });
+  page.on("request", (request) => {
+    if (request.url().includes("/api/rtc") && request.method() === "POST") {
+      const packet = request.postDataJSON();
+      if (packet.kind === "data" && packet.payload?.type === "game") relayedGames++;
+    }
+  });
   page.on("console", (message) => {
     if (message.type() === "error")
       errors.push(`${message.text()} ${message.location().url}`.trim());
@@ -50,8 +64,13 @@ try {
   const code = (await host.locator(".online-room-code > strong").textContent())?.trim();
   if (!code) throw new Error("No se generó el código de sala");
 
-  await guest.goto(`${baseUrl}?sala=${code}`);
+  await guest.goto(baseUrl);
+  await guest.getByRole("button", { name: /Jugar en pareja/ }).click();
+  await guest.getByRole("button", { name: /Jugar online/ }).click();
+  await guest.getByRole("button", { name: /Preparar sala online/ }).click();
+  await guest.getByRole("button", { name: /Unirme con código/ }).click();
   await guest.getByLabel("Tu nombre").fill("Luis");
+  await guest.getByLabel("Código de sala").fill(code);
   await guest.getByRole("button", { name: "Entrar en la sala" }).click();
   await Promise.all([
     host.getByText("Luis está dentro").waitFor({ timeout: 20_000 }),
@@ -81,6 +100,7 @@ try {
   await host.getByText("Turno de Ana", { exact: true }).waitFor({ timeout: 8_000 });
 
   if (errors.length) throw new Error(`Errores de navegador: ${errors.join(" | ")}`);
+  if (forceRelay && relayedGames < 3) throw new Error("No se sincronizaron las jugadas por la conexión alternativa");
   console.log(
     JSON.stringify(
       {
@@ -89,6 +109,8 @@ try {
         connected: ["Ana", "Luis"],
         synchronizedTurns: 2,
         remotePlacementAnimation: true,
+        transport: forceRelay ? "server" : "direct",
+        relayedGames,
       },
       null,
       2,

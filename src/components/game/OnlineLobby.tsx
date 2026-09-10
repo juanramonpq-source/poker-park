@@ -94,6 +94,7 @@ export function OnlineLobby({
           </div>
         ) : (
           <div className="online-flow">
+            {online.error ? <p className="online-wait-start" role="alert">{online.error}</p> : null}
             {!busy ? (
               <>
                 <label className="online-field">
@@ -157,11 +158,16 @@ export function OnlineLobby({
                         ? `${online.peer?.name || "Compañero"} está dentro`
                         : online.status === "failed"
                           ? "No se pudo conectar"
-                          : "Esperando al otro jugador"}
+                          : online.peer
+                            ? "Conectando los dos dispositivos…"
+                            : online.role === "guest" ? "Buscando al anfitrión…" : "Esperando al otro jugador"}
                     </strong>
                     <small>
                       {online.error ??
-                        (connected ? "La sala ya está lista." : "No cierres esta pantalla.")}
+                        (connected
+                          ? "La sala ya está lista."
+                          : online.peer ? "Si la conexión directa no funciona, usaremos la conexión alternativa."
+                          : online.role === "guest" ? "El anfitrión debe mantener abierta esta misma sala." : "Comparte el código y mantén abierta esta sala.")}
                     </small>
                   </span>
                 </div>
@@ -183,7 +189,7 @@ export function OnlineLobby({
                   </div>
                 ) : connected ? (
                   <p className="online-wait-start">
-                    <UserRound /> El anfitrión está eligiendo el reto y la dificultad.
+                    <UserRound /> Esperando a que el anfitrión pulse «Empezar juntos».
                   </p>
                 ) : null}
               </>
@@ -192,8 +198,9 @@ export function OnlineLobby({
         )}
 
         <p className="online-privacy">
-          <Shield aria-hidden /> La partida viaja directamente entre ambos navegadores. Al
-          conectaros, cada dispositivo puede conocer la dirección de red del otro.
+          <Shield aria-hidden /> La partida usa una conexión directa o, si la red lo impide,
+          una conexión alternativa a través del servidor. Con conexión directa, cada
+          dispositivo puede conocer la dirección de red del otro.
         </p>
       </section>
     </div>

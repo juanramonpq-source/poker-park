@@ -8,7 +8,7 @@ const signalSchema = z.object({
   room: ID,
   from: ID,
   to: ID,
-  kind: z.enum(["offer", "answer", "ice"]),
+  kind: z.enum(["offer", "answer", "ice", "relay", "data"]),
   payload: z
     .unknown()
     .refine((value) => value !== undefined && JSON.stringify(value).length <= 32_768),

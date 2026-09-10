@@ -107,6 +107,7 @@ export function OnlineGameProvider({ children }: { children: ReactNode }) {
   const remoteGames = useRef(new WeakSet<GameState>());
   const previousGame = useRef<GameState | null>(null);
   const connectedPeerId = useRef<string | null>(null);
+  const receivedPackets = useRef(new Set<string>());
 
   const leaveRoom = useCallback(() => {
     roomRef.current?.close();
@@ -130,6 +131,8 @@ export function OnlineGameProvider({ children }: { children: ReactNode }) {
     const code = normalizeCode(rawCode);
     const name = rawName.trim().slice(0, 24) || (nextRole === "host" ? "Anfitrión" : "Invitado");
     const selfId = randomId();
+    connectedPeerId.current = null;
+    receivedPackets.current.clear();
     roleRef.current = nextRole;
     localNameRef.current = name;
     setRole(nextRole);
@@ -147,8 +150,23 @@ export function OnlineGameProvider({ children }: { children: ReactNode }) {
       room: `pokerpark_${code}`,
       selfId,
       name,
-      onConnected: () => setStatus("waiting"),
+      onConnected: () => {
+        if (roomRef.current === room) setStatus("waiting");
+      },
+      onError: (message) => {
+        if (roomRef.current !== room) return;
+        setError(message);
+        if (message) {
+          setStatus("failed");
+          useGameStore.getState().setOnlineConnected(false);
+        } else {
+          const ready = room.peerList().some((other) => other.connectionState === "connected");
+          setStatus(ready ? "connected" : "waiting");
+          useGameStore.getState().setOnlineConnected(ready);
+        }
+      },
       onPeersChanged: (peers) => {
+        if (roomRef.current !== room) return;
         if (peers.length > 1) {
           setError("La sala ya tiene dos jugadores.");
           setStatus("failed");
@@ -157,11 +175,13 @@ export function OnlineGameProvider({ children }: { children: ReactNode }) {
         const other = peers[0] ?? null;
         setPeer(other);
         if (other?.connectionState === "connected") {
+          setError(null);
           useGameStore.getState().setOnlineConnected(true);
           setStatus("connected");
           if (roleRef.current === "host" && connectedPeerId.current !== other.id) {
             connectedPeerId.current = other.id;
             window.setTimeout(() => {
+              if (roomRef.current !== room) return;
               const game = useGameStore.getState().game;
               if (game?.mode === "online") {
                 room.send({ type: "game", id: randomId(), game, move: null } satisfies GamePacket);
@@ -182,9 +202,13 @@ export function OnlineGameProvider({ children }: { children: ReactNode }) {
         }
       },
       onMessage: (_from, data, channel) => {
+        if (roomRef.current !== room) return;
         if (channel !== "reliable" || !data || typeof data !== "object") return;
         const packet = data as Partial<GamePacket>;
         if (packet.type !== "game" || !isGameState(packet.game) || packet.game.mode !== "online") return;
+        if (typeof packet.id !== "string" || receivedPackets.current.has(packet.id)) return;
+        receivedPackets.current.add(packet.id);
+        if (receivedPackets.current.size > 200) receivedPackets.current.delete(receivedPackets.current.values().next().value!);
         remoteGames.current.add(packet.game);
         useGameStore.getState().syncOnlineGame(
           packet.game,
@@ -207,13 +231,13 @@ export function OnlineGameProvider({ children }: { children: ReactNode }) {
 
   const startGame = useCallback(
     (challenge: GameChallenge, difficulty: GameDifficulty) => {
-      if (roleRef.current !== "host" || !roomRef.current) return;
+      if (roleRef.current !== "host" || !roomRef.current || status !== "connected") return;
       const otherName = peer?.name || "Invitado";
       useGameStore
         .getState()
         .start("online", challenge, difficulty, [localNameRef.current, otherName]);
     },
-    [peer],
+    [peer, status],
   );
 
   useEffect(() => {
@@ -235,6 +259,15 @@ export function OnlineGameProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => () => roomRef.current?.close(), []);
+
+  useEffect(() => {
+    if (role !== "guest" || peer || (status !== "waiting" && status !== "joining")) return;
+    const timeout = window.setTimeout(() => {
+      setError("No encontramos al anfitrión. Comprueba el código y que ambos usáis la misma dirección del juego con la sala abierta.");
+      setStatus("failed");
+    }, 25_000);
+    return () => window.clearTimeout(timeout);
+  }, [role, peer, status]);
 
   const value = useMemo<OnlineContextValue>(
     () => ({

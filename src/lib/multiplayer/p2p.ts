@@ -1,7 +1,7 @@
 /**
  * Full-mesh WebRTC rooms: one RTCPeerConnection per remote peer, signaled
- * through /api/rtc (see signaling.server.ts), game data flowing directly
- * browser-to-browser afterwards. Client-authoritative by construction — see
+ * through /api/rtc (see signaling.server.ts). Reliable packets use an HTTPS
+ * relay fallback when direct connectivity stalls. Client-authoritative — see
  * the multiplayer-p2p skill for when NOT to use this.
  *
  * Negotiation follows the "perfect negotiation" pattern: on a glare (both
@@ -9,7 +9,7 @@
  * rolls back and accepts, so pairs converge without wedging.
  */
 
-export type SignalKind = "offer" | "answer" | "ice";
+export type SignalKind = "offer" | "answer" | "ice" | "relay" | "data";
 
 /**
  * Wire contract between this client and the signaling relay the app provides
@@ -39,6 +39,7 @@ export interface PeerInfo {
   candidateType: string | null;
   /** Data-channel ping RTT (ms), measured every 2s once connected. */
   rttMs: number | null;
+  transport: "direct" | "server" | null;
 }
 
 export interface P2PRoomOptions {
@@ -52,6 +53,7 @@ export interface P2PRoomOptions {
   onMessage?: (from: string, data: unknown, channel: "state" | "reliable") => void;
   /** Fires once, on the first successful signaling poll (registration). */
   onConnected?: () => void;
+  onError?: (message: string | null) => void;
 }
 
 interface PeerSlot {
@@ -72,6 +74,8 @@ interface PeerSlot {
   recreatedForOffer?: boolean;
   info: PeerInfo;
   pingSentAt?: number;
+  relayActive?: boolean;
+  relayRequestedAt?: number;
 }
 
 const FAST_POLL_MS = 400;
@@ -106,6 +110,7 @@ export class P2PRoom {
   private closed = false;
   private everPolled = false;
   private lastPeersFingerprint = "";
+  private pollFailures = 0;
 
   constructor(opts: P2PRoomOptions) {
     this.opts = opts;
@@ -120,6 +125,7 @@ export class P2PRoom {
     try {
       await this.pollOnce();
     } catch {
+      this.pollFailed();
       // First poll can fail transiently; the scheduled loop below retries.
     }
     if (this.closed) return;
@@ -159,12 +165,20 @@ export class P2PRoom {
     const wire = JSON.stringify({ t: "d", d: data });
     const targets = peerId ? [this.peers.get(peerId)] : [...this.peers.values()];
     for (const slot of targets) {
-      if (slot?.reliable?.readyState === "open") slot.reliable.send(wire);
+      if (slot?.relayActive) void this.sendSignal(slot.info.id, "data", data);
+      else if (slot?.reliable?.readyState === "open") slot.reliable.send(wire);
     }
   }
 
   peerList(): PeerInfo[] {
-    return [...this.peers.values()].map((s) => ({ ...s.info }));
+    return [...this.peers.values()].map((s) => ({
+      ...s.info,
+      connectionState: s.relayActive || s.reliable?.readyState === "open"
+        ? "connected"
+        : s.terminal ? "failed"
+        : s.info.connectionState === "connected" ? "connecting" : s.info.connectionState,
+      transport: s.relayActive ? "server" : s.reliable?.readyState === "open" ? "direct" : null,
+    }));
   }
 
   // ── signaling loop ─────────────────────────────────────────────────────────
@@ -177,6 +191,7 @@ export class P2PRoom {
 
   private anyPairConnecting(): boolean {
     for (const s of this.peers.values()) {
+      if (s.relayActive) return true;
       // Terminal pairs (NAT-blocked after all recovery attempts) must not pin
       // the session at the 400ms fast-poll rate.
       if (s.terminal) continue;
@@ -192,11 +207,14 @@ export class P2PRoom {
       name: this.opts.name ?? "",
       since: String(this.cursor),
     });
-    const res = await fetch(`/api/rtc?${params}`);
+    const res = await fetch(`/api/rtc?${params}`, { cache: "no-store", signal: AbortSignal.timeout(8000) });
     if (this.closed) return;
     if (!res.ok) throw new Error(`signaling poll failed: ${res.status}`);
     const body = (await res.json()) as RtcPollResponse;
     if (this.closed) return;
+    if (!Array.isArray(body.peers) || !Array.isArray(body.signals)) throw new Error("Invalid room response");
+    if (this.pollFailures >= 3) this.opts.onError?.(null);
+    this.pollFailures = 0;
     if (!this.everPolled) {
       this.everPolled = true;
       this.opts.onConnected?.();
@@ -215,9 +233,17 @@ export class P2PRoom {
     try {
       await this.pollOnce();
     } catch {
+      this.pollFailed();
       // Transient poll failures are expected (tab sleep, deploy roll); retry.
     }
     this.schedulePoll(this.anyPairConnecting() ? FAST_POLL_MS : IDLE_POLL_MS);
+  }
+
+  private pollFailed(): void {
+    if (this.closed) return;
+    if (++this.pollFailures === 3) {
+      this.opts.onError?.("No podemos contactar con la sala. Comprueba la conexión a internet; estamos reintentando.");
+    }
   }
 
   private reconcileRoster(peers: { id: string; name: string }[]): void {
@@ -261,6 +287,7 @@ export class P2PRoom {
         connectionState: pc.connectionState,
         candidateType: null,
         rttMs: null,
+        transport: null,
       },
     };
     this.peers.set(peerId, slot);
@@ -269,6 +296,7 @@ export class P2PRoom {
       if (e.candidate) void this.sendSignal(peerId, "ice", e.candidate.toJSON());
     };
     pc.onconnectionstatechange = () => {
+      if (this.closed || slot.relayActive || this.peers.get(peerId) !== slot) return;
       slot.info.connectionState = pc.connectionState;
       if (pc.connectionState === "connecting" || pc.connectionState === "connected") {
         slot.lastProgressAt = Date.now();
@@ -317,7 +345,9 @@ export class P2PRoom {
     else slot.reliable = channel;
     channel.onopen = () => {
       slot.lastProgressAt = Date.now();
+      this.emitPeers();
     };
+    channel.onclose = () => this.emitPeers();
     channel.onmessage = (e) => {
       let msg: { t: string; d?: unknown };
       try {
@@ -375,6 +405,25 @@ export class P2PRoom {
       slot = created;
     }
     const polite = this.opts.selfId < from;
+
+    // HTTPS fallback is negotiated by both peers before declaring the room
+    // ready. It also works when ICE cannot find a route between their networks.
+    if (kind === "relay") {
+      const ack = typeof payload === "object" && payload !== null && "ack" in payload && payload.ack === true;
+      if (!ack) await this.sendSignal(from, "relay", { ack: true });
+      if (this.closed) return;
+      slot.relayActive = true;
+      slot.terminal = false;
+      slot.pc.close();
+      this.schedulePoll(FAST_POLL_MS);
+      this.emitPeers();
+      return;
+    }
+    if (kind === "data") {
+      if (slot.relayActive) this.opts.onMessage?.(from, payload, "reliable");
+      return;
+    }
+    if (slot.relayActive) return;
 
     try {
       if (kind === "offer" || kind === "answer") {
@@ -450,6 +499,7 @@ export class P2PRoom {
       try {
         const res = await fetch("/api/rtc", {
           method: "POST",
+          signal: AbortSignal.timeout(8000),
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
             op: "signal",
@@ -467,6 +517,7 @@ export class P2PRoom {
           // Delivery gave up; the pair converges on the next offer cycle (or
           // the watchdog rebuilds it). Logged once so failures are visible.
           console.warn(`[p2p] signal ${kind} to ${to} failed after retries`, err);
+          this.opts.onError?.("No se ha podido enviar la conexión o la jugada. Comprueba internet y vuelve a entrar en la sala.");
           return;
         }
         await new Promise((r) => setTimeout(r, SIGNAL_RETRY_DELAYS_MS[attempt]));
@@ -501,6 +552,7 @@ export class P2PRoom {
     if (this.closed) return;
     const now = Date.now();
     for (const [peerId, slot] of this.peers) {
+      if (slot.relayActive) continue;
       // pc.close() and some suspend/resume wedges never fire
       // connectionstatechange — read the LIVE state so a silently-dead pc
       // still trips the stall timer instead of hiding behind a cached
@@ -511,8 +563,12 @@ export class P2PRoom {
         if (live === "connecting" || live === "connected") slot.lastProgressAt = now;
         this.emitPeers();
       }
-      if (slot.terminal || live === "connected") continue;
+      if (slot.terminal || slot.reliable?.readyState === "open") continue;
       if (now - slot.lastProgressAt <= STALL_MS) continue;
+      if (!slot.relayRequestedAt || now - slot.relayRequestedAt >= STALL_MS) {
+        slot.relayRequestedAt = now;
+        void this.sendSignal(peerId, "relay", { ack: false });
+      }
       if (slot.recoveryAttempts >= MAX_RECOVERY_ATTEMPTS) {
         slot.terminal = true;
         this.emitPeers();
@@ -561,7 +617,7 @@ export class P2PRoom {
     // setters otherwise re-render consumers on every poll/ping.
     const list = this.peerList();
     const fingerprint = JSON.stringify(
-      list.map((p) => [p.id, p.name, p.connectionState, p.candidateType, p.rttMs]),
+      list.map((p) => [p.id, p.name, p.connectionState, p.transport, p.candidateType, p.rttMs]),
     );
     if (fingerprint === this.lastPeersFingerprint) return;
     this.lastPeersFingerprint = fingerprint;

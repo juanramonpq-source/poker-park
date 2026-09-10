@@ -30,7 +30,8 @@ en atracciones completas) son opcionales.
 Sigue docs/CODEX.md y no cambies las reglas de atracciones sin que te lo
 pidan. Stack objetivo: Vite + React + TypeScript + Tailwind + Zustand.
 Persistencia en localStorage. El modo online usa el servidor de señalización
-/api/rtc y conexión WebRTC entre jugadores.
+/api/rtc y conexión WebRTC entre jugadores, con retransmisión HTTPS de respaldo
+si la red impide la conexión directa.
 ```
 
 ---
