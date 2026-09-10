@@ -12,8 +12,8 @@ const browser = await chromium.launch({ headless: true, ...(existsSync(chrome) ?
 const deck = makeDeck();
 const card = id => structuredClone(deck.find(candidate => candidate.id === id));
 
-function perfectNight() {
-  const game = createGame("solo", undefined, "night", "easy");
+function perfectGame(challenge = "night") {
+  const game = createGame("solo", undefined, challenge, "easy");
   const full = {
     coaster: [2, 3, 4, 5, 6, 7, 8, 9].map(rank => card(`clubs-${rank}`)),
     haunted: [2, 3, 4, 5, 1].map(rank => card(`spades-${rank}`)),
@@ -24,10 +24,12 @@ function perfectNight() {
     restrooms: [card("hearts-12"), card("hearts-13")],
   };
   for (const id of ATTRACTION_IDS) game.attractions[id].slots = full[id];
-  game.night.unlocked = [...ATTRACTION_IDS];
-  game.night.route = [];
-  game.night.jackBox = [];
-  game.night.jokerUsed = true;
+  if (game.night) {
+    game.night.unlocked = [...ATTRACTION_IDS];
+    game.night.route = [];
+    game.night.jackBox = [];
+    game.night.jokerUsed = true;
+  }
   game.deck = [];
   game.hands = [[], []];
   game.entrance = [card("diamonds-12"), card("diamonds-13")];
@@ -37,7 +39,7 @@ function perfectNight() {
   return game;
 }
 
-async function openReward(page, game) {
+async function openReward(page, game, rewardName) {
   await page.goto(url);
   await page.evaluate(state => {
     localStorage.setItem("poker-park.settings.v1", JSON.stringify({ muted: true }));
@@ -45,9 +47,19 @@ async function openReward(page, game) {
     localStorage.setItem("poker-park.save.v7", JSON.stringify(state));
   }, game);
   await page.reload();
-  await page.getByRole("button", { name: "Continuar la guardia", exact: true }).click();
+  await page.getByRole("button", { name: game.challenge === "night" ? "Continuar la guardia" : "Continuar la jornada", exact: true }).click();
   await page.getByRole("button", { name: "Cerrar el parque", exact: true }).click();
-  await page.getByRole("button", { name: "Descargar fondo para móvil", exact: true }).waitFor({ timeout: 15000 });
+  await page.getByRole("button", { name: rewardName, exact: true }).waitFor({ timeout: 15000 });
+}
+
+async function assertSafeDownload(page, game, rewardName, filename) {
+  await openReward(page, game, rewardName);
+  const beforeUrl = page.url();
+  const download = page.waitForEvent("download");
+  await page.getByRole("button", { name: rewardName, exact: true }).click();
+  assert.equal((await download).suggestedFilename(), filename);
+  assert.equal(page.url(), beforeUrl);
+  await page.getByRole("button", { name: "Recompensa lista", exact: true }).waitFor();
 }
 
 try {
@@ -59,16 +71,13 @@ try {
   });
   page.on("pageerror", error => errors.push(error.message));
   page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
-  await openReward(page, perfectNight());
-  const beforeUrl = page.url();
-  const download = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Descargar fondo para móvil", exact: true }).click();
-  assert.equal((await download).suggestedFilename(), "Poker-Park-Guardianes-del-Alba.webp");
-  assert.equal(page.url(), beforeUrl);
-  await page.getByRole("button", { name: "Recompensa lista", exact: true }).waitFor();
+  await assertSafeDownload(page, perfectGame(), "Descargar fondo para móvil", "Poker-Park-Guardianes-del-Alba.webp");
   await page.getByRole("button", { name: "Activar interfaz nocturna", exact: true }).click();
   await page.screenshot({ path: "screenshots/reward-download-mobile.png", fullPage: true });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+
+  await assertSafeDownload(page, perfectGame("impossible"), "Fondo del parque imposible", "Poker-Park-0013.webp");
+  await assertSafeDownload(page, perfectGame("impossible"), "Certificado Pase Maestro", "Certificado-Pase-Maestro.svg");
 
   const shared = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
   await shared.addInitScript(() => {
@@ -78,7 +87,7 @@ try {
     } });
   });
   shared.on("pageerror", error => errors.push(error.message));
-  await openReward(shared, perfectNight());
+  await openReward(shared, perfectGame(), "Descargar fondo para móvil");
   await shared.getByRole("button", { name: "Descargar fondo para móvil", exact: true }).click();
   assert.deepEqual(await shared.evaluate(() => window.__rewardShare), {
     filename: "Poker-Park-Guardianes-del-Alba.webp",

@@ -38,6 +38,7 @@ const MIRROR_BRIEFING = [
 const MASTER_MODES: {
   id: MasterMode;
   title: string;
+  menuTitle: string;
   kicker: string;
   rule: string;
   reward: string;
@@ -48,6 +49,7 @@ const MASTER_MODES: {
   {
     id: "festival",
     title: "Festival de las Luces",
+    menuTitle: "Festival",
     kicker: "Encadena el brillo",
     rule: "Alterna atracciones: cada cambio mantiene el combo y enciende más bombillas.",
     reward: "Reverso Fuegos de Feria",
@@ -58,6 +60,7 @@ const MASTER_MODES: {
   {
     id: "mirror",
     title: "Parque Espejo",
+    menuTitle: "Espejo",
     kicker: "Todo empieza al otro lado",
     rule: "No solo se refleja el plano: cada atracción debe construirse en el orden inverso.",
     reward: "Insignia Plata de Luna",
@@ -68,6 +71,7 @@ const MASTER_MODES: {
   {
     id: "storm",
     title: "Día de Tormenta",
+    menuTitle: "Tormenta",
     kicker: "Juega con el pronóstico",
     rule: "La lluvia cierra un sector cada turno. Siempre conoceréis el siguiente.",
     reward: "Reverso Nube Dorada",
@@ -78,6 +82,7 @@ const MASTER_MODES: {
   {
     id: "impossible",
     title: "Poker Park 00:13",
+    menuTitle: "00:13",
     kicker: "El parque imposible",
     rule: "Espejo, tormenta y combos de luz en una única jornada final. No tiene cronómetro: solo acaba al cerrar el parque, agotar las cartas o confirmar el bloqueo.",
     reward: "Final verdadero, Reverso DUAL y Galería Maestro",
@@ -97,7 +102,7 @@ export function MasterPassOverlay({
   onStart: (mode: Mode, challenge: GameChallenge, difficulty: GameDifficulty) => void;
 }) {
   const impossibleOpen = masterTrialsComplete(secrets) || secrets.impossiblePerfect;
-  const [selected, setSelected] = useState<MasterMode | null>(null);
+  const [selected, setSelected] = useState<MasterMode>("festival");
   const [soloChoiceOpen, setSoloChoiceOpen] = useState(false);
   const [pairChoiceOpen, setPairChoiceOpen] = useState(false);
   const [difficulty, setDifficulty] = useState<GameDifficulty>("standard");
@@ -110,13 +115,13 @@ export function MasterPassOverlay({
         <header>
           <span className="master-pass-seal" aria-hidden><FerrisWheel /></span>
           <span>
-            <small>Acceso tras La Noche de Guardia</small>
+            <small>Cuatro retos extra</small>
             <h2 id="master-pass-title">Pase Maestro</h2>
           </span>
           <Button size="icon" variant="ghost" onClick={onClose} aria-label="Cerrar Pase Maestro"><X /></Button>
         </header>
-        <p className="master-pass-intro">Tres parques que no figuraban en el mapa. Complétalos para revelar la entrada de las 00:13.</p>
-        <div className="master-mode-grid">
+        <p className="master-pass-intro">Elige un reto arriba; sus reglas y la forma de jugar quedan siempre a la vista.</p>
+        <nav className="master-mode-grid" aria-label="Retos del Pase Maestro">
           {MASTER_MODES.map((mode) => {
             const locked = mode.id === "impossible" && !impossibleOpen;
             const complete = Boolean(secrets[mode.secretKey]);
@@ -127,17 +132,19 @@ export function MasterPassOverlay({
                 key={mode.id}
                 disabled={locked}
                 className={cn("master-mode-option", `master-mode-${mode.id}`, selected === mode.id && "is-selected", complete && "is-complete")}
+                aria-pressed={selected === mode.id}
                 onClick={() => { setSelected(mode.id); setDifficulty("standard"); }}
               >
                 <span className="master-mode-icon">{locked ? <LockKeyhole /> : <Icon />}</span>
-                <span className="master-mode-copy"><small>{locked ? "Entrada oculta" : `${mode.kicker} · ${mode.changes} cambios en Clásico`}</small><strong>{mode.title}</strong><p>{locked ? "Completa los otros tres modos." : mode.rule}</p></span>
-                <span className="master-mode-state">{complete ? <><Check /> Superado</> : locked ? "???" : "Jugar"}</span>
+                <span className="master-mode-copy"><strong>{mode.menuTitle}</strong><small>{locked ? "Entrada oculta" : mode.kicker}</small></span>
+                <span className="master-mode-state">{complete ? <Check aria-label="Superado" /> : locked ? "???" : null}</span>
               </button>
             );
           })}
-        </div>
-        {selectedMode ? (
-          <div className="master-start-panel stagger-in">
+        </nav>
+        <div className="master-start-panel stagger-in">
+          {selectedMode ? (
+            <>
             <div><Sparkles aria-hidden /><span><small>Recompensa perfecta</small><strong>{selectedMode.reward}</strong></span></div>
             {selectedMode.id === "festival" ? (
               <section className="festival-briefing" aria-label="Cómo jugar al Festival de las Luces">
@@ -171,8 +178,9 @@ export function MasterPassOverlay({
               <Button size="lg" onClick={() => setPairChoiceOpen(true)}><Users /> En pareja</Button>
               <Button size="lg" variant="secondary" onClick={() => setSoloChoiceOpen(true)}><User /> Modo solitario</Button>
             </div>
-          </div>
-        ) : <p className="master-select-hint">Toca una entrada para consultar su recompensa y empezar.</p>}
+            </>
+          ) : null}
+        </div>
       </section>
       {soloChoiceOpen && selectedMode ? (
         <SoloModeChooser
