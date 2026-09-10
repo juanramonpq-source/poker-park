@@ -35,10 +35,16 @@ const MIRROR_BRIEFING = [
   "Sillas Voladoras: cuelga las cuatro figuras antes de levantar la torre. Restaurante: A♣ primero. Aseos: reina antes que rey.",
 ];
 
+const STORM_BRIEFING = [
+  "Al empezar cada turno, la tormenta cierra temporalmente una atracción. Las cartas que ya estaban colocadas permanecen a salvo.",
+  "El pronóstico anuncia qué sector se cerrará después, para que puedas preparar una ruta alternativa.",
+  "Si el temporal te deja sin jugada, el parque espera dos turnos en solitario o cuatro pases en pareja antes de declarar el bloqueo.",
+];
+
 const MASTER_MODES: {
   id: MasterMode;
   title: string;
-  menuTitle: string;
+  chapter: string;
   kicker: string;
   rule: string;
   reward: string;
@@ -49,7 +55,7 @@ const MASTER_MODES: {
   {
     id: "festival",
     title: "Festival de las Luces",
-    menuTitle: "Festival",
+    chapter: "Reto I",
     kicker: "Encadena el brillo",
     rule: "Alterna atracciones: cada cambio mantiene el combo y enciende más bombillas.",
     reward: "Reverso Fuegos de Feria",
@@ -60,7 +66,7 @@ const MASTER_MODES: {
   {
     id: "mirror",
     title: "Parque Espejo",
-    menuTitle: "Espejo",
+    chapter: "Reto II",
     kicker: "Todo empieza al otro lado",
     rule: "No solo se refleja el plano: cada atracción debe construirse en el orden inverso.",
     reward: "Insignia Plata de Luna",
@@ -71,7 +77,7 @@ const MASTER_MODES: {
   {
     id: "storm",
     title: "Día de Tormenta",
-    menuTitle: "Tormenta",
+    chapter: "Reto III",
     kicker: "Juega con el pronóstico",
     rule: "La lluvia cierra un sector cada turno. Siempre conoceréis el siguiente.",
     reward: "Reverso Nube Dorada",
@@ -82,7 +88,7 @@ const MASTER_MODES: {
   {
     id: "impossible",
     title: "Poker Park 00:13",
-    menuTitle: "00:13",
+    chapter: "Reto final",
     kicker: "El parque imposible",
     rule: "Espejo, tormenta y combos de luz en una única jornada final. No tiene cronómetro: solo acaba al cerrar el parque, agotar las cartas o confirmar el bloqueo.",
     reward: "Final verdadero, Reverso DUAL y Galería Maestro",
@@ -115,12 +121,12 @@ export function MasterPassOverlay({
         <header>
           <span className="master-pass-seal" aria-hidden><FerrisWheel /></span>
           <span>
-            <small>Cuatro retos extra</small>
+            <small>Mapa secreto desplegado</small>
             <h2 id="master-pass-title">Pase Maestro</h2>
           </span>
           <Button size="icon" variant="ghost" onClick={onClose} aria-label="Cerrar Pase Maestro"><X /></Button>
         </header>
-        <p className="master-pass-intro">Elige un reto arriba; sus reglas y la forma de jugar quedan siempre a la vista.</p>
+        <p className="master-pass-intro">Has encontrado cuatro parques que no figuraban en ningún plano. Cada entrada transforma la jornada y esconde una recompensa.</p>
         <nav className="master-mode-grid" aria-label="Retos del Pase Maestro">
           {MASTER_MODES.map((mode) => {
             const locked = mode.id === "impossible" && !impossibleOpen;
@@ -136,8 +142,8 @@ export function MasterPassOverlay({
                 onClick={() => { setSelected(mode.id); setDifficulty("standard"); }}
               >
                 <span className="master-mode-icon">{locked ? <LockKeyhole /> : <Icon />}</span>
-                <span className="master-mode-copy"><strong>{mode.menuTitle}</strong><small>{locked ? "Entrada oculta" : mode.kicker}</small></span>
-                <span className="master-mode-state">{complete ? <Check aria-label="Superado" /> : locked ? "???" : null}</span>
+                <span className="master-mode-copy"><small>{mode.chapter}</small><strong>{mode.title}</strong><p>{locked ? "Completa los tres retos anteriores" : mode.kicker}</p></span>
+                <span className="master-mode-state">{complete ? <><Check /> Superado</> : locked ? "Entrada oculta" : "Descubrir"}</span>
               </button>
             );
           })}
@@ -145,7 +151,10 @@ export function MasterPassOverlay({
         <div className="master-start-panel stagger-in">
           {selectedMode ? (
             <>
-            <div><Sparkles aria-hidden /><span><small>Recompensa perfecta</small><strong>{selectedMode.reward}</strong></span></div>
+            <div className="master-mode-summary">
+              <span><small>Entrada seleccionada</small><strong>{selectedMode.title}</strong><p>{selectedMode.rule}</p></span>
+              <span className="master-mode-reward"><Sparkles aria-hidden /><span><small>Recompensa perfecta</small><strong>{selectedMode.reward}</strong></span></span>
+            </div>
             {selectedMode.id === "festival" ? (
               <section className="festival-briefing" aria-label="Cómo jugar al Festival de las Luces">
                 <p><strong>Objetivo del modo</strong> Completar el parque y, como reto adicional, mantener encendida la cadena de luces.</p>
@@ -171,6 +180,15 @@ export function MasterPassOverlay({
                 <ol>
                   {MIRROR_BRIEFING.map((rule, index) => <li key={rule}><span>{index + 1}</span>{rule}</li>)}
                 </ol>
+              </section>
+            ) : null}
+            {selectedMode.id === "storm" ? (
+              <section className="festival-briefing storm-briefing" aria-label="Cómo jugar al Día de Tormenta">
+                <p><strong>Objetivo del modo</strong> Completar las 7 atracciones mientras el frente de lluvia obliga a cambiar de plan en cada turno.</p>
+                <ol>
+                  {STORM_BRIEFING.map((rule, index) => <li key={rule}><span>{index + 1}</span>{rule}</li>)}
+                </ol>
+                <p className="festival-briefing-example"><strong>Ejemplo:</strong> si el Restaurante está cerrado, juegas en otro sector; al avanzar el turno, vuelve a abrirse y la tormenta se desplaza.</p>
               </section>
             ) : null}
             <DifficultySelector challenge={selectedMode.id} value={difficulty} onChange={setDifficulty} dark />
