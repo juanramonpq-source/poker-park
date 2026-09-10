@@ -32,6 +32,9 @@ export interface NightShiftState {
   route: AttractionId[];
   pendingUnlock: boolean;
   emergencyUses: number;
+  /** Solo: las jotas esperan fuera de la mano, disponibles para las Sillas. */
+  jackBox?: Card[];
+  jokerUsed?: boolean;
   /** Compatibilidad con partidas nocturnas guardadas antes de que los ases volvieran al mazo. */
   aceRack?: Card[];
 }

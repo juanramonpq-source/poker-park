@@ -5,6 +5,7 @@ import {
   legalSlotsForCard,
 } from "./attractions.ts";
 import { cardName, isAce, isFace, makeDeck, shuffle } from "./deck.ts";
+import { hasJackBox, jokerOptions, playableCard, playableCards, storeNightJacks } from "./night-tools.ts";
 import {
   advanceStorm,
   hasMirrorRules,
@@ -138,10 +139,18 @@ export function beginTurn(state: GameState): GameState {
   } else {
     next.drawnThisTurn = true;
   }
+  storeNightJacks(next);
   return maybeEnd(next);
 }
 
 function removeFromHand(state: GameState, cardId: string): Card {
+  const joker = jokerOptions(state).find(card => card.id === cardId);
+  if (joker) { state.night!.jokerUsed = true; return joker; }
+  if (hasJackBox(state)) {
+    const box = state.night!.jackBox ?? [];
+    const boxIndex = box.findIndex(card => card.id === cardId);
+    if (boxIndex >= 0) return box.splice(boxIndex, 1)[0];
+  }
   const hand = state.hands[state.currentPlayer];
   const index = hand.findIndex((c) => c.id === cardId);
   if (index < 0) throw new Error("Esa carta no está en tu mano");
@@ -150,7 +159,7 @@ function removeFromHand(state: GameState, cardId: string): Card {
 }
 
 export function remainingCards(state: GameState): Card[] {
-  return [...state.hands[0], ...state.hands[1], ...state.deck];
+  return [...state.hands[0], ...state.hands[1], ...state.deck, ...(state.night?.jackBox ?? [])];
 }
 
 export function isNightShift(state: GameState): boolean {
@@ -214,7 +223,7 @@ export function nightUnlockChoices(state: GameState): AttractionId[] {
 
 export function visitorPhase(state: GameState): boolean {
   if (isNightShift(state) && (state.night?.route.length ?? 0) > 0) return false;
-  const pool = remainingCards(state);
+  const pool = [...remainingCards(state), ...jokerOptions(state)];
   for (const id of ATTRACTION_IDS) {
     if (!isAttractionUnlocked(state, id)) continue;
     if (isAttractionStormClosed(state, id)) continue;
@@ -249,7 +258,7 @@ export function legalPlacements(
   state: GameState,
   cardId: string,
 ): { attractionId: AttractionId; index: number }[] {
-  const card = state.hands[state.currentPlayer].find((c) => c.id === cardId);
+  const card = playableCard(state, cardId);
   return card ? placementOptionsForCard(state, card) : [];
 }
 
@@ -304,7 +313,7 @@ export function legalExchanges(state: GameState, cardId: string): ExchangeTarget
 
 export function hasLegalAction(state: GameState): boolean {
   if (state.ended || state.pendingAdvance) return false;
-  const hand = state.hands[state.currentPlayer];
+  const hand = [...playableCards(state), ...jokerOptions(state)];
   for (const card of hand) {
     if (legalPlacements(state, card.id).length > 0) return true;
     if (legalVisits(state, card.id).length > 0) return true;
@@ -315,7 +324,7 @@ export function hasLegalAction(state: GameState): boolean {
 
 export function hasRequiredCardAction(state: GameState): boolean {
   if (state.ended || state.pendingAdvance) return false;
-  const hand = state.hands[state.currentPlayer];
+  const hand = [...playableCards(state), ...jokerOptions(state)];
   for (const card of hand) {
     if (legalPlacements(state, card.id).length > 0) return true;
     if (legalExchanges(state, card.id).length > 0) return true;
@@ -325,7 +334,7 @@ export function hasRequiredCardAction(state: GameState): boolean {
 
 export function hasDirectPlacement(state: GameState): boolean {
   if (state.ended || state.pendingAdvance) return false;
-  return state.hands[state.currentPlayer].some(
+  return playableCards(state).some(
     (card) => legalPlacements(state, card.id).length > 0,
   );
 }
@@ -438,7 +447,7 @@ export function advanceTurn(state: GameState): GameState {
 }
 
 function maybeEnd(state: GameState): GameState {
-  const cardsLeft = state.deck.length + state.hands[0].length + state.hands[1].length;
+  const cardsLeft = remainingCards(state).length + (jokerOptions(state).length ? 1 : 0);
   if (cardsLeft === 0) {
     state.ended = true;
     state.endReason = "empty";
@@ -530,6 +539,7 @@ export function exchangeCard(state: GameState, cardId: string, target: ExchangeT
   hand[handIndex] = taken;
   next.exchangesUsed += 1;
   next.swappedCardId = taken.id;
+  storeNightJacks(next);
   next.consecutivePasses = 0;
   const limit = exchangeLimit(next);
   if (next.exchangesUsed >= limit - 1) next.entranceFaceDown[0] = true;

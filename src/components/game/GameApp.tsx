@@ -14,6 +14,7 @@ import { useGameStore } from "@/store/game-store";
 import { challengeClass } from "@/lib/game/challenges";
 import { OnlineGameProvider } from "@/lib/multiplayer/online-game";
 import { OnlineStatusPill } from "@/components/game/OnlineStatusPill";
+import { PlacementCaution } from "@/components/game/PlacementCaution";
 
 function PlayingTable() {
   const game = useGameStore((s) => s.game);
@@ -30,6 +31,7 @@ function PlayingTable() {
       <OnlineStatusPill />
       <NightUnlockSheet />
       <BlockedSheet />
+      <PlacementCaution />
       {mapIntroOpen ? <ParkMapIntro game={game} /> : null}
       {mapOutroOpen ? <ParkMapIntro game={game} direction="closing" /> : null}
     </div>

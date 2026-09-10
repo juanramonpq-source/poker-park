@@ -58,7 +58,7 @@ export function suitName(suit: Suit): string {
 }
 
 export function cardName(card: Card): string {
-  return `${rankLabel(card.rank)} de ${suitName(card.suit)}`;
+  return `${card.id.startsWith("night-joker:") ? "Comodín: " : ""}${rankLabel(card.rank)} de ${suitName(card.suit)}`;
 }
 
 export function isRed(suit: Suit): boolean {

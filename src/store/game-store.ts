@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { placementWarning, type PlacementWarning } from "@/lib/game/placement-warning";
+import { playableCard } from "@/lib/game/night-tools";
 import { chooseAiMove } from "@/lib/game/ai";
 import * as audio from "@/lib/game/audio";
 import {
@@ -53,6 +55,10 @@ export type AiMoveFx = {
 };
 
 interface GameStore {
+  placementCaution: { game: GameState; cardId: string; attractionId: AttractionId; index: number; warning: PlacementWarning } | null;
+  dismissPlacementCaution: () => void;
+  confirmPlacementCaution: () => void;
+  selectJoker: (card: Card) => void;
   screen: Screen;
   game: GameState | null;
   selectedCardId: string | null;
@@ -91,7 +97,7 @@ interface GameStore {
   selectCard: (id: string | null) => void;
   toggleExchange: () => void;
   openPark: (id: AttractionId | null) => void;
-  place: (attractionId: AttractionId, index: number) => void;
+  place: (attractionId: AttractionId, index: number, confirmed?: boolean) => void;
   visit: (attractionId: AttractionId) => void;
   exchange: (target: ExchangeTarget) => void;
   pass: () => void;
@@ -185,6 +191,7 @@ export const useGameStore = create<GameStore>((set, get) => {
   };
 
   const afterHuman = (next: GameState, fromHuman = true) => {
+    set({ placementCaution: null });
     persist(next);
     if (next.pendingAdvance && next.lastCompleted) {
       set({
@@ -317,6 +324,20 @@ export const useGameStore = create<GameStore>((set, get) => {
   };
 
   return {
+    placementCaution: null,
+    dismissPlacementCaution: () => set({ placementCaution: null }),
+    confirmPlacementCaution: () => {
+      const caution = get().placementCaution;
+      set({ placementCaution: null });
+      if (!caution || get().game !== caution.game || get().selectedCardId !== caution.cardId) return;
+      get().place(caution.attractionId, caution.index, true);
+    },
+    selectJoker: (card) => {
+      const { game } = get();
+      if (!canAct() || !game || game.pendingAdvance || get().aiThinking || game.swappedCardId) return;
+      if (!card.id.startsWith("night-joker:") || !playableCard(game, card.id)) return;
+      set({ selectedCardId: card.id, exchangeMode: false, placementCaution: null });
+    },
     screen: "title",
     game: null,
     selectedCardId: null,
@@ -500,7 +521,9 @@ export const useGameStore = create<GameStore>((set, get) => {
         audio.playSelect();
         audio.tapHaptic("select");
       }
-      set({ selectedCardId: next });
+      set({ selectedCardId: next, placementCaution: null,
+        ...(get().game?.night?.jackBox?.some(card => card.id === next) ? { exchangeMode: false } : {}),
+      });
     },
     toggleExchange: () => {
       if (!canAct()) return;
@@ -516,12 +539,20 @@ export const useGameStore = create<GameStore>((set, get) => {
       audio.playUi();
       set({ openAttraction: id });
     },
-    place: (attractionId, index) => {
+    place: (attractionId, index, confirmed = false) => {
       if (!canAct()) return;
       const { game, selectedCardId, exchangeMode } = get();
       if (!game || !selectedCardId || exchangeMode || get().aiThinking || game.pendingAdvance)
         return;
       try {
+        if (!legalPlacements(game, selectedCardId).some(p => p.attractionId === attractionId && p.index === index)) return;
+        if (!confirmed) {
+          const warning = placementWarning(game, selectedCardId, attractionId, index);
+          if (warning) {
+            set({ placementCaution: { game, cardId: selectedCardId, attractionId, index, warning } });
+            return;
+          }
+        }
         const next = placeCard(game, selectedCardId, attractionId, index);
         juice(game, next, get().pulse, attractionId);
         afterHuman(next);

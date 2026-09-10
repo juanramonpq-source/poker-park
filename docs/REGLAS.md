@@ -45,6 +45,13 @@ Completar las 7 atracciones desbloquea el mismo progreso y las mismas
 recompensas tanto en Fácil como en Clásico. Si se consigue en Clásico, se añade
 además a la portada una medalla propia de ese modo.
 
+En Fácil, en todos los retos y modalidades, una colocación que reduzca las
+cartas disponibles hasta impedir completar otros recorridos con la distribución
+actual muestra una advertencia. Se puede **Reconsiderar** o **Colocar igualmente**.
+Los intercambios legales en atracciones incompletas pueden reparar algunas de
+esas situaciones. La ayuda considera palos, valores y necesidades compartidas,
+sin revelar manos ajenas ni el orden del mazo; no garantiza poder ganar.
+
 La interfaz permite hacer la colocación tocando carta y destino o arrastrando
 la carta hasta un hueco válido. Son dos controles para la misma acción y no
 alteran ninguna regla.
@@ -156,6 +163,19 @@ pareja, cada integrante mantiene su mano independiente.
 - Si no queda ninguna colocación directa y aún existen sectores cerrados, el generador permite abrir uno y continuar el mismo turno. Si todavía existe un intercambio, el equipo puede gastarlo antes o registrar la incidencia. Cada uso del generador queda anotado.
 - El final se presenta como informe de mantenimiento: atracciones revisadas, incidencias y autorización de apertura.
 - Completar las 7 revisiones concede la acreditación Guardianes del Alba y desbloquea las recompensas de La octava luz.
+- En solitario, en ambas dificultades, las Jotas que llegan a la mano (reparto,
+  robo o intercambio) pasan automáticamente a la **Caseta de guardia**. Cada
+  Jota se reemplaza robando otra carta mientras quede mazo, repitiendo si sale
+  otra Jota. Las Jotas de la Entrada permanecen allí hasta recibirse.
+- Las Jotas de la caseta se pueden colocar en Sillas cuando su torre esté lista.
+  Guardarlas no gasta turno ni cambio; colocarlas consume la colocación del
+  turno, seguida del robo normal. La caseta no es una fuente de intercambios.
+- En solitario Fácil, el llavero incluye un **comodín de un solo uso** adicional
+  a las 52 cartas. Se eligen valor y palo; quedan fijados al colocarlo. Consume
+  la colocación, no un intercambio. Respeta suministro, orden y dependencias.
+- En cualquier modalidad Fácil, completar **6 revisiones** ya abre el Pase
+  Maestro. Las 7 siguen siendo necesarias para Guardianes del Alba, fondo y
+  tema nocturno. Los progresos perfectos anteriores conservan todos sus accesos.
 
 ## Modos del Pase Maestro
 

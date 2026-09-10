@@ -117,7 +117,7 @@ GameState.version = 7
   difficulty?: standard | easy
   challenge?: classic | night | festival | mirror | storm | impossible
   night?: sectores con suministro, ruta pendiente, elección de apertura,
-          incidencias y aceRack? (solo compatibilidad con partidas antiguas)
+          incidencias, jackBox?, jokerUsed? y aceRack? (compatibilidad antigua)
   names, deck, hands[2], entrance[2], entranceFaceDown[2]
   attractions, exchangesUsed (límite según modo), currentPlayer
   drawnThisTurn, consecutivePasses
@@ -143,6 +143,14 @@ Barajar 52. 2 cartas → Entrada. 3 a cada jugador, o 5 a la única mano en
 solitario. Resto = mazo. En la Noche de Guardia, los cuatro ases permanecen en
 la baraja y pueden salir en la Entrada, en las manos o mediante el robo normal.
 El Llavero de Ases solo puede recuperar uno que todavía siga oculto en el mazo.
+
+En guardia solitaria, `storeNightJacks` aparta las Jotas de la mano a `jackBox`
+y roba un reemplazo por cada una. Se aplica al reparto, robo, intercambio y
+carga de un guardado anterior. Las Jotas de la Entrada no se apartan hasta
+recibirse. Se colocan desde la caseta en Sillas mediante la acción normal.
+En solitario Fácil hay un comodín adicional (`night-joker:palo:valor`): se
+prepara en el llavero, se selecciona sin consumirlo y `placeCard` fija su carta
+y marca `jokerUsed`. Un intercambio posterior conserva ese valor y palo.
 
 ### Turno
 1. Al empezar turno se roba 1 del mazo (si queda).
@@ -378,6 +386,22 @@ Todo sintético en `src/lib/game/audio.ts` (Web Audio). Sin mp3.
 ---
 
 ## 11. Tests mínimos a conservar
+
+`easy-aids.test.ts` cubre conservación de cartas, caseta, comodín, guardados y
+el nuevo acceso al Pase Maestro con seis revisiones nocturnas en Fácil.
+`masterPassUnlocked` es independiente de `nightPerfect`; `hasMasterPass`
+conserva el acceso de los guardados antiguos. Siete revisiones siguen siendo
+necesarias para la acreditación y cosméticos de Guardianes del Alba.
+
+`placement-warning.ts` calcula asignaciones posibles de cartas a los huecos
+pendientes, considerando ambas salidas de Montaña y las reglas Espejo. Detecta
+carencias individuales y compartidas por conjuntos de atracciones. Usa la
+baraja canónica menos las cartas públicas colocadas, no manos ajenas ni orden
+del mazo; ignora cierres temporales y cuenta el comodín como un solo recurso.
+Es una advertencia de distribución actual, no un solucionador de turnos ni
+una prohibición: los intercambios pueden reparar algunas carencias. La
+confirmación vive solo en UI; no se persiste ni sincroniza como una jugada.
+Se vuelve a comprobar el estado y la selección antes de ejecutar la jugada.
 
 `src/lib/game/attractions.test.ts` y `src/lib/game/engine.test.ts` cubren:
 

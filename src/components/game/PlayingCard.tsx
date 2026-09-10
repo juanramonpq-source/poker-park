@@ -249,6 +249,7 @@ export function PlayingCard({
           <Index rank={card.rank} suit={card.suit} size={size} />
         </div>
         <PipField rank={card.rank} suit={card.suit} size={size} />
+        {card.id.startsWith("night-joker:") ? <span className="joker-card-mark" aria-hidden>★</span> : null}
         <div className="absolute bottom-[3%] right-[4%] rotate-180">
           <Index rank={card.rank} suit={card.suit} size={size} />
         </div>

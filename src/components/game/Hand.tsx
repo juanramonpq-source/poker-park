@@ -4,6 +4,8 @@ import { cardName, isFace } from "@/lib/game/deck";
 import { canVisitAnything, legalExchanges, legalPlacements, legalVisits } from "@/lib/game/engine";
 import { Check, X } from "lucide-react";
 import { PlayingCard } from "@/components/game/PlayingCard";
+import { NightJackBox } from "@/components/game/NightTools";
+import { playableCard } from "@/lib/game/night-tools";
 import { cn } from "@/lib/utils";
 import { useGameStore, useLegalForSelected } from "@/store/game-store";
 import type { AttractionId, Card, GameState } from "@/lib/game/types";
@@ -92,7 +94,7 @@ export function Hand() {
   const viewer = game.mode === "ai" ? 0 : game.mode === "online" ? (onlineLocalPlayer ?? 0) : game.currentPlayer;
   const hand = game.hands[viewer];
   const locked = aiThinking || Boolean(aiMoveFx) || game.pendingAdvance || (game.mode === "ai" && game.currentPlayer === 1) || (game.mode === "online" && (!onlineConnected || onlineLocalPlayer !== game.currentPlayer));
-  const selectedCard = hand.find((c) => c.id === selectedCardId);
+  const selectedCard = selectedCardId ? playableCard(game, selectedCardId) : undefined;
   const selectedCanExchange = Boolean(
     selectedCard && !game.swappedCardId && legalExchanges(game, selectedCard.id).length,
   );
@@ -122,7 +124,7 @@ export function Hand() {
           ? "Elige la carta que quieres cambiar"
           : isNight ? "Elige una carta para la revisión" : "Elige una carta de tu mano";
   const guideDetail = selectedCard
-    ? `Seleccionada: ${cardName(selectedCard)}`
+    ? `${game.night?.jackBox?.some(c => c.id === selectedCard.id) ? "Desde la caseta" : "Seleccionada"}: ${cardName(selectedCard)}`
     : `${hand.length} cartas · toca o arrastra`;
 
   const beginDrag = (event: ReactPointerEvent<HTMLButtonElement>, card: Card) => {
@@ -209,6 +211,7 @@ export function Hand() {
   return (
     <footer className="hand-panel">
       <div className="hand-inner">
+        <NightJackBox game={game} locked={locked || Boolean(game.swappedCardId)} />
         <div className="hand-guide" aria-live="polite">
           <span className={cn("hand-step", selectedCard && !noMove && "is-ready")}>
             {selectedCard && !noMove ? <Check aria-hidden /> : 1}
@@ -225,7 +228,7 @@ export function Hand() {
           ) : null}
         </div>
         <div className="hand-cards" role="group" aria-label={`Tu mano: ${hand.length} cartas`}>
-          {hand.map((card, i) => {
+          {[...hand, ...(selectedCard && !hand.some(c => c.id === selectedCard.id) ? [selectedCard] : [])].map((card, i) => {
             const selected = selectedCardId === card.id;
             const tilt = (i - (hand.length - 1) / 2) * 5.5;
             return (

@@ -55,6 +55,7 @@ export function SoloModeChooser({
           </button>
         </div>
         <DifficultySelector challenge={challenge} value={difficulty} onChange={setDifficulty} />
+        {challenge === "night" && mode === "solo" ? <p className="tutorial-choice-copy">Las Jotas descansan en la caseta y se reemplazan al robar. {difficulty === "easy" ? "Además, tienes un comodín de un solo uso en el llavero. Con 6 revisiones abres el Pase Maestro; con 7 consigues Guardianes del Alba." : "Podrás colocarlas en las Sillas cuando la torre esté lista."}</p> : null}
         <Button size="lg" className="mt-4 w-full" onClick={() => onChoose(mode, difficulty)}>
           {mode === "solo" ? "Empezar montando solo" : "Empezar con compañero virtual"}
         </Button>

@@ -11,7 +11,7 @@ import {
 } from "@/lib/game/engine";
 import { ATTRACTION_DEFS } from "@/lib/game/attractions";
 import { playLifetimeUnlock, playParty, playRollCrash, playRollFill, playRollTick } from "@/lib/game/audio";
-import { loadSecrets, masterTrialsComplete, recordPerfectCompletion, unlockSecret } from "@/lib/game/persist";
+import { hasMasterPass, loadSecrets, masterTrialsComplete, recordNightProgress, recordPerfectCompletion, unlockSecret } from "@/lib/game/persist";
 import { CHALLENGE_NAMES } from "@/lib/game/challenges";
 import type { GameChallenge, GameState } from "@/lib/game/types";
 import { Button } from "@/components/ui/button";
@@ -173,6 +173,7 @@ export function EndScreen() {
       timers.push(window.setTimeout(() => {
         playRollCrash(done.length);
         setResolved(true);
+        if (game) setSecrets(recordNightProgress(game, done.length));
         if (perfect) {
           const nextSecrets = recordPerfectCompletion(challenge, difficulty);
           setSecrets(nextSecrets);
@@ -185,7 +186,7 @@ export function EndScreen() {
     };
     timers.push(window.setTimeout(tick, done.length === 0 ? 640 : 680));
     return () => timers.forEach((id) => window.clearTimeout(id));
-  }, [step, done.length, perfect, isNight, challenge, difficulty, pulse]);
+  }, [step, done.length, perfect, isNight, challenge, difficulty, pulse, game]);
 
   if (!game) return null;
   const returnToTitle = () => {
@@ -313,6 +314,8 @@ export function EndScreen() {
                 <a href="/images/poker-park-night-wallpaper.webp" download="Poker-Park-Guardianes-del-Alba.webp"><Download aria-hidden /> Descargar fondo para móvil</a>
                 <button type="button" onClick={toggleNightTheme}><MoonStar aria-hidden /> {nightTheme ? "Desactivar interfaz nocturna" : "Activar interfaz nocturna"}</button>
               </section>
+            ) : isNight && done.length >= 6 && difficulty === "easy" && hasMasterPass(secrets) ? (
+              <section className="night-reward-card"><div><Crown aria-hidden /><span><small>Nuevo acceso</small><strong>Pase Maestro desbloqueado</strong></span></div><p>Seis revisiones en Fácil abren los siguientes retos. Completa las siete para conseguir la acreditación Guardianes del Alba y sus recompensas.</p></section>
             ) : isMasterMode && perfect ? (
               <section className={cn("master-reward-card", challenge === "impossible" && "is-true-ending")}>
                 <div className="master-reward-heading">

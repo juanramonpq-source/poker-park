@@ -30,6 +30,7 @@ export function DifficultySelector({
           <span><strong>Fácil</strong><small>{easyChanges} cambios · mismos desbloqueos</small></span>
         </button>
       </div>
+      {value === "easy" ? <p>Te avisamos si una colocación deja sin cartas suficientes a otro recorrido. Siempre puedes colocar igualmente.</p> : null}
     </div>
   );
 }

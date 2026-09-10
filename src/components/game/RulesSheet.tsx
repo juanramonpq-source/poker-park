@@ -25,6 +25,10 @@ const SECTIONS: Array<{
     body: "Los intercambios son compartidos: 3 en Clásico, 4 en Fácil y Festival, 5 en Noche, Espejo y Tormenta, y 6 en 00:13. Puedes pulsar Cambiar y elegir tu carta, o elegir primero la carta y después pulsar Cambiar. Luego escoge qué carta recibes de la entrada o de una atracción, si se mantiene la estructura. Tras el cambio sigues tú y debes colocar la carta nueva. La primera entrada se cierra al quedar una maniobra; la segunda, al agotar el límite.",
   },
   {
+    title: "Ayuda en Fácil",
+    body: "En todos los retos y modalidades, antes de una colocación que deje sin cartas suficientes a otros recorridos aparece una advertencia. Cuenta las necesidades de palos y valores, incluso cuando varias atracciones compiten por las mismas cartas. Puedes Reconsiderar o Colocar igualmente: un intercambio legal podría reparar la situación mientras la atracción siga incompleta. Es una ayuda de planificación, no una garantía de completar el parque.",
+  },
+  {
     title: "Atracciones",
     body: "Montaña Rusa: números de menor a mayor, sin saltos, empezando por un 2 o un 3; recorre subidas, un looping y la bajada. Casa del Terror: 4 picas de número y el as de picas de tejado. Túnel del Amor: arco de 7 corazones de número, as en la cumbre. Bosque Encantado: 3×3 de tréboles y diamantes de número, as de diamantes al centro, y debajo dos columnas de diamantes en la entrada. Sillas Voladoras: primero las 3 picas de la torre; las 4 figuras solo cuando la base está lista. Restaurante: números con el as de tréboles al centro. Aseos: un rey y una reina juntos.",
   },
@@ -42,7 +46,7 @@ const SECTIONS: Array<{
   },
   {
     title: "La Noche de Guardia",
-    body: "Se desbloquea al completar las siete atracciones. El personal de mantenimiento empieza con dos sectores encendidos y dispone de 5 cambios en Clásico o 6 en Fácil. Los cuatro ases siguen dentro del mazo y salen con normalidad. Si el as que necesitas continúa oculto, el Llavero de Ases permite recuperarlo entregando una figura, siempre que pueda colocarse inmediatamente. Cada atracción revisada permite dar corriente a otra. Si no puedes colocar ninguna carta, puedes probar un intercambio o registrar una incidencia para abrir un sector con el generador. Puede jugarse en pareja, con compañero o en solitario.",
+    body: "Se desbloquea al completar las siete atracciones del parque de día. Empiezas con dos sectores encendidos y 5 cambios en Clásico o 6 en Fácil. Los ases siguen en el mazo; el Llavero de Ases permite recuperar uno oculto entregando una figura de la mano si el as encaja inmediatamente. Cada revisión abre otro sector. Sin colocaciones, puedes intercambiar o usar el generador para abrir uno. En solitario, las Jotas que llegan a la mano van a la Caseta de guardia y se reemplazan robando otra carta si queda mazo. Pueden colocarse desde allí en las Sillas cuando la torre esté lista, consumiendo la colocación del turno. En solitario Fácil, el llavero incluye un comodín de un uso: eliges su valor y palo, quedan fijados al colocarlo y no consume intercambio; respeta las dependencias. En cualquier modalidad Fácil, 6 revisiones abren el Pase Maestro; las 7 conceden Guardianes del Alba y sus recompensas.",
     visible: (secrets) => secrets.perfect,
   },
   {

@@ -42,6 +42,8 @@ const gameSchema = z.object({
   night: z.object({
     unlocked: z.array(attractionId).max(7), route: z.array(attractionId).max(7),
     pendingUnlock: z.boolean(), emergencyUses: counter, aceRack: cards.optional(),
+    jackBox: z.array(card.extend({ rank: z.literal(11) })).max(4).optional(),
+    jokerUsed: z.boolean().optional(),
   }).optional(),
   festival: z.object({
     combo: counter, bestCombo: counter, bulbs: counter, lastAttractionId: attractionId.nullable(),

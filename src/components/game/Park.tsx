@@ -36,6 +36,8 @@ import type { AttractionId, Card, GameState, Suit } from "@/lib/game/types";
 import { AttractionSheet, ICONS } from "@/components/game/AttractionBoard";
 import { RideFinale } from "@/components/game/RideFinale";
 import { PlayingCard } from "@/components/game/PlayingCard";
+import { NightJokerPicker } from "@/components/game/NightTools";
+import { jokerAvailable } from "@/lib/game/night-tools";
 import { ParkMascots } from "@/components/game/ParkMascots";
 import { ParkMapArtwork } from "@/components/game/ParkMapArtwork";
 import { cn } from "@/lib/utils";
@@ -311,7 +313,7 @@ function EntranceTile({
           >
             <img src="/images/ace-keyring.webp" alt="" />
             <small>Llavero de Ases</small>
-            <span>{hiddenAces.length}</span>
+            <span>{hiddenAces.length}{jokerAvailable(game) ? " + ★" : ""}</span>
           </button>
         ) : null}
       </div>
@@ -341,7 +343,7 @@ function AceRackSheet({ game, onClose }: { game: GameState; onClose: () => void 
   return createPortal(
     <div className="ace-rack-layer" role="dialog" aria-modal="true" aria-labelledby="ace-rack-title">
       <button type="button" className="ace-rack-backdrop" onClick={onClose} aria-label="Cerrar Llavero de Ases" />
-      <section className="ace-rack-card stagger-in">
+      <section className="ace-rack-card stagger-in night-tools-scroll">
         <header>
           <img src="/images/ace-keyring.webp" alt="" />
           <span><small>Equipo de mantenimiento</small><h2 id="ace-rack-title">Llavero de Ases</h2></span>
@@ -378,6 +380,7 @@ function AceRackSheet({ game, onClose }: { game: GameState; onClose: () => void 
               ? "Ningún as que siga oculto en el mazo encaja todavía en un sector abierto."
               : "Ayuda de emergencia: elige una figura de tu mano y pulsa Cambiar."}
         </div>
+        <NightJokerPicker game={game} onClose={onClose} />
       </section>
     </div>,
     document.body,

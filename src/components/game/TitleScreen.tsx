@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { playLifetimeUnlock, playUi, startChallengeBed, startTitleBed, unlockAudio } from "@/lib/game/audio";
 import {
   clearGame,
+  hasMasterPass,
   loadSecrets,
   resetPokerParkProgress,
   saveSecrets,
@@ -295,7 +296,7 @@ export function TitleScreen() {
             ) : (
               <p className="night-challenge-hint">Completa las 7 atracciones para descubrir un nuevo turno.</p>
             )}
-            {secrets.nightPerfect ? (
+            {hasMasterPass(secrets) ? (
               <button type="button" className="master-pass-button" onClick={() => setMasterPassOpen(true)}>
                 <span><Crown aria-hidden /></span>
                 <span><small>Mapa secreto descubierto</small><strong>Pase Maestro</strong></span>
@@ -342,6 +343,7 @@ export function TitleScreen() {
               <span><Sparkles aria-hidden /> Nuevos sectores al completar</span>
               <span><Crown aria-hidden /> {exchangeLimit({ challenge: "night", difficulty: nightDifficulty })} cambios compartidos</span>
               <span><img src="/images/ace-keyring.webp" alt="" /> Ases en el mazo · llavero de emergencia</span>
+              <span><Sparkles aria-hidden /> En Fácil: Pase Maestro con 6 revisiones; acreditación con 7</span>
             </div>
             <div className="tutorial-choice-actions">
               <DifficultySelector challenge="night" value={nightDifficulty} onChange={setNightDifficulty} dark />

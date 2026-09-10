@@ -1,4 +1,5 @@
 import { shuffle } from "./deck.ts";
+import { storeNightJacks } from "./night-tools.ts";
 import { isGameState } from "./state-validation.ts";
 import type { Card, GameChallenge, GameDifficulty, GameState } from "./types.ts";
 
@@ -73,6 +74,7 @@ export function loadGame(): GameState | null {
       if (unseenAces.length > 0) parsed.deck = shuffle([...parsed.deck, ...unseenAces]);
       delete parsed.night.aceRack;
     }
+    storeNightJacks(parsed);
     return parsed;
   } catch {
     return null;
@@ -103,6 +105,7 @@ export interface Secrets {
   perfect: boolean;
   lifetime: boolean;
   nightPerfect: boolean;
+  masterPassUnlocked?: boolean;
   pentonuiSignal: boolean;
   festivalPerfect: boolean;
   mirrorPerfect: boolean;
@@ -136,6 +139,7 @@ export function loadSecrets(): Secrets {
       perfect: Boolean(parsed.perfect),
       lifetime: Boolean(parsed.lifetime),
       nightPerfect: Boolean(parsed.nightPerfect),
+      masterPassUnlocked: Boolean(parsed.masterPassUnlocked || parsed.nightPerfect),
       pentonuiSignal: Boolean(parsed.pentonuiSignal),
       festivalPerfect: Boolean(parsed.festivalPerfect),
       mirrorPerfect: Boolean(parsed.mirrorPerfect),
@@ -183,6 +187,17 @@ export function recordPerfectCompletion(challenge: GameChallenge, difficulty: Ga
   const next = { ...current, [key]: true, classicMedals };
   saveSecrets(next);
   return next;
+}
+
+export function hasMasterPass(secrets: Secrets): boolean {
+  return Boolean(secrets.masterPassUnlocked || secrets.nightPerfect);
+}
+
+export function recordNightProgress(state: GameState, completed: number): Secrets {
+  if (state.challenge === "night" && state.difficulty === "easy" && completed >= 6) {
+    return unlockSecret("masterPassUnlocked");
+  }
+  return loadSecrets();
 }
 
 export function masterTrialsComplete(secrets: Secrets) {
