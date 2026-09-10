@@ -254,7 +254,7 @@ export function TitleScreen() {
             Poker Park
           </h1>
           <p className="title-description">
-            Recorre las atracciones del parque, a solas o en compañía, guiado por la baraja francesa.
+            Vive un día en un parque de atracciones, guiado por una baraja francesa.
           </p>
           <p className="title-detail">1–2 jugadores · Una baraja</p>
           {secrets.lifetime ? (

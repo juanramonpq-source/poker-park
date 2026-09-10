@@ -636,9 +636,15 @@
 }
 
 @media (max-height: 740px) {
-  .title-description,
   .title-detail {
     display: none;
+  }
+
+  .title-description {
+    max-width: 30ch;
+    margin-top: 0.55rem;
+    font-size: 0.78rem;
+    line-height: 1.35;
   }
 
   .title-hero {
@@ -647,8 +653,8 @@
 }
 
 @media (max-width: 520px) and (max-height: 880px) {
-  .title-description,
   .title-detail { display: none; }
+  .title-description { max-width: 30ch; margin-top: .55rem; font-size: .78rem; line-height: 1.35; }
   .title-hero { margin-bottom: .7rem; }
   .title-name { margin-top: .35rem; font-size: clamp(2.45rem, 12vw, 3.25rem); }
   .title-eyebrow { font-size: .56rem; }
@@ -1236,6 +1242,10 @@
   animation: map-v2-sheet-close 2.55s var(--ease-smooth) both;
 }
 
+.park-map-intro.is-closing .map-intro-v2.park-map-intro-sheet::after {
+  animation: map-v2-frame-close 0.42s ease-out both;
+}
+
 .park-map-intro.is-closing .map-intro-fold-left {
   animation: map-v2-fold-left-close 1.7s 0.42s cubic-bezier(0.64, 0, 0.78, 0) both;
 }
@@ -1301,6 +1311,10 @@
   0% { filter: drop-shadow(0 34px 28px rgb(0 0 0 / 0.5)); transform: translateY(0) rotate(-1.2deg) scale(1); }
   66% { filter: drop-shadow(0 18px 15px rgb(0 0 0 / 0.42)); transform: translateY(1%) rotate(1.4deg) scale(0.82); }
   100% { filter: drop-shadow(0 5px 4px rgb(0 0 0 / 0.22)); transform: translateY(10%) rotate(3deg) scale(0.5); }
+}
+
+@keyframes map-v2-frame-close {
+  to { opacity: 0; }
 }
 
 @keyframes map-v2-fold-left-close {
