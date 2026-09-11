@@ -1,16 +1,13 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { playMascot } from "@/lib/game/audio";
+import { MASCOT_IDS, recordMascotGreeting, type MascotId, type MascotProgress } from "@/lib/game/mascot-progress";
 import { cn } from "@/lib/utils";
-
-export type MascotId = "turtle" | "hedgehog" | "fish";
 
 const MASCOTS: { id: MascotId; name: string; animal: string }[] = [
   { id: "turtle", name: "Tuga", animal: "la tortuga" },
   { id: "hedgehog", name: "Púa", animal: "el erizo" },
   { id: "fish", name: "Burbujas", animal: "el pez flotante" },
 ];
-
-const MASCOT_IDS = MASCOTS.map(({ id }) => id);
 
 function MascotButton({
   id,
@@ -23,7 +20,7 @@ function MascotButton({
   className?: string;
   style?: CSSProperties;
   alwaysVisible?: boolean;
-  onGreet?: () => void;
+  onGreet?: (id: MascotId) => void;
 }) {
   const mascot = MASCOTS.find((item) => item.id === id)!;
   const [reaction, setReaction] = useState(0);
@@ -35,7 +32,7 @@ function MascotButton({
     window.clearTimeout(reactionTimer.current);
     playMascot(id);
     setReaction((value) => value + 1);
-    onGreet?.();
+    onGreet?.(id);
     reactionTimer.current = window.setTimeout(() => setReaction(0), 900);
   };
 
@@ -102,7 +99,8 @@ export function ParkMascots() {
       <MascotButton
         id={active}
         className={cn("park-mascot", `park-mascot-${active}`)}
-        onGreet={() => {
+        onGreet={(id) => {
+          recordMascotGreeting(id);
           window.clearTimeout(greetTimer.current);
           greetTimer.current = window.setTimeout(() => setActive(null), 1050);
         }}
@@ -111,7 +109,7 @@ export function ParkMascots() {
   );
 }
 
-export function MenuMascots() {
+export function MenuMascots({ onProgress }: { onProgress?: (progress: MascotProgress) => void }) {
   const [active, setActive] = useState<MascotId | null>(null);
   const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
   const last = useRef<MascotId | null>(null);
@@ -203,7 +201,8 @@ export function MenuMascots() {
         id={active}
         className={cn("menu-mascot-perch", `menu-mascot-${active}`)}
         style={{ left: anchor.x, top: anchor.y }}
-        onGreet={() => {
+        onGreet={(id) => {
+          onProgress?.(recordMascotGreeting(id));
           window.clearTimeout(greetTimer.current);
           greetTimer.current = window.setTimeout(() => setActive(null), 1050);
         }}

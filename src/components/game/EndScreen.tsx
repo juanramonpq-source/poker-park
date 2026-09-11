@@ -19,6 +19,7 @@ import { MascotParade } from "@/components/game/ParkMascots";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { useOnlineGame } from "@/lib/multiplayer/online-game";
+import { favoriteMascotNote, loadMascotProgress, MASCOT_IDS, MASCOT_NAMES, totalMascotGreetings } from "@/lib/game/mascot-progress";
 
 const NIGHT_SCALE = [
   "Sin corriente", "Primera comprobación", "Sector asegurado", "Guardia en marcha",
@@ -240,6 +241,7 @@ export function EndScreen() {
   const [lifetime, setLifetime] = useState(() => loadSecrets().lifetime);
   const [nightReward, setNightReward] = useState(() => loadSecrets().nightPerfect);
   const [secrets, setSecrets] = useState(() => loadSecrets());
+  const [mascotProgress] = useState(loadMascotProgress);
   const [nightWasLocked] = useState(() => !loadSecrets().perfect);
   const [nightRevealDismissed, setNightRevealDismissed] = useState(false);
   const done = game ? completedAttractions(game) : [];
@@ -256,6 +258,7 @@ export function EndScreen() {
   const scale = isSolo && challenge === "impossible"
     ? baseScale.map((title) => title === "El parque os recuerda" ? "El parque te recuerda" : title)
     : baseScale;
+  const mascotGreetingTotal = totalMascotGreetings(mascotProgress);
 
   useEffect(() => {
     const t = window.setTimeout(() => setStep("tally"), 1600);
@@ -417,6 +420,12 @@ export function EndScreen() {
             </section>
             <h2 className="mt-6 font-display text-lg">{isNight ? "Acreditaciones" : "Insignias"}</h2>
             <ul className="mt-2 grid grid-cols-2 gap-2">{badges.map((badge) => <li key={badge.id} className={cn("rounded-xl border px-3 py-2", badge.secret ? "border-accent/35 bg-accent/8" : "border-border bg-surface")}><p className="text-[12px] font-semibold text-fg">{badge.name}</p><p className="mt-0.5 text-[10px] leading-snug text-muted">{badge.hint}</p></li>)}</ul>
+            <section className="mascot-tally-note" aria-label="Saludos a las mascotas">
+              <small>Dato secreto del parque</small>
+              <strong>Has saludado {mascotGreetingTotal} {mascotGreetingTotal === 1 ? "vez" : "veces"} a las mascotas.</strong>
+              <p>{MASCOT_IDS.map((id) => `${MASCOT_NAMES[id]} ${mascotProgress.greetings[id]}`).join(" · ")}</p>
+              <p className="mascot-favorite">{favoriteMascotNote(mascotProgress)}</p>
+            </section>
             {isNight && perfect && nightReward ? (
               <section className="night-reward-card">
                 <div><ShieldCheck aria-hidden /><span><small>Secreto completado</small><strong>La octava luz</strong></span></div>

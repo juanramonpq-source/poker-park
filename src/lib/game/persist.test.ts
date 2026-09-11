@@ -19,9 +19,11 @@ describe("recuperación de datos", () => {
 
   it("el reinicio permite volver a ver la apertura sin borrar datos ajenos", () => {
     values.set("poker-park.opening-seen.v1", "seen");
+    values.set("poker-park.mascots.v1", JSON.stringify({ greetings: { turtle: 26 } }));
     values.set("other-app", "keep");
     resetPokerParkProgress();
     assert.equal(values.has("poker-park.opening-seen.v1"), false);
+    assert.equal(values.has("poker-park.mascots.v1"), false);
     assert.equal(values.get("other-app"), "keep");
   });
 

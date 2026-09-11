@@ -88,6 +88,7 @@ src/lib/game/attractions.ts    validez, huecos legales, hints
 src/lib/game/engine.ts         turnos, colocación, fin, recuento
 src/lib/game/ai.ts             compañero automático
 src/lib/game/persist.ts        localStorage v7
+src/lib/game/mascot-progress.ts saludos locales, favorita y medallas de mascotas
 src/lib/game/audio.ts          mezclador, ambientes, SFX y música de recuperación
 src/lib/game/soundtrack.ts     siete pistas Suno, carga y bucles con fundidos
 src/lib/game/attractions.test.ts
@@ -213,6 +214,15 @@ atracciones **completas**. Es **opcional**.
 
 ### Pantallas
 `title` → `playing` → (hotseat: `pass` entre jugadores) → `end`.
+
+### Mascotas y saludos secretos
+Las pulsaciones sobre Tuga, Púa y Burbujas se guardan localmente solo cuando
+aparecen en la portada o sobre el mapa de juego. Sus apariciones en el recuento
+y los créditos reaccionan, pero no incrementan el contador. El recuento revela
+el total, el detalle por mascota y la favorita; los empates se resuelven a favor
+de la última saludada. Cada mascota concede medallas acumulativas de bronce,
+plata y oro al superar 25, 50 y 100 saludos, visibles junto a las medallas de la
+portada. Este progreso no forma parte de `GameState` ni se sincroniza online.
 
 ---
 

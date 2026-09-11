@@ -144,6 +144,19 @@ clima con una partida imposible.
 
 No hay ganador. Solo el parque que habéis sido capaces de crear.
 
+## Secreto de las mascotas
+
+Tuga, Púa y Burbujas aparecen ocasionalmente en la portada y durante la
+partida. Cada saludo en esos dos lugares se conserva en el progreso local sin
+mostrar un contador durante el juego. En el recuento se revela el total, el
+detalle de saludos y la nota «Tu mascota favorita es…»; si hay empate, cuenta
+como favorita la última mascota saludada.
+
+Cada mascota tiene tres medallas acumulativas en la portada: bronce al superar
+25 saludos, plata al superar 50 y oro al superar 100. Tocar las mascotas del
+recuento o de los créditos no suma saludos. Las medallas son cosméticas y no
+condicionan retos, reglas ni desbloqueos.
+
 ## Reto desbloqueable: La Noche de Guardia
 
 Al completar las 7 atracciones del parque clásico se desbloquea este segundo

@@ -26,6 +26,8 @@ import { ClassicMedals } from "@/components/game/ClassicMedals";
 import { OnlineLobby } from "@/components/game/OnlineLobby";
 import { OpeningSequence } from "@/components/game/OpeningSequence";
 import { useOpeningSequence } from "@/components/game/useOpeningSequence";
+import { MascotMedals } from "@/components/game/MascotMedals";
+import { loadMascotProgress, type MascotProgress } from "@/lib/game/mascot-progress";
 
 function Motes() {
   return (
@@ -70,6 +72,11 @@ export function TitleScreen() {
     impossiblePerfect: false,
     classicMedals: [],
   });
+  const [mascotProgress, setMascotProgress] = useState<MascotProgress>({
+    version: 1,
+    greetings: { turtle: 0, hedgehog: 0, fish: 0 },
+    lastGreeted: null,
+  });
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialChoiceOpen, setTutorialChoiceOpen] = useState(false);
   const [nightModeOpen, setNightModeOpen] = useState(false);
@@ -89,6 +96,7 @@ export function TitleScreen() {
 
   useEffect(() => {
     setSecrets(loadSecrets());
+    setMascotProgress(loadMascotProgress());
     setTutorialComplete(window.localStorage.getItem(TUTORIAL_SEEN_KEY) === "true");
     if (new URL(window.location.href).searchParams.has("sala")) setOnlineSetup({ challenge: "classic", difficulty: "standard" });
   }, []);
@@ -263,7 +271,10 @@ export function TitleScreen() {
             <strong>Pentonúi Games</strong>
           </span>
         </button>
-        <ClassicMedals earned={secrets.classicMedals} />
+        <div className="title-medal-rack">
+          <ClassicMedals earned={secrets.classicMedals} />
+          <MascotMedals progress={mascotProgress} />
+        </div>
       </div>
 
       <div className="title-shell" inert={!["title", "landing", "ready"].includes(opening.stage) || undefined}>
@@ -449,7 +460,7 @@ export function TitleScreen() {
       ) : null}
       <LegalSheet open={legalOpen} onClose={() => setLegalOpen(false)} />
       {onlineSetup ? <OnlineLobby initialChallenge={onlineSetup.challenge} initialDifficulty={onlineSetup.difficulty} onClose={() => setOnlineSetup(null)} /> : null}
-      <MenuMascots />
+      <MenuMascots onProgress={setMascotProgress} />
     </main>
   );
 }

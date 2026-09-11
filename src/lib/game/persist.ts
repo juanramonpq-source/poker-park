@@ -225,6 +225,7 @@ export function resetPokerParkProgress() {
     localStorage.removeItem(SAVE_KEY);
     localStorage.removeItem(SECRETS_KEY);
     localStorage.removeItem(SETTINGS_KEY);
+    localStorage.removeItem("poker-park.mascots.v1");
     localStorage.removeItem("poker-park-tutorial-seen");
     localStorage.removeItem("poker-park.opening-seen.v1");
   } catch {
