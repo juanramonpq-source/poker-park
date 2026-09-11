@@ -61,6 +61,17 @@ function saveMascotProgress(progress: MascotProgress) {
   }
 }
 
+export function unlockAllMascotProgress(): MascotProgress {
+  const progress: MascotProgress = {
+    version: 1,
+    greetings: { turtle: 101, hedgehog: 101, fish: 101 },
+    lastGreeted: null,
+    pentonuiMedal: true,
+  };
+  saveMascotProgress(progress);
+  return progress;
+}
+
 export function recordMascotGreeting(id: MascotId): MascotProgress {
   const current = loadMascotProgress();
   const next = {
