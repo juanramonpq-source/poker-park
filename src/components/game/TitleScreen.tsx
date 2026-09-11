@@ -467,16 +467,17 @@ export function TitleScreen() {
             <div className="tutorial-heading">
               <div>
                 <p className="tutorial-kicker">En menos de un minuto</p>
-                <h2 id="tutorial-title">Tu primera vuelta</h2>
+                <h2 id="tutorial-title">Cómo se vive Poker Park</h2>
               </div>
               <Button size="icon" variant="ghost" onClick={() => setTutorialOpen(false)} aria-label="Cerrar tutorial">
                 <X className="size-4" />
               </Button>
             </div>
             <ol className="tutorial-steps">
-              <li><span>1</span><p>{pendingMode === "solo" ? <><strong>Empieza con cinco cartas.</strong> Robas una más al abrir el primer turno y recorres el parque con una única mano.</> : <><strong>Robad y hablad.</strong> Es un juego colaborativo: cada jugador tiene su propia mano y decidís juntos dónde encaja cada carta.</>}</p></li>
-              <li><span>2</span><p>{pendingMode === "solo" ? <><strong>Toca o arrastra.</strong> Elige una carta y toca su destino, o llévala directamente hasta una posición iluminada.</> : <><strong>Tocad o arrastrad.</strong> Podéis elegir una carta y tocar su destino, o llevarla directamente hasta una posición iluminada.</>}</p></li>
-              <li><span>3</span><p>{pendingMode === "solo" ? <><strong>Administra los cambios.</strong> Esta partida permite {exchangeLimit({ challenge: pendingChallenge, difficulty: pendingDifficulty })}; si tu mano se bloquea por completo, termina la jornada.</> : <><strong>Guardad los cambios.</strong> Esta partida permite {exchangeLimit({ challenge: pendingChallenge, difficulty: pendingDifficulty })} cambios; usadlos cuando desbloqueen una atracción.</>}</p></li>
+              <li><span>1</span><p><strong>Disfruta del día.</strong> No hay ganadores ni perdedores. La baraja marca el recorrido: intenta montar en tantas de las siete atracciones como puedas. Lo importante es el viaje.</p></li>
+              <li><span>2</span><p>{pendingMode === "solo" ? <><strong>Una única mano.</strong> Empiezas con cinco cartas y robas una al abrir cada turno. Coloca una carta en una atracción siguiendo su recorrido.</> : pendingMode === "ai" ? <><strong>Con compañero virtual.</strong> Tú llevas tu mano y el parque controla la otra. Jugáis de forma cooperativa y no tienes que pasar el dispositivo.</> : pendingMode === "hotseat" ? <><strong>Compartid el parque.</strong> Cada jugador tiene su mano privada. Hablad todo lo que queráis y pasa el dispositivo cuando el juego lo indique.</> : <><strong>En cada turno.</strong> Roba una carta y trata de colocarla en alguna atracción siguiendo su recorrido.</>}</p></li>
+              <li><span>3</span><p><strong>Busca los huecos iluminados.</strong> Toca una carta y después su destino, o arrástrala directamente. También dispones de {exchangeLimit({ challenge: pendingChallenge, difficulty: pendingDifficulty })} cambios para desbloquear el recorrido cuando lo necesites.</p></li>
+              <li><span>4</span><p><strong>Recorre todo lo que puedas.</strong> Completar las siete atracciones es disfrutar Poker Park al máximo. Si lo consigues, Poker Park puede guardarte alguna sorpresa.</p></li>
             </ol>
             <Button size="lg" className="mt-5 w-full" onClick={finishTutorial}>
               {pendingMode ? "Empezar partida" : "¡Entendido!"}
