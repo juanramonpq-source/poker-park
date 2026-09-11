@@ -16,6 +16,7 @@ import { challengeClass } from "@/lib/game/challenges";
 import { OnlineGameProvider } from "@/lib/multiplayer/online-game";
 import { OnlineStatusPill } from "@/components/game/OnlineStatusPill";
 import { PlacementCaution } from "@/components/game/PlacementCaution";
+import { ProgressUnlockPopups } from "@/components/game/ProgressUnlockPopups";
 
 function PlayingTable() {
   const game = useGameStore((s) => s.game);
@@ -73,6 +74,7 @@ function GameAppContent() {
         {screen === "pass" ? <PassScreen /> : null}
         {screen === "end" ? <EndScreen /> : null}
       </div>
+      <ProgressUnlockPopups active={screen === "end"} />
       <FxLayer />
       <RulesSheet />
     </div>
