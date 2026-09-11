@@ -12,7 +12,10 @@ const TIER_NAMES = {
 } as const;
 
 export function MascotMedals({ progress }: { progress: MascotProgress }) {
-  const medals = MASCOT_IDS.flatMap((id) => mascotMedalTiers(progress.greetings[id]).map((tier) => ({ id, tier })));
+  const medals = MASCOT_IDS.flatMap((id) => {
+    const tier = mascotMedalTiers(progress.greetings[id]).at(-1);
+    return tier ? [{ id, tier }] : [];
+  });
   if (medals.length === 0 && !progress.pentonuiMedal) return null;
 
   return (
