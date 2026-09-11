@@ -13,7 +13,7 @@ const TIER_NAMES = {
 
 export function MascotMedals({ progress }: { progress: MascotProgress }) {
   const medals = MASCOT_IDS.flatMap((id) => mascotMedalTiers(progress.greetings[id]).map((tier) => ({ id, tier })));
-  if (medals.length === 0) return null;
+  if (medals.length === 0 && !progress.pentonuiMedal) return null;
 
   return (
     <div className="title-mascot-medals" aria-label="Medallas de amistad con las mascotas">
@@ -27,6 +27,11 @@ export function MascotMedals({ progress }: { progress: MascotProgress }) {
           <span aria-hidden />
         </span>
       ))}
+      {progress.pentonuiMedal ? (
+        <span className="title-mascot-medal mascot-medal-pentonui" title="Medalla Pentonúi · Colección completa" aria-label="Medalla Pentonúi: colección completa">
+          <img src="/brand/pentonui-games-icon.png" alt="" />
+        </span>
+      ) : null}
     </div>
   );
 }

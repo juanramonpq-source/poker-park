@@ -19,7 +19,8 @@ import { MascotParade } from "@/components/game/ParkMascots";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { useOnlineGame } from "@/lib/multiplayer/online-game";
-import { favoriteMascotNote, loadMascotProgress, MASCOT_IDS, MASCOT_NAMES, totalMascotGreetings } from "@/lib/game/mascot-progress";
+import { claimPentonuiMedal, favoriteMascotNote, loadMascotProgress, MASCOT_IDS, MASCOT_NAMES, totalMascotGreetings } from "@/lib/game/mascot-progress";
+import { PentonuiMedalReveal } from "@/components/game/PentonuiMedalReveal";
 
 const NIGHT_SCALE = [
   "Sin corriente", "Primera comprobación", "Sector asegurado", "Guardia en marcha",
@@ -241,7 +242,8 @@ export function EndScreen() {
   const [lifetime, setLifetime] = useState(() => loadSecrets().lifetime);
   const [nightReward, setNightReward] = useState(() => loadSecrets().nightPerfect);
   const [secrets, setSecrets] = useState(() => loadSecrets());
-  const [mascotProgress] = useState(loadMascotProgress);
+  const [mascotProgress, setMascotProgress] = useState(loadMascotProgress);
+  const [pentonuiReveal, setPentonuiReveal] = useState(false);
   const [nightWasLocked] = useState(() => !loadSecrets().perfect);
   const [nightRevealDismissed, setNightRevealDismissed] = useState(false);
   const done = game ? completedAttractions(game) : [];
@@ -283,14 +285,20 @@ export function EndScreen() {
       timers.push(window.setTimeout(() => {
         playRollCrash(done.length);
         setResolved(true);
-        if (game) setSecrets(recordNightProgress(game, done.length));
+        let nextSecrets = game ? recordNightProgress(game, done.length) : loadSecrets();
         if (perfect) {
-          const nextSecrets = recordPerfectCompletion(challenge, difficulty);
-          setSecrets(nextSecrets);
+          nextSecrets = recordPerfectCompletion(challenge, difficulty);
           if (isNight) setNightReward(true);
           playParty();
           pulse("end");
           timers.push(window.setTimeout(() => pulse("end"), 800));
+        }
+        setSecrets(nextSecrets);
+        const award = claimPentonuiMedal(nextSecrets.classicMedals);
+        setMascotProgress(award.progress);
+        if (award.newlyAwarded) {
+          setPentonuiReveal(true);
+          playLifetimeUnlock();
         }
       }, 520));
     };
@@ -377,6 +385,7 @@ export function EndScreen() {
 
   return (
     <main className="end-tally relative min-h-dvh overflow-y-auto bg-bg pb-10 text-fg">
+      {pentonuiReveal ? <PentonuiMedalReveal onClose={() => setPentonuiReveal(false)} /> : null}
       {challenge === "classic" && perfect && resolved && nightWasLocked && !nightRevealDismissed ? (
         <NightFirstReveal onClose={() => setNightRevealDismissed(true)} />
       ) : null}

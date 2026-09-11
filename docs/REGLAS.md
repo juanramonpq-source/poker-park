@@ -157,6 +157,11 @@ Cada mascota tiene tres medallas acumulativas en la portada: bronce al superar
 recuento o de los créditos no suma saludos. Las medallas son cosméticas y no
 condicionan retos, reglas ni desbloqueos.
 
+La colección tiene una última sorpresa: al conseguir las seis medallas de los
+retos en dificultad Clásica y las tres medallas de mascota en oro, aparece una
+décima medalla azul con el emblema de Pentonúi. El juego anuncia el logro una
+sola vez y después conserva la medalla en la portada.
+
 ## Reto desbloqueable: La Noche de Guardia
 
 Al completar las 7 atracciones del parque clásico se desbloquea este segundo

@@ -222,7 +222,11 @@ y los créditos reaccionan, pero no incrementan el contador. El recuento revela
 el total, el detalle por mascota y la favorita; los empates se resuelven a favor
 de la última saludada. Cada mascota concede medallas acumulativas de bronce,
 plata y oro al superar 25, 50 y 100 saludos, visibles junto a las medallas de la
-portada. Este progreso no forma parte de `GameState` ni se sincroniza online.
+portada. Al reunir las seis medallas de retos en dificultad Clásica y las tres
+medallas de mascota en oro se concede, una sola vez, la décima medalla azul de
+Pentonúi. El desbloqueo se anuncia con una ventana especial tanto si la última
+condición se completa al terminar una partida como si se detecta al regresar a
+la portada. Este progreso no forma parte de `GameState` ni se sincroniza online.
 
 ---
 

@@ -23,6 +23,7 @@ describe("progreso secreto de las mascotas", () => {
       version: 1,
       greetings: { turtle: 0, hedgehog: 0, fish: 0 },
       lastGreeted: null,
+      pentonuiMedal: false,
     });
     assert.equal(progressModule.favoriteMascot(progressModule.loadMascotProgress()), null);
   });
@@ -63,6 +64,7 @@ describe("progreso secreto de las mascotas", () => {
       version: 1,
       greetings: { turtle: 12, hedgehog: 0, fish: 0 },
       lastGreeted: null,
+      pentonuiMedal: false,
     });
   });
 
@@ -74,6 +76,48 @@ describe("progreso secreto de las mascotas", () => {
       version: 1,
       greetings: { turtle: 4, hedgehog: 9, fish: 2 },
       lastGreeted: "turtle",
+      pentonuiMedal: false,
     }), "Tu mascota favorita es Púa.");
+  });
+
+  it("reserva la medalla Pentonui para las seis clasicas y los tres oros", async () => {
+    const progressModule = await import("./mascot-progress.ts");
+    assert.equal(typeof progressModule.qualifiesForPentonuiMedal, "function");
+    const allClassicMedals = ["classic", "night", "festival", "mirror", "storm", "impossible"] as const;
+    const almost = {
+      version: 1,
+      greetings: { turtle: 101, hedgehog: 101, fish: 100 },
+      lastGreeted: "fish",
+      pentonuiMedal: false,
+    } as const;
+
+    assert.equal(progressModule.qualifiesForPentonuiMedal(almost, allClassicMedals), false);
+    assert.equal(progressModule.qualifiesForPentonuiMedal({
+      ...almost,
+      greetings: { ...almost.greetings, fish: 101 },
+    }, allClassicMedals.slice(0, 5)), false);
+    assert.equal(progressModule.qualifiesForPentonuiMedal({
+      ...almost,
+      greetings: { ...almost.greetings, fish: 101 },
+    }, allClassicMedals), true);
+  });
+
+  it("concede y guarda la medalla Pentonui una sola vez", async () => {
+    const progressModule = await import("./mascot-progress.ts");
+    assert.equal(typeof progressModule.claimPentonuiMedal, "function");
+    values.set("poker-park.mascots.v1", JSON.stringify({
+      version: 1,
+      greetings: { turtle: 101, hedgehog: 101, fish: 101 },
+      lastGreeted: "fish",
+      pentonuiMedal: false,
+    }));
+    const allClassicMedals = ["classic", "night", "festival", "mirror", "storm", "impossible"] as const;
+
+    const first = progressModule.claimPentonuiMedal(allClassicMedals);
+    assert.equal(first.newlyAwarded, true);
+    assert.equal(first.progress.pentonuiMedal, true);
+    const second = progressModule.claimPentonuiMedal(allClassicMedals);
+    assert.equal(second.newlyAwarded, false);
+    assert.equal(second.progress.pentonuiMedal, true);
   });
 });

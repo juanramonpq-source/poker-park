@@ -40,9 +40,16 @@ try {
         version: 1,
         greetings: { turtle: 101, hedgehog: 101, fish: 101 },
         lastGreeted: "fish",
+        pentonuiMedal: false,
       }));
     }, { savedSecrets: secrets });
     await reachReadyTitle(page);
+    const reveal = page.locator(".pentonui-medal-reveal");
+    await reveal.waitFor({ state: "visible", timeout: 2_000 });
+    assert.match(await reveal.innerText(), /Medalla Pentonúi/);
+    await page.waitForTimeout(900);
+    await page.screenshot({ path: new URL(`pentonui-popup-${name}.png`, screenshots).pathname, fullPage: true });
+    await reveal.getByRole("button", { name: "Guardar en mi colección" }).click();
     await page.screenshot({ path: new URL(`mascot-medals-${name}.png`, screenshots).pathname, fullPage: true });
     const layout = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,
@@ -52,8 +59,11 @@ try {
     }));
     assert.deepEqual(errors, [], `${name}: errores en consola`);
     assert.equal(layout.scrollWidth, layout.clientWidth, `${name}: desbordamiento horizontal`);
-    assert.equal(layout.mascotMedals, 9, `${name}: deben verse las nueve medallas de mascotas`);
+    assert.equal(layout.mascotMedals, 10, `${name}: deben verse las nueve medallas de mascotas y la final`);
     assert.equal(layout.classicMedals, 6, `${name}: deben convivir con las seis medallas clasicas`);
+    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForTimeout(350);
+    assert.equal(await page.locator(".pentonui-medal-reveal").count(), 0, `${name}: el aviso final solo debe aparecer una vez`);
     await page.close();
   }
 

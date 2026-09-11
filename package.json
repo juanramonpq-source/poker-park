@@ -33,6 +33,7 @@
     "test:online-entries": "node scripts/online-entry-modes-smoke.mjs",
     "test:drag": "node scripts/drag-smoke.mjs",
     "test:mascots": "node scripts/mascot-progress-smoke.mjs",
+    "test:pentonui-medal": "node --experimental-strip-types scripts/pentonui-medal-end-smoke.mjs",
     "test:rules-gating": "node scripts/rules-gating-smoke.mjs",
     "check:auth": "node scripts/check-auth-invariant.mjs",
     "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/auth/gate-identity.test.ts",

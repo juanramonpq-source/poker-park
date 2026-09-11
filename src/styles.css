@@ -279,6 +279,8 @@
 .mascot-medal-bronze { border-color: #a55d2c; background: #d79357; }
 .mascot-medal-silver { border-color: #aab8c3; background: #e1e8ed; }
 .mascot-medal-gold { border-color: #d3a21d; background: #f6d15c; box-shadow: 0 2px 8px rgb(255 215 88 / .42), inset 0 0 0 1px rgb(255 255 255 / .55); }
+.mascot-medal-pentonui { border-color: #65caff; background: #0e60ae; box-shadow: 0 0 9px rgb(73 188 255 / .66), inset 0 0 0 1px rgb(255 255 255 / .52); }
+.mascot-medal-pentonui img { position: relative; z-index: 1; width: 94%; height: 94%; object-fit: contain; }
 
 .title-studio-badge:active { opacity: 0.78; transform: scale(0.96); }
 
@@ -1803,6 +1805,30 @@
 .mascot-tally-note strong { display: block; margin-top: .25rem; color: var(--color-fg); font-family: var(--font-display); font-size: 1rem; }
 .mascot-tally-note p { margin-top: .28rem; color: var(--color-muted); font-size: .68rem; }
 .mascot-tally-note .mascot-favorite { color: var(--color-fg); font-size: .76rem; font-weight: 800; }
+
+.pentonui-medal-reveal { position: fixed; z-index: 210; inset: 0; display: grid; place-items: center; overflow-y: auto; padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); }
+.pentonui-medal-backdrop { position: absolute; inset: 0; background: rgb(2 14 31 / .86); backdrop-filter: blur(9px); }
+.pentonui-medal-card { position: relative; width: min(100%, 25rem); overflow: hidden; border: 1px solid #69c9ff; border-radius: var(--radius-xl); background: radial-gradient(circle at 50% 0, rgb(53 174 255 / .24), transparent 42%), linear-gradient(155deg, #123c6b, #07172f); box-shadow: 0 24px 70px rgb(0 8 24 / .62), inset 0 0 38px rgb(70 185 255 / .08); padding: 1.4rem; color: #f7fbff; text-align: center; }
+.pentonui-medal-card > small { display: block; margin-top: .8rem; color: #8ed6ff; font-size: .62rem; font-weight: 900; letter-spacing: .17em; text-transform: uppercase; }
+.pentonui-medal-card h2 { margin-top: .3rem; font-family: var(--font-display); font-size: 2rem; font-weight: 600; }
+.pentonui-medal-card > p { margin: .65rem auto 0; max-width: 20rem; color: #c9e3f7; font-size: .8rem; line-height: 1.5; }
+.pentonui-medal-card > button { width: 100%; margin-top: 1rem; background: #77ceff; color: #07172f; }
+.pentonui-medal-seal { position: relative; z-index: 1; display: grid; width: 6.2rem; height: 6.2rem; margin: .1rem auto 0; place-items: center; border: 3px solid #8edaff; border-radius: 50%; background: radial-gradient(circle, #2a8eda, #0b4b91 68%, #062b5c); box-shadow: 0 0 0 6px rgb(106 207 255 / .12), 0 0 32px rgb(70 184 255 / .58), inset 0 0 18px rgb(255 255 255 / .24); animation: pentonui-medal-arrival 850ms cubic-bezier(.22, 1, .36, 1) both; }
+.pentonui-medal-seal img { width: 82%; height: 82%; object-fit: contain; filter: drop-shadow(0 5px 7px rgb(0 14 37 / .55)); }
+.pentonui-medal-burst { position: absolute; inset: -25%; animation: pentonui-burst-turn 12s linear infinite; }
+.pentonui-medal-burst span { position: absolute; inset: 0; background: conic-gradient(from 0deg, transparent 0 19deg, rgb(104 205 255 / .12) 20deg 27deg, transparent 28deg 59deg); }
+.pentonui-medal-burst span:nth-child(2) { transform: rotate(37deg); }
+.pentonui-medal-burst span:nth-child(3) { transform: rotate(79deg); }
+.pentonui-medal-legend { position: relative; display: flex; align-items: center; justify-content: center; gap: .35rem; margin-top: .8rem; color: #86d4ff; font-size: .68rem; font-weight: 850; letter-spacing: .04em; }
+.pentonui-medal-legend svg { width: .9rem; height: .9rem; }
+
+@keyframes pentonui-medal-arrival {
+  0% { opacity: 0; transform: translateY(-2.5rem) rotate(-18deg) scale(.55); }
+  62% { opacity: 1; transform: translateY(.3rem) rotate(4deg) scale(1.08); }
+  100% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+}
+
+@keyframes pentonui-burst-turn { to { transform: rotate(360deg); } }
 
 .hud-menu-backdrop {
   position: fixed;
