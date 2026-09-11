@@ -324,6 +324,12 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
 
 ## 8. UI (contrato visual)
 
+- En «Toca para entrar», toda la portada acepta el toque y activa la caída del
+  menú. El manejador directo vive en `TitleScreen` para que Safari genere el
+  clic sobre zonas vacías; no delegar mediante un clic simulado desde
+  `GameApp`. Los botones (incluido «Omitir apertura») conservan su acción.
+  Regresión real de WebKit/Chromium: `node scripts/title-screen-input-smoke.mjs
+  <url>`; requiere los navegadores de Playwright instalados.
 - La portada presenta una llegada de luz, rótulo y cartas francesas. Los
   indicadores `poker-park.motion.*` solo recuerdan las animaciones vistas;
   no forman parte del progreso ni de la partida. La primera apertura del

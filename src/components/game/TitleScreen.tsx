@@ -1,6 +1,6 @@
 import { BookOpen, Crown, FerrisWheel, MoonStar, Palette, ShieldCheck, Sparkles, User, Users, Wrench, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { playLifetimeUnlock, playUi, startChallengeBed, startTitleBed, unlockAudio } from "@/lib/game/audio";
+import { playLifetimeUnlock, playMenuClick, playUi, startChallengeBed, startTitleBed, unlockAudio } from "@/lib/game/audio";
 import {
   clearGame,
   hasMasterPass,
@@ -229,10 +229,19 @@ export function TitleScreen() {
 
   return (
     <main
-      className="title-screen fixed inset-0 h-dvh overflow-hidden bg-bg text-fg"
+      className={`title-screen fixed inset-0 h-dvh overflow-hidden bg-bg text-fg${opening.stage === "title" ? " cursor-pointer" : ""}`}
       data-opening={opening.stage}
       data-menu-night={nightModeOpen || soloChoice?.challenge === "night" || pairSetup?.challenge === "night" || undefined}
       onPointerDown={wake}
+      onClick={event => {
+        // Safari needs a direct click handler on the touch surface. Delegating
+        // only through an ancestor's capture handler drops background taps.
+        if (opening.stage !== "title" || !(event.target instanceof Element)) return;
+        if (event.target.closest('button, [role="button"]')) return;
+        playMenuClick();
+        wake();
+        opening.setStage("landing");
+      }}
     >
       <picture className="title-cover-picture" aria-hidden="true">
         <source media="(min-width: 768px)" srcSet={desktopCover} />
