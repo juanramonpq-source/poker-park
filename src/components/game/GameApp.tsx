@@ -62,6 +62,13 @@ function GameAppContent() {
       onClickCapture={event => {
         if (screen !== "title" || !(event.target instanceof Element)) return;
         const button = event.target.closest('button, [role="button"]');
+        const titleEntrance = event.currentTarget.querySelector<HTMLButtonElement>(
+          '.title-screen[data-opening="title"] .opening-title-action',
+        );
+        if (titleEntrance && !button) {
+          titleEntrance.click();
+          return;
+        }
         if (!button || button.matches(':disabled, [aria-disabled="true"]')) return;
         playMenuClick();
       }}
