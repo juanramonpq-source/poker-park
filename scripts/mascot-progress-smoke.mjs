@@ -59,7 +59,7 @@ try {
     }));
     assert.deepEqual(errors, [], `${name}: errores en consola`);
     assert.equal(layout.scrollWidth, layout.clientWidth, `${name}: desbordamiento horizontal`);
-    assert.equal(layout.mascotMedals, 10, `${name}: deben verse las nueve medallas de mascotas y la final`);
+    assert.equal(layout.mascotMedals, 4, `${name}: deben verse tres medallas de mascota de rango maximo y la final`);
     assert.equal(layout.classicMedals, 6, `${name}: deben convivir con las seis medallas clasicas`);
     await page.reload({ waitUntil: "networkidle" });
     await page.waitForTimeout(350);
