@@ -23,6 +23,7 @@ import { useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { SecretFlag, Secrets } from "@/lib/game/persist";
 import type { GameChallenge } from "@/lib/game/types";
+import { unlockAllMascotProgress } from "@/lib/game/mascot-progress";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -199,7 +200,7 @@ export function DeveloperMenu({
             <section className="developer-danger-zone">
               <h3><RotateCcw /> Acciones globales</h3>
               <div className="developer-global-actions">
-                <button type="button" onClick={() => onApplySecrets(PROGRESS_PRESETS.at(-1)!.secrets)}><Sparkles /><span><strong>Desbloquear absolutamente todo</strong><small>Aplica el último paso del recorrido.</small></span></button>
+                <button type="button" onClick={() => { unlockAllMascotProgress(); onApplySecrets(PROGRESS_PRESETS.at(-1)!.secrets); }}><Sparkles /><span><strong>Desbloquear absolutamente todo</strong><small>Activa también las medallas de Tuga, Púa, Burbujas y la medalla Pentonúi.</small></span></button>
                 <button type="button" className="is-danger" onClick={() => setConfirmReset(true)}><RotateCcw /><span><strong>Resetear Poker Park</strong><small>Borra partida, tutorial, secretos, ajustes e insignias.</small></span></button>
               </div>
               {confirmReset ? (
