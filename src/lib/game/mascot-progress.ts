@@ -105,8 +105,8 @@ export function totalMascotGreetings(progress: MascotProgress): number {
 export function favoriteMascotNote(progress: MascotProgress): string {
   const favorite = favoriteMascot(progress);
   return favorite
-    ? `Tu mascota favorita es ${MASCOT_NAMES[favorite]}.`
-    : "Todavía no tienes una mascota favorita.";
+    ? `Mascota favorita de este dispositivo: ${MASCOT_NAMES[favorite]}.`
+    : "Este dispositivo todavía no tiene una mascota favorita.";
 }
 
 const REQUIRED_CLASSIC_MEDALS: GameChallenge[] = ["classic", "night", "festival", "mirror", "storm", "impossible"];
