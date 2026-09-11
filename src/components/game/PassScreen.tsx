@@ -19,10 +19,10 @@ export function PassScreen() {
       <div className="pass-vignette" />
       <div className="pass-card stagger-in">
         <span className="pass-icon">{isNight ? <Flashlight aria-hidden /> : <UserRound aria-hidden />}</span>
-        <p className="pass-kicker">{isNight ? "Entrega la linterna" : "Pasa el teléfono"}</p>
+        <p className="pass-kicker">{isNight ? "Entrega la linterna" : "Pasa el dispositivo"}</p>
         <h1>Turno de {name}</h1>
         <div className="pass-privacy"><EyeOff aria-hidden /><span>La otra mano está oculta</span></div>
-        <p className="pass-copy">{isNight ? "El siguiente guarda continúa la ronda de comprobaciones. Su mano sigue siendo privada." : "Cuando tengas el teléfono, pulsa el botón para ver tus cartas y comenzar el turno."}</p>
+        <p className="pass-copy">{isNight ? "El siguiente guarda continúa la ronda de comprobaciones. Su mano sigue siendo privada." : "Cuando tengas el dispositivo, pulsa el botón para ver tus cartas y comenzar el turno."}</p>
         <Button size="lg" className="w-full" onClick={continueAfterPass}>
           Soy {name}
         </Button>
