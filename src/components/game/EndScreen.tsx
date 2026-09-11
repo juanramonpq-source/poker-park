@@ -19,7 +19,7 @@ import { MascotParade } from "@/components/game/ParkMascots";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { useOnlineGame } from "@/lib/multiplayer/online-game";
-import { claimPentonuiMedal, favoriteMascotNote, loadMascotProgress, MASCOT_IDS, MASCOT_NAMES, totalMascotGreetings } from "@/lib/game/mascot-progress";
+import { claimPentonuiMedal, favoriteMascot, favoriteMascotNote, loadMascotProgress, MASCOT_IDS, MASCOT_NAMES, totalMascotGreetings } from "@/lib/game/mascot-progress";
 import { PentonuiMedalReveal } from "@/components/game/PentonuiMedalReveal";
 
 const NIGHT_SCALE = [
@@ -261,6 +261,7 @@ export function EndScreen() {
     ? baseScale.map((title) => title === "El parque os recuerda" ? "El parque te recuerda" : title)
     : baseScale;
   const mascotGreetingTotal = totalMascotGreetings(mascotProgress);
+  const favorite = favoriteMascot(mascotProgress);
 
   useEffect(() => {
     const t = window.setTimeout(() => setStep("tally"), 1600);
@@ -433,7 +434,12 @@ export function EndScreen() {
               <small>Dato secreto del parque</small>
               <strong>Has saludado {mascotGreetingTotal} {mascotGreetingTotal === 1 ? "vez" : "veces"} a las mascotas.</strong>
               <p>{MASCOT_IDS.map((id) => `${MASCOT_NAMES[id]} ${mascotProgress.greetings[id]}`).join(" · ")}</p>
-              <p className="mascot-favorite">{favoriteMascotNote(mascotProgress)}</p>
+              {favorite ? (
+                <p className="mascot-favorite mascot-favorite-row">
+                  <span className={cn("mascot-sprite", `mascot-sprite-${favorite}`, "mascot-favorite-sprite")} aria-hidden="true" />
+                  <span>Mascota favorita de este dispositivo: {MASCOT_NAMES[favorite]}</span>
+                </p>
+              ) : <p className="mascot-favorite">{favoriteMascotNote(mascotProgress)}</p>}
             </section>
             {isNight && perfect && nightReward ? (
               <section className="night-reward-card">

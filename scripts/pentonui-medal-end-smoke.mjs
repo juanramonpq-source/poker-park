@@ -67,6 +67,10 @@ try {
   const reveal = page.locator(".pentonui-medal-reveal");
   await reveal.waitFor({ state: "visible", timeout: 20_000 });
   assert.match(await reveal.innerText(), /Medalla Pentonúi/);
+  const favoriteMascot = page.locator(".mascot-tally-note");
+  await favoriteMascot.waitFor({ state: "visible", timeout: 2_000 });
+  assert.match(await favoriteMascot.innerText(), /Mascota favorita de este dispositivo: Burbujas/);
+  assert.equal(await favoriteMascot.locator(".mascot-sprite.mascot-sprite-fish").count(), 1, "la mascota favorita debe mostrar su sprite reutilizado");
   const stored = await page.evaluate(() => ({
     secrets: JSON.parse(localStorage.getItem("poker-park.secrets.v1")),
     mascots: JSON.parse(localStorage.getItem("poker-park.mascots.v1")),
@@ -75,6 +79,8 @@ try {
   assert.equal(stored.mascots.pentonuiMedal, true);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   assert.deepEqual(errors, []);
+  await reveal.getByRole("button", { name: "Guardar en mi colección" }).click();
+  await favoriteMascot.waitFor({ state: "visible", timeout: 2_000 });
   await page.screenshot({ path: "screenshots/pentonui-medal-end-mobile.png", fullPage: true });
   console.log("Medalla Pentonúi concedida y anunciada desde el recuento final.");
 } finally {

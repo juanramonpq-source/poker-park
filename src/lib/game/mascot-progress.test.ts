@@ -77,7 +77,7 @@ describe("progreso secreto de las mascotas", () => {
       greetings: { turtle: 4, hedgehog: 9, fish: 2 },
       lastGreeted: "turtle",
       pentonuiMedal: false,
-    }), "Tu mascota favorita es Púa.");
+    }), "Mascota favorita de este dispositivo: Púa.");
   });
 
   it("reserva la medalla Pentonui para las seis clasicas y los tres oros", async () => {
