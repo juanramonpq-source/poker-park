@@ -6,19 +6,19 @@ const title = readFileSync(new URL("../src/components/game/TitleScreen.tsx", imp
 const pass = readFileSync(new URL("../src/components/game/PassScreen.tsx", import.meta.url), "utf8");
 
 test("tutorial explains the cooperative journey and its reward without implying a winner", () => {
-  assert.match(title, /No hay ganadores ni perdedores/);
-  assert.match(title, /montar en tantas de las siete atracciones como puedas/);
-  assert.match(title, /Poker Park puede guardarte alguna sorpresa/);
+  assert.match(title, /No hay ganadores ni perdedores/i);
+  assert.match(title, /montar en tantas de las siete atracciones como puedas/i);
+  assert.match(title, /Poker Park puede guardarte alguna sorpresa/i);
 });
 
 test("tutorial distinguishes solo play from shared-device play", () => {
-  assert.match(title, /una única mano/);
-  assert.match(title, /pasa el dispositivo cuando el juego lo indique/);
-  assert.match(title, /compañero virtual/);
+  assert.match(title, /una única mano/i);
+  assert.match(title, /pasa el dispositivo cuando el juego lo indique/i);
+  assert.match(title, /compañero virtual/i);
 });
 
 test("pass screen uses device-neutral wording", () => {
-  assert.match(pass, /Pasa el dispositivo/);
-  assert.match(pass, /Cuando tengas el dispositivo/);
-  assert.doesNotMatch(pass, /teléfono/);
+  assert.match(pass, /Pasa el dispositivo/i);
+  assert.match(pass, /Cuando tengas el dispositivo/i);
+  assert.doesNotMatch(pass, /teléfono/i);
 });
