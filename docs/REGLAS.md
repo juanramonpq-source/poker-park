@@ -121,6 +121,15 @@ Cuando ya no se puede ampliar ninguna atracción (o el parque está completo), l
 
 ## Final
 
+En todos los retos y modalidades, completar el parque o llegar a la fase de
+visitantes muestra «La jornada en el parque ha terminado», aunque sobren
+cambios. Se puede cerrar directamente o dejar visitantes de forma opcional;
+el cierre sigue disponible mientras se eligen. Los cambios ahorrados se
+conservan como mérito en el recuento, sin modificar la valoración por
+atracciones ni los desbloqueos. Una carta útil en la Entrada, en otra mano o
+en el mazo, un intercambio que recupere una colocación, el suministro pendiente
+y los cierres temporales por tormenta no se confunden con una jornada resuelta.
+
 - Se agotan mazo y manos, o
 - bloqueo irresoluble (una confirmación en solitario y dos pases en pareja; en
   Tormenta/00:13 son dos turnos en solitario o cuatro pases en pareja), o

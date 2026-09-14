@@ -1,4 +1,4 @@
-import { canVisitAnything, hasRequiredAction, parkSolved, passLimit } from "@/lib/game/engine";
+import { canVisitAnything, exchangeLimit, hasRequiredAction, parkSolved, passLimit, visitorPhase } from "@/lib/game/engine";
 import { Button } from "@/components/ui/button";
 import { useGameStore } from "@/store/game-store";
 
@@ -20,6 +20,8 @@ export function BlockedSheet() {
 
   const visits = canVisitAnything(game);
   const solved = parkSolved(game);
+  const finished = solved || visitorPhase(game);
+  const savedExchanges = Math.max(0, exchangeLimit(game) - game.exchangesUsed);
   const isSolo = game.mode === "solo";
   const weatherSolo = isSolo && (game.challenge === "storm" || game.challenge === "impossible");
   const lastPass = game.consecutivePasses >= passLimit(game) - 1;
@@ -28,21 +30,20 @@ export function BlockedSheet() {
     <div className="absolute inset-0 z-30 flex items-end justify-center p-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
       <button type="button" className="absolute inset-0 bg-fg/35 backdrop-blur-[2px]" aria-hidden />
       <section className="relative z-10 w-full max-w-md rounded-2xl border border-border bg-surface p-5 shadow-soft stagger-in">
-        {visits || solved ? (
+        {finished ? (
           <>
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-accent">
-              {solved ? "Parque completo" : "El día se acaba"}
+              {solved ? "Parque completo" : "Recorrido completado"}
             </p>
             <h2 className="mt-2 font-display text-2xl font-medium tracking-tight text-fg">
-              {solved
-                ? "El parque está resuelto"
-                : "Ya no se puede montar en más atracciones"}
+              La jornada en el parque ha terminado
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-muted">
               {visits
                 ? "Las figuras que quedan pueden sentarse como visitantes. No es obligatorio."
-                : "No queda nada más que colocar. Es hora de cerrar el parque."}
+                : "Ya has terminado todas las atracciones posibles. Es hora de cerrar el parque."}
             </p>
+            {savedExchanges > 0 ? <p className="mt-2 text-sm font-semibold text-good">{savedExchanges} {savedExchanges === 1 ? "cambio ahorrado" : "cambios ahorrados"}. Se conservan en el recuento; no hace falta gastarlos.</p> : null}
             <Button size="lg" className="mt-5 w-full" onClick={closePark}>
               Cerrar el parque
             </Button>

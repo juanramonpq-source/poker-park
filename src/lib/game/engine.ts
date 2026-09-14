@@ -222,15 +222,41 @@ export function nightUnlockChoices(state: GameState): AttractionId[] {
 }
 
 export function visitorPhase(state: GameState): boolean {
+  if (parkSolved(state)) return true;
   if (isNightShift(state) && (state.night?.route.length ?? 0) > 0) return false;
   const pool = [...remainingCards(state), ...jokerOptions(state)];
+  const canExchange = state.exchangesUsed < exchangeLimit(state);
+  if (canExchange) {
+    pool.push(...state.entrance.filter((_, index) => !state.entranceFaceDown[index]));
+  }
   for (const id of ATTRACTION_IDS) {
     if (!isAttractionUnlocked(state, id)) continue;
-    if (isAttractionStormClosed(state, id)) continue;
+    // A temporary storm closure must not turn a recoverable park into a finale.
     const attr = state.attractions[id];
     if (isAttractionComplete(id, attr.slots, hasMirrorRules(state))) continue;
     for (const card of pool) {
       if (legalSlotsForCard(id, attr.slots, card, hasMirrorRules(state)).length > 0) return false;
+    }
+  }
+  // A structural swap may free a useful card even when no loose card fits.
+  // Keep that recovery available; swapping only Entrance figures is optional.
+  if (canExchange) {
+    for (const id of ATTRACTION_IDS) {
+      const slots = state.attractions[id].slots;
+      if (isAttractionComplete(id, slots, hasMirrorRules(state))) continue;
+      for (let index = 0; index < slots.length; index += 1) {
+        const released = slots[index];
+        if (!released) continue;
+        const vacant = slots.map((card, i) => i === index ? null : card);
+        for (const replacement of pool) {
+          if (!legalSlotsForCard(id, vacant, replacement, hasMirrorRules(state)).includes(index)) continue;
+          const replaced = slots.map((card, i) => i === index ? replacement : card);
+          if (ATTRACTION_IDS.some(destination => legalSlotsForCard(
+            destination, destination === id ? replaced : state.attractions[destination].slots,
+            released, hasMirrorRules(state),
+          ).length > 0)) return false;
+        }
+      }
     }
   }
   return ATTRACTION_IDS.some((id) =>
@@ -327,6 +353,7 @@ export function hasLegalAction(state: GameState): boolean {
 
 export function hasRequiredCardAction(state: GameState): boolean {
   if (state.ended || state.pendingAdvance) return false;
+  if (visitorPhase(state)) return false;
   const hand = [...playableCards(state), ...jokerOptions(state)];
   for (const card of hand) {
     if (legalPlacements(state, card.id).length > 0) return true;

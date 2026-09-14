@@ -4,6 +4,7 @@ import {
   completedAttractions,
   dayBadges,
   dayRating,
+  exchangeLimit,
   passLimit,
   ratingCopy,
   RATING_SCALE,
@@ -429,6 +430,7 @@ export function EndScreen() {
               <p>{ending.body}</p>
             </section>
             <h2 className="mt-6 font-display text-lg">{isNight ? "Acreditaciones" : "Insignias"}</h2>
+            <p className="mt-2 text-sm font-semibold text-good">Cambios ahorrados: {Math.max(0, exchangeLimit(game) - game.exchangesUsed)} de {exchangeLimit(game)}. Cada cambio conservado cuenta como mérito de la jornada.</p>
             <ul className="mt-2 grid grid-cols-2 gap-2">{badges.map((badge) => <li key={badge.id} className={cn("rounded-xl border px-3 py-2", badge.secret ? "border-accent/35 bg-accent/8" : "border-border bg-surface")}><p className="text-[12px] font-semibold text-fg">{badge.name}</p><p className="mt-0.5 text-[10px] leading-snug text-muted">{badge.hint}</p></li>)}</ul>
             <section className="mascot-tally-note" aria-label="Saludos a las mascotas">
               <small>Dato secreto del parque</small>

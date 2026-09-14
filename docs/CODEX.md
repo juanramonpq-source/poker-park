@@ -424,7 +424,12 @@ originales mediante Suno Pro. Procedencia y proceso en `docs/MUSICA-SUNO.md` y
   `advanceTurn`; si `ended` → screen `end`; hotseat → screen `pass`.
 - `pass` se niega si `hasRequiredAction`; `closePark` siempre permite terminar
   voluntariamente y pasar al recuento.
-- `hasRequiredAction` = colocaciones, intercambios o generador nocturno.
+- `hasRequiredAction` = colocaciones, intercambios o generador nocturno,
+  salvo parque completo o fase visitante: los cambios restantes son opcionales.
+  `visitorPhase` tiene en cuenta cartas útiles en Entrada, otras manos, mazo,
+  caseta y comodín, intercambios estructurales que liberen una carta útil y
+  suministro pendiente; ignora cierres temporales de tormenta para evitar
+  finales prematuros. El recuento muestra el saldo de cambios ahorrados.
   Visitantes no.
 - El generador se ofrece cuando no hay colocación directa aunque aún quede un
   intercambio; el jugador puede elegir entre gastar el cambio o registrar la

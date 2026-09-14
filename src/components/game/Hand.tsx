@@ -58,6 +58,7 @@ export function Hand() {
   const aiThinking = useGameStore((s) => s.aiThinking);
   const aiMoveFx = useGameStore((s) => s.aiMoveFx);
   const visitorPromptHidden = useGameStore((s) => s.visitorPromptHidden);
+  const closePark = useGameStore((s) => s.closePark);
   const onlineLocalPlayer = useGameStore((s) => s.onlineLocalPlayer);
   const onlineConnected = useGameStore((s) => s.onlineConnected);
   const openPark = useGameStore((s) => s.openPark);
@@ -217,6 +218,7 @@ export function Hand() {
     <footer className="hand-panel">
       <div className="hand-inner">
         <NightJackBox game={game} locked={locked || Boolean(game.swappedCardId)} />
+        {visitorPromptHidden && !locked ? <button type="button" className="mb-2 min-h-11 w-full rounded-xl bg-accent px-3 py-2 text-sm font-bold text-accent-fg" onClick={closePark}>Cerrar el parque</button> : null}
         <div className="hand-guide" aria-live="polite">
           <span className={cn("hand-step", selectedCard && !noMove && "is-ready")}>
             {selectedCard && !noMove ? <Check aria-hidden /> : 1}
