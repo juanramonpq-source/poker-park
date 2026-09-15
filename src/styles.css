@@ -96,6 +96,17 @@
     color: var(--color-fg);
     overscroll-behavior: none;
     touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* Keep names and room codes editable without selecting the game labels. */
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
   }
 
   button:not(:disabled),

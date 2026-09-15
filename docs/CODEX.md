@@ -392,6 +392,8 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
   `playSelect`. El toque sigue siendo el control principal y, como alternativa,
   se puede arrastrar una carta sin perder su identidad visual hasta una
   atracción o hasta un hueco legal iluminado.
+- Los textos y paneles no permiten selección nativa ni el menú táctil de
+  mantener pulsado. Los campos de nombres y códigos conservan la edición.
 - Baldosas legales: `tile-hot` (borde verde + pulso). Si hay visitante
   posible, tocar la baldosa **deja el visitante** directo.
 - HUD: chip de mazo, botón de cambios con el saldo real del modo, reglas,
