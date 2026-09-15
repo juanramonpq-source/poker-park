@@ -51,7 +51,7 @@ export function PairStartChooser({
           </button>
           <button type="button" className={cn("solo-mode-choice pair-online-choice", playMode === "online" && "is-selected")} aria-pressed={playMode === "online"} onClick={() => setPlayMode("online")}>
             <span className="solo-mode-choice-icon"><Globe2 aria-hidden /></span>
-            <span><strong>Jugar online <em>Beta</em></strong><small>Cada persona ve su mano y las jugadas del otro navegador.</small></span>
+            <span><strong>Jugar online</strong><small>Cada persona ve su mano y las jugadas del otro navegador.</small></span>
           </button>
         </div>
         <DifficultySelector challenge={challenge} value={difficulty} onChange={setDifficulty} />

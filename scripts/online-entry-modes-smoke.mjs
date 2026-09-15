@@ -1,5 +1,6 @@
 import { chromium } from "playwright";
 import { existsSync, mkdirSync } from "node:fs";
+import assert from "node:assert/strict";
 
 const baseUrl = process.env.POKER_PARK_URL ?? "http://127.0.0.1:8080/";
 const localChrome =
@@ -39,10 +40,12 @@ async function expectPairChooser(challengeName) {
   await chooser.getByText(challengeName, { exact: true }).waitFor();
   await chooser.getByRole("button", { name: /En este dispositivo/ }).waitFor();
   await chooser.getByRole("button", { name: /Jugar online/ }).waitFor();
+  assert.doesNotMatch(await chooser.innerText(), /\bbeta\b/i);
 }
 
 try {
   await page.goto(baseUrl);
+  await page.getByRole("button", { name: "Omitir apertura", exact: true }).click();
   await page.getByRole("button", { name: "Jugar en pareja", exact: true }).click();
   await expectPairChooser("Jornada de día");
   mkdirSync("screenshots", { recursive: true });

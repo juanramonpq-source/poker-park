@@ -394,6 +394,8 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
   atracción o hasta un hueco legal iluminado.
 - Los textos y paneles no permiten selección nativa ni el menú táctil de
   mantener pulsado. Los campos de nombres y códigos conservan la edición.
+  Si no se puede copiar una invitación online automáticamente, se muestra su
+  enlace en un campo que permite selección y copia manual.
 - La página principal permanece fija, sin desplazamiento ni rebote del documento.
   El Pase Maestro mantiene visibles la dificultad y los botones de inicio en los
   cuatro retos; solo su área de instrucciones permite desplazamiento interno.

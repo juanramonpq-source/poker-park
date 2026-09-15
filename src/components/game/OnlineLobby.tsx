@@ -35,6 +35,7 @@ export function OnlineLobby({
   const [challenge] = useState<GameChallenge>(initialChallenge);
   const [difficulty] = useState<GameDifficulty>(initialDifficulty);
   const [copied, setCopied] = useState(false);
+  const [inviteFallback, setInviteFallback] = useState<string | null>(null);
 
   useEffect(() => {
     if (online.role === "host") setView("create");
@@ -49,9 +50,22 @@ export function OnlineLobby({
   const copyInvite = async () => {
     const url = new URL(window.location.href);
     url.searchParams.set("sala", online.roomCode);
-    await navigator.clipboard.writeText(url.toString());
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
+    setCopied(false);
+    setInviteFallback(null);
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setInviteFallback(url.toString());
+    }
+  };
+
+  const selectInvite = (input: HTMLInputElement) => {
+    // Let Safari finish positioning its caret before selecting the whole link.
+    window.requestAnimationFrame(() => {
+      if (document.activeElement === input) input.setSelectionRange(0, input.value.length);
+    });
   };
 
   const connected = online.status === "connected";
@@ -71,7 +85,7 @@ export function OnlineLobby({
             <Globe2 aria-hidden />
           </span>
           <div>
-            <p className="tutorial-kicker">Beta web · sala privada</p>
+            <p className="tutorial-kicker">Sala privada</p>
             <h2 id="online-title">Jugar online</h2>
           </div>
           <Button size="icon" variant="ghost" onClick={close} aria-label="Cerrar">
@@ -145,6 +159,13 @@ export function OnlineLobby({
                       {copied ? "Enlace copiado" : "Copiar invitación"}
                     </button>
                   ) : null}
+                  {inviteFallback ? <div className="online-invite-fallback">
+                    <p role="status">No se pudo copiar automáticamente. Selecciona el enlace para copiarlo.</p>
+                    <label className="online-field">
+                      <span>Enlace de invitación</span>
+                      <input readOnly value={inviteFallback} onFocus={event => selectInvite(event.currentTarget)} onClick={event => selectInvite(event.currentTarget)} />
+                    </label>
+                  </div> : null}
                 </div>
                 <div
                   className={`online-connection is-${online.status}`}

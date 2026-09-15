@@ -542,6 +542,10 @@
 .online-room-code > strong { font-family: ui-monospace, monospace; font-size: 1.8rem; letter-spacing: .16em; }
 .online-room-code > button { display: inline-flex; align-items: center; gap: .3rem; color: var(--color-sky); font-size: .66rem; font-weight: 800; }
 .online-room-code > button svg { width: .85rem; }
+.online-invite-fallback { display: grid; width: 100%; min-width: 0; gap: .5rem; margin-top: .4rem; }
+.online-invite-fallback > p { color: #b9ccda; font-size: .64rem; line-height: 1.4; }
+.online-invite-fallback .online-field { min-width: 0; }
+.online-invite-fallback input { min-width: 0; font-size: 1rem; -webkit-touch-callout: default; }
 .online-connection { display: flex; align-items: center; gap: .65rem; border-radius: var(--radius-md); background: rgb(255 255 255 / .055); padding: .7rem; }
 .online-connection > svg { flex: 0 0 auto; width: 1.15rem; color: #ffd268; }
 .online-connection.is-connected > svg { color: #66d99a; }
