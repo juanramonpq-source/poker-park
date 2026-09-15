@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { SoloModeChooser } from "@/components/game/SoloModeChooser";
 import { PairStartChooser } from "@/components/game/PairStartChooser";
 import { DifficultySelector } from "@/components/game/DifficultySelector";
+import { MasterModeGuide } from "@/components/game/MasterModeGuide";
 
 type MasterMode = Exclude<GameChallenge, "classic" | "night">;
 
@@ -134,7 +135,6 @@ export function MasterPassOverlay({
           </span>
           <Button size="icon" variant="ghost" onClick={onClose} aria-label="Cerrar Pase Maestro"><X /></Button>
         </header>
-        <p className="master-pass-intro">Has encontrado cuatro parques que no figuraban en ningún plano. Cada entrada transforma la jornada y esconde una recompensa.</p>
         <nav className="master-mode-grid" aria-label="Retos del Pase Maestro">
           {MASTER_MODES.map((mode) => {
             const locked = mode.id === "impossible" && !impossibleOpen;
@@ -151,7 +151,7 @@ export function MasterPassOverlay({
               >
                 <span className="master-mode-icon">{locked ? <LockKeyhole /> : <Icon />}</span>
                 <span className="master-mode-copy"><small>{mode.chapter}</small><strong>{mode.title}</strong><p>{locked ? "Completa los tres retos anteriores" : mode.kicker}</p></span>
-                <span className="master-mode-state">{complete ? <><Check /> Superado</> : locked ? "Entrada oculta" : "Descubrir"}</span>
+                <span className="master-mode-state">{complete ? <><Check /> Superado</> : locked ? "Supera los 3 retos" : "Descubrir"}</span>
               </button>
             );
           })}
@@ -161,9 +161,12 @@ export function MasterPassOverlay({
             <>
             <div className="master-mode-info" role="region" aria-label={`Instrucciones de ${selectedMode.title}`} tabIndex={0}>
             <div className="master-mode-summary">
-              <span><small>Entrada seleccionada</small><strong>{selectedMode.title}</strong><p>{selectedMode.rule}</p></span>
+              <span><strong>{selectedMode.title}</strong></span>
               <span className="master-mode-reward"><Sparkles aria-hidden /><span><small>Recompensa perfecta</small><strong>{selectedMode.reward}</strong></span></span>
             </div>
+            <MasterModeGuide mode={selectedMode.id} />
+            <details className="master-full-rules">
+            <summary>Consultar reglas completas</summary>
             {selectedMode.id === "festival" ? (
               <section className="festival-briefing" aria-label="Cómo jugar al Festival de las Luces">
                 <p><strong>Objetivo del modo</strong> Completar el parque y, como reto adicional, mantener encendida la cadena de luces.</p>
@@ -207,6 +210,7 @@ export function MasterPassOverlay({
                 <p>Los cambios gastan las maniobras del reto. Las dependencias y los cierres por tormenta siguen vigentes.</p>
               </section>
             ) : null}
+            </details>
             </div>
             <div className="master-start-controls">
             <DifficultySelector challenge={selectedMode.id} value={difficulty} onChange={setDifficulty} dark />

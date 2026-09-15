@@ -397,6 +397,8 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
 - La página principal permanece fija, sin desplazamiento ni rebote del documento.
   El Pase Maestro mantiene visibles la dificultad y los botones de inicio en los
   cuatro retos; solo su área de instrucciones permite desplazamiento interno.
+  La explicación principal usa esquemas de cartas, atracciones y flechas; las
+  reglas completas quedan plegadas como consulta opcional en cada reto.
   Las ayudas extensas y el recuento final conservan su propio desplazamiento.
 - Baldosas legales: `tile-hot` (borde verde + pulso). Si hay visitante
   posible, tocar la baldosa **deja el visitante** directo.

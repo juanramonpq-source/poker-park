@@ -44,7 +44,7 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   await page.addInitScript(() => {
     // Isolated browser profile: exercise the final mode without changing player progress.
-    localStorage.setItem('poker-park.secrets.v1', JSON.stringify({ perfect: true, nightPerfect: true, masterPassUnlocked: true, festivalPerfect: true, mirrorPerfect: true, stormPerfect: true }));
+    if (!localStorage.getItem('poker-park.secrets.v1')) localStorage.setItem('poker-park.secrets.v1', JSON.stringify({ perfect: true, nightPerfect: true, masterPassUnlocked: true, festivalPerfect: true, mirrorPerfect: true, stormPerfect: true }));
     localStorage.setItem('poker-park.opening-seen.v1', 'seen');
     localStorage.setItem('poker-park-tutorial-seen', 'true');
     localStorage.setItem('poker-park.settings.v1', JSON.stringify({ muted: true }));
@@ -57,6 +57,11 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
       await page.setViewportSize(size);
       for (const mode of ['festival', 'mirror', 'storm', 'impossible']) {
         await page.locator(`.master-mode-${mode}`).click();
+        const guide = page.getByRole('region', { name: 'Guía visual del reto', exact: true });
+        await guide.waitFor();
+        assert.equal(await page.locator('.master-full-rules').evaluate(el => el.open), false);
+        assert.equal(await guide.locator('.guide-support-row').count(), mode === 'festival' ? 0 : mode === 'storm' ? 1 : 2);
+        if (mode === 'mirror') assert.equal(await guide.locator('.guide-mirror-step').count(), 6);
         for (const difficulty of ['Clásico', 'Fácil']) {
           await page.locator('.master-start-panel').getByRole('button', { name: new RegExp(difficulty) }).click();
           await page.waitForTimeout(150);
@@ -72,6 +77,13 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
           assert.ok(bounds.controls.every(c => c.fits && c.reachable), `${name} ${JSON.stringify(size)} ${mode} ${difficulty}: ${JSON.stringify(bounds)}`);
           assert.ok(bounds.width <= size.width && bounds.height <= size.height, 'Document overflow');
         }
+        await page.locator('.master-full-rules > summary').click();
+        assert.equal(await page.locator('.master-full-rules').evaluate(el => el.open), true);
+        const actions = await page.locator('.master-start-actions').boundingBox();
+        assert.ok(actions.y + actions.height <= size.height, 'Expanded rules must not push start buttons away');
+        await page.locator('.master-full-rules > summary').click();
+        await page.locator('.master-mode-info').evaluate(el => { el.scrollTop = 0; });
+        if (size.width === 390) await page.screenshot({ path: `screenshots/master-guide-${label}-${name}-${mode}.png` });
       }
       await page.screenshot({ path: `screenshots/master-menu-${label}-${name}-${size.width}.png` });
     }
@@ -131,8 +143,14 @@ for (const [name, engine] of [['chromium', chromium], ['webkit', webkit]]) {
     await fixedDocument();
     await credits.click();
     await page.getByRole('button', { name: 'Volver al inicio', exact: true }).waitFor();
+    await page.evaluate(() => localStorage.setItem('poker-park.secrets.v1', JSON.stringify({ perfect: true, nightPerfect: true })));
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.getByRole('button', { name: 'Omitir apertura', exact: true }).click();
+    await page.locator('.master-pass-button').click();
+    assert.ok(await page.locator('.master-mode-impossible').isDisabled(), 'The final challenge remains locked for unfinished profiles');
+    assert.equal(await page.locator('.master-mode-impossible .master-mode-state').textContent(), 'Supera los 3 retos');
     assert.deepEqual(errors, []);
-    console.log(JSON.stringify({ ok: true, url, browser: name, checked: 'four modes, both difficulties, four viewports, reachable controls, scrolling explanations, solo/pair entry, fixed title/game, card drag, end results', errors }));
+    console.log(JSON.stringify({ ok: true, url, browser: name, checked: 'four visual guides and correct aids, expandable full rules, both difficulties, four viewports, reachable controls, scrolling explanations, solo/pair entry, fixed title/game, card drag, end results', errors }));
   } catch (error) {
     await page.screenshot({ path: `screenshots/master-menu-${label}-${name}-failure.png` });
     console.error('At failure:', await page.locator('.master-mode-info').evaluateAll(elements => elements.map(el => ({ scroll: el.scrollTop, height: el.clientHeight, contentHeight: el.scrollHeight, rect: el.getBoundingClientRect().toJSON() }))));
