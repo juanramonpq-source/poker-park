@@ -20,6 +20,7 @@ const gameSchema = z.object({
   mode: z.enum(["solo", "hotseat", "ai", "online"]),
   difficulty: z.enum(["standard", "easy"]).optional(),
   challenge: z.enum(["classic", "night", "festival", "mirror", "storm", "impossible"]).optional(),
+  jackBox: z.array(card.extend({ rank: z.literal(11) })).max(4).optional(),
   names: z.tuple([z.string(), z.string()]),
   deck: cards,
   hands: z.tuple([cards, cards]),

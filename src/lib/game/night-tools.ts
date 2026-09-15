@@ -1,12 +1,24 @@
 import { makeDeck } from "./deck.ts";
+import { hasMirrorRules } from "./challenges.ts";
 import type { Card, GameState } from "./types.ts";
 
 export function hasJackBox(state: GameState): boolean {
-  return state.challenge === "night" && state.mode === "solo" && Boolean(state.night);
+  return state.mode === "solo" && (
+    (state.challenge === "night" && Boolean(state.night)) || hasMirrorRules(state) || state.challenge === "storm"
+  );
+}
+
+export function hasAceKeyring(state: GameState): boolean {
+  return (state.challenge === "night" && Boolean(state.night)) || hasMirrorRules(state);
+}
+
+export function jackBoxCards(state: GameState): Card[] {
+  if (!hasJackBox(state)) return [];
+  return (state.challenge === "night" ? state.night?.jackBox : state.jackBox) ?? [];
 }
 
 export function jokerAvailable(state: GameState): boolean {
-  return hasJackBox(state) && state.difficulty === "easy" && !state.night?.jokerUsed;
+  return state.challenge === "night" && hasJackBox(state) && state.difficulty === "easy" && !state.night?.jokerUsed;
 }
 
 export function jokerOptions(state: GameState): Card[] {
@@ -14,7 +26,7 @@ export function jokerOptions(state: GameState): Card[] {
 }
 
 export function playableCards(state: GameState): Card[] {
-  return [...state.hands[state.currentPlayer], ...(hasJackBox(state) ? state.night?.jackBox ?? [] : [])];
+  return [...state.hands[state.currentPlayer], ...jackBoxCards(state)];
 }
 
 export function playableCard(state: GameState, id: string): Card | undefined {
@@ -26,7 +38,7 @@ export function playableCard(state: GameState, id: string): Card | undefined {
 export function storeNightJacks(state: GameState): void {
   if (!hasJackBox(state)) return;
   const hand = state.hands[0];
-  const box = state.night!.jackBox ??= [];
+  const box = state.challenge === "night" ? state.night!.jackBox ??= [] : state.jackBox ??= [];
   for (let index = 0; index < hand.length;) {
     if (hand[index].rank !== 11 || hand[index].id.startsWith("night-joker:")) { index += 1; continue; }
     const [jack] = hand.splice(index, 1);

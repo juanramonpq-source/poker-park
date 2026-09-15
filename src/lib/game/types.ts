@@ -62,6 +62,8 @@ export interface GameState {
   difficulty?: GameDifficulty;
   challenge?: GameChallenge;
   night?: NightShiftState;
+  /** Caseta solitaria de Espejo, Tormenta y 00:13; independiente del suministro nocturno. */
+  jackBox?: Card[];
   festival?: FestivalState;
   storm?: StormState;
   names: [string, string];

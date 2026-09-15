@@ -214,3 +214,29 @@ pareja, cada integrante mantiene su mano independiente.
 - Todos los retos se pueden jugar en solitario, en pareja o con el compañero automático.
 - **Día de Tormenta:** un sector cierra temporalmente y el siguiente se anuncia; 5 cambios en Clásico y bloqueo tras dos turnos solitarios o cuatro pases en pareja.
 - **Poker Park 00:13:** reto final con Espejo, Tormenta y Festival activos a la vez. Para completar las 7 atracciones hay que respetar las dependencias invertidas, planificar los cierres anunciados por el pronóstico y alternar destinos para mantener el combo de luces. Las 00:13 indican la apertura, no una cuenta atrás. Concede 6 cambios en Clásico o 7 en Fácil y conserva el margen de dos rondas completas antes de declarar un bloqueo meteorológico.
+
+### Equipo de apoyo del Pase Maestro
+
+En ambas dificultades, el apoyo depende del reto:
+
+| Reto | Caseta de Jotas (solo en solitario) | Llavero de Ases (todas las modalidades) |
+|---|---|---|
+| Festival | No | No |
+| Espejo | Sí | Sí |
+| Tormenta | Sí | No |
+| 00:13 | Sí | Sí |
+
+- La caseta conserva el funcionamiento de Guardia: aparta cada Jota recibida,
+  roba un reemplazo si queda mazo y permite colocarla desde allí en Sillas o
+  cambiarla por una carta visible de la Entrada. En Espejo y 00:13 las cuatro
+  figuras se colocan **antes** de la torre; en Tormenta van después.
+- El llavero permite entregar una figura **de la mano** a cambio de un as
+  todavía oculto en el mazo que pueda colocarse inmediatamente. La figura
+  vuelve al mazo. Una Jota guardada solo puede cambiarse con la Entrada.
+- Cada intercambio consume una de las maniobras existentes (4/5/5/6, más
+  una en Fácil). No se amplían los límites ni se elimina la obligación de
+  colocar la carta recibida. La tormenta y las dependencias siguen vigentes.
+- El comodín adicional sigue reservado a Guardia solitaria Fácil.
+- Festival conserva sus reglas: el combo no restringe colocaciones.
+
+Justificación y experimento reproducible: [análisis de dificultad](ANALISIS-PASE-MAESTRO.md).

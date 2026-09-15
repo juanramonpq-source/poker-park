@@ -17,6 +17,7 @@ export function completedPark(mode: Mode = "solo", challenge: GameChallenge = "c
   game.hands = [[card("clubs-12"), card("clubs-13")], mode === "solo" ? [] : [card("spades-12"), card("spades-13")]];
   if (mode === "solo") game.deck = [card("spades-12"), card("spades-13")];
   game.entrance = [card("diamonds-12"), card("diamonds-13")];
+  if (game.jackBox) game.jackBox = [];
   if (game.night) {
     game.night.unlocked = [...ATTRACTION_IDS];
     game.night.route = [];

@@ -121,6 +121,7 @@ GameState.version = 7
   challenge?: classic | night | festival | mirror | storm | impossible
   night?: sectores con suministro, ruta pendiente, elección de apertura,
           incidencias, jackBox?, jokerUsed? y aceRack? (compatibilidad antigua)
+  jackBox?: Jotas de Espejo/Tormenta/00:13 en solitario, sin suministro nocturno
   names, deck, hands[2], entrance[2], entranceFaceDown[2]
   attractions, exchangesUsed (límite según modo), currentPlayer
   drawnThisTurn, consecutivePasses
@@ -155,7 +156,14 @@ También se intercambian desde la caseta con la Entrada: la Jota sale de
 `jackBox`, ocupa esa entrada y la recibida pasa a la mano con `swappedCardId`.
 Se conserva el límite de cambios y el turno; no se roba por sacar una Jota
 de la caseta. La caseta no habilita cambios con huecos ni con el llavero.
-En solitario Fácil hay un comodín adicional (`night-joker:palo:valor`): se
+El Pase Maestro reutiliza `storeNightJacks` en Espejo, Tormenta y 00:13
+solitarios, guardando en `GameState.jackBox` sin crear un estado `night`.
+`jackBoxCards` unifica el acceso, también al cargar guardados v7 anteriores.
+Espejo y 00:13 disponen de llavero en todas las modalidades (`hasAceKeyring`);
+Festival no recibe ayudas y Tormenta no recibe llavero. Ambos recursos
+respetan las dependencias, los cierres y el presupuesto de intercambios.
+Ver [análisis de dificultad](ANALISIS-PASE-MAESTRO.md).
+En Guardia solitaria Fácil hay un comodín adicional (`night-joker:palo:valor`): se
 prepara en el llavero, se selecciona sin consumirlo y `placeCard` fija su carta
 y marca `jokerUsed`. Un intercambio posterior conserva ese valor y palo.
 

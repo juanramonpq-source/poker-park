@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { createGame, exchangeCard, exchangeLimit, hasRequiredAction, legalExchanges, legalPlacements, placeCard, remainingCards } from "./engine.ts";
+import { createGame, exchangeCard, exchangeLimit, hasRequiredAction, legalExchanges, legalPlacements, nightAceCandidates, placeCard, remainingCards } from "./engine.ts";
 import { makeDeck } from "./deck.ts";
 import { hasMirrorRules } from "./challenges.ts";
-import { hasJackBox, jokerAvailable, jokerOptions, storeNightJacks } from "./night-tools.ts";
+import { hasAceKeyring, hasJackBox, jackBoxCards, jokerAvailable, jokerOptions, storeNightJacks } from "./night-tools.ts";
 import { placementWarning } from "./placement-warning.ts";
 import { isGameState } from "./state-validation.ts";
 import { hasMasterPass, loadGame, loadSecrets, recordNightProgress, recordPerfectCompletion, saveGame } from "./persist.ts";
@@ -14,7 +14,7 @@ const card = (id: string) => structuredClone(deck.find(c => c.id === id)!);
 function hand(state: GameState, ids: string[]) {
   state.hands = [ids.map(card), []];
   const placed = Object.values(state.attractions).flatMap(a => a.slots).filter(Boolean).map(c => c!.id);
-  const used = [...ids, ...placed, ...state.entrance.map(c => c.id), ...(state.night?.jackBox ?? []).map(c => c.id)];
+  const used = [...ids, ...placed, ...state.entrance.map(c => c.id), ...jackBoxCards(state).map(c => c.id)];
   state.deck = deck.filter(c => !used.includes(c.id));
 }
 
@@ -131,7 +131,7 @@ describe("caseta y comodín nocturnos", () => {
     for (const mode of ["solo", "hotseat", "ai", "online"] as const) {
       for (const challenge of ["classic", "night", "festival", "mirror", "storm", "impossible"] as const) {
         const g = createGame(mode, undefined, challenge, "easy");
-        assert.equal(hasJackBox(g), mode === "solo" && challenge === "night");
+        assert.equal(hasJackBox(g), mode === "solo" && ["night", "mirror", "storm", "impossible"].includes(challenge));
         assert.equal(jokerAvailable(g), mode === "solo" && challenge === "night");
       }
     }
@@ -160,6 +160,114 @@ describe("caseta y comodín nocturnos", () => {
     assert.equal(hasRequiredAction(g), true);
     g.night!.jokerUsed = true;
     assert.equal(hasRequiredAction(g), false);
+  });
+});
+
+describe("equilibrio del Pase Maestro", () => {
+  it("conserva las 52 cartas y las ayudas elegidas en todas las modalidades", () => {
+    for (const mode of ["solo", "hotseat", "ai", "online"] as const) {
+      for (const challenge of ["classic", "night", "festival", "mirror", "storm", "impossible"] as const) {
+        for (const difficulty of ["standard", "easy"] as const) {
+          const g = createGame(mode, undefined, challenge, difficulty);
+          assert.equal(hasAceKeyring(g), ["night", "mirror", "impossible"].includes(challenge));
+          if (hasJackBox(g)) assert.ok(g.hands[0].every(c => c.rank !== 11));
+          const all = [...remainingCards(g), ...g.entrance];
+          assert.equal(all.length, 52);
+          assert.equal(new Set(all.map(c => c.id)).size, 52);
+          assert.ok(isGameState(g));
+          if (challenge !== "night") assert.equal(g.night, undefined);
+        }
+      }
+    }
+  });
+  it("las Jotas respetan el orden invertido y el cierre de Sillas", () => {
+    for (const challenge of ["mirror", "storm", "impossible"] as const) {
+      const g = createGame("solo", undefined, challenge);
+      g.jackBox = [card("clubs-11")];
+      hand(g, ["hearts-12"]);
+      if (g.storm) g.storm.forecast = ["love", "chairs", ...ATTRACTION_IDS.filter(id => !["love", "chairs"].includes(id))];
+      if (challenge === "storm") {
+        assert.deepEqual(legalPlacements(g, "clubs-11"), []);
+        [2, 3, 4].forEach((r, i) => { g.attractions.chairs.slots[4 + i] = card(`spades-${r}`); });
+      }
+      assert.equal(legalPlacements(g, "clubs-11").length, 4);
+      const next = placeCard(g, "clubs-11", "chairs", 0);
+      assert.equal(next.attractions.chairs.slots[0]!.id, "clubs-11");
+      assert.ok(!jackBoxCards(next).some(c => c.id === "clubs-11"));
+      assert.equal(g.jackBox.length, 1, "el estado original sigue intacto");
+      if (g.storm) {
+        g.storm.index = 1;
+        assert.deepEqual(legalPlacements(g, "clubs-11"), []);
+      }
+    }
+  });
+  it("la caseta del Pase permite cambios con Entrada y conserva aforo y carta pendiente", () => {
+    for (const challenge of ["mirror", "storm", "impossible"] as const) {
+      const g = createGame("solo", undefined, challenge);
+      g.jackBox = [card("clubs-11")];
+      g.entrance = [card("clubs-9"), card("clubs-10")];
+      hand(g, ["hearts-12"]);
+      g.exchangesUsed = exchangeLimit(g) - 1;
+      g.entranceFaceDown = [true, false];
+      assert.deepEqual(legalExchanges(g, "clubs-11"), [{ kind: "entrance", index: 1 }]);
+      const next = exchangeCard(g, "clubs-11", { kind: "entrance", index: 1 });
+      assert.equal(next.jackBox!.length, 0);
+      assert.equal(next.swappedCardId, "clubs-10");
+      assert.deepEqual(next.deck, g.deck);
+      assert.deepEqual(next.entranceFaceDown, [true, true]);
+      assert.equal(next.entrance[1].id, "clubs-11");
+      assert.equal(next.exchangesUsed, exchangeLimit(g));
+      assert.equal(new Set([...remainingCards(next), ...next.entrance].map(c => c.id)).size, 52);
+      assert.deepEqual(legalExchanges(next, "hearts-12"), []);
+    }
+  });
+  it("el llavero rescata un as oculto, pagándolo y respetando el pronóstico", () => {
+    for (const mode of ["solo", "hotseat", "ai", "online"] as const) {
+      for (const challenge of ["mirror", "impossible"] as const) {
+        const g = createGame(mode, undefined, challenge);
+        g.jackBox = undefined;
+        g.entrance = [card("clubs-2"), card("clubs-3")];
+        hand(g, ["hearts-12"]);
+        if (g.storm) g.storm.forecast = ["haunted", ...ATTRACTION_IDS.filter(id => id !== "haunted")];
+        const target = { kind: "ace-rack", cardId: "hearts-1" } as const;
+        assert.ok(legalExchanges(g, "hearts-12").some(t => JSON.stringify(t) === JSON.stringify(target)));
+        if (g.storm) assert.ok(!legalExchanges(g, "hearts-12").some(t => t.kind === "ace-rack" && t.cardId === "spades-1"));
+        const next = exchangeCard(g, "hearts-12", target);
+        assert.equal(next.exchangesUsed, 1);
+        assert.equal(next.swappedCardId, "hearts-1");
+        assert.ok(next.deck.some(c => c.id === "hearts-12"));
+        assert.ok(!nightAceCandidates(next).some(c => c.id === "hearts-1"));
+        assert.doesNotThrow(() => placeCard(next, "hearts-1", "love", 3));
+        assert.equal(new Set([...remainingCards(next), ...next.entrance].map(c => c.id)).size, 52);
+        g.exchangesUsed = exchangeLimit(g);
+        assert.throws(() => exchangeCard(g, "hearts-12", target));
+      }
+    }
+  });
+  it("migra una caseta ausente al cargar y valida su contenido", () => {
+    const values = new Map<string, string>();
+    Object.defineProperty(globalThis, "localStorage", { configurable: true, value: {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    } });
+    for (const challenge of ["mirror", "storm", "impossible"] as const) {
+      const g = createGame("solo", undefined, challenge);
+      delete g.jackBox;
+      g.hands[0] = [card("clubs-11")]; g.deck = [card("hearts-11"), card("clubs-2")];
+      saveGame(g);
+      const loaded = loadGame()!;
+      assert.equal(loaded.jackBox![0].id, "clubs-11");
+      assert.equal(loaded.hands[0][0].id, "clubs-2");
+      saveGame(loaded);
+      assert.deepEqual(loadGame(), loaded);
+      loaded.jackBox!.push(card("clubs-2"));
+      assert.equal(isGameState(loaded), false);
+      loaded.jackBox = []; loaded.hands[0] = [card("hearts-11")]; loaded.deck = [];
+      storeNightJacks(loaded);
+      assert.equal(loaded.hands[0].length, 0);
+      assert.equal(loaded.jackBox.length, 1);
+    }
   });
 });
 

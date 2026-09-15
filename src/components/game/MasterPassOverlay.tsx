@@ -198,6 +198,14 @@ export function MasterPassOverlay({
                 <p className="festival-briefing-example"><strong>Ejemplo:</strong> si el Restaurante está cerrado, juegas en otro sector; al avanzar el turno, vuelve a abrirse y la tormenta se desplaza.</p>
               </section>
             ) : null}
+            {selectedMode.id !== "festival" ? (
+              <section className="festival-briefing" aria-label="Equipo de apoyo">
+                <p><strong>Equipo de apoyo</strong> En ambas dificultades:</p>
+                <p><strong>Caseta de Jotas · solo en solitario.</strong> Guarda automáticamente tus Jotas y roba un reemplazo si queda mazo. Puedes colocarlas en Sillas o cambiarlas por una carta de la Entrada.</p>
+                {selectedMode.id !== "storm" ? <p><strong>Llavero de Ases · todas las modalidades.</strong> Cambia una figura de tu mano por un as que siga en el mazo y puedas colocar ahora.</p> : null}
+                <p>Los cambios gastan las maniobras del reto. Las dependencias y los cierres por tormenta siguen vigentes.</p>
+              </section>
+            ) : null}
             <DifficultySelector challenge={selectedMode.id} value={difficulty} onChange={setDifficulty} dark />
             <div className="master-start-actions">
               <Button size="lg" onClick={() => setPairChoiceOpen(true)}><Users /> En pareja</Button>

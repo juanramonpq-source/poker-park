@@ -5,7 +5,7 @@ import {
   legalSlotsForCard,
 } from "./attractions.ts";
 import { cardName, isAce, isFace, makeDeck, shuffle } from "./deck.ts";
-import { hasJackBox, jokerOptions, playableCard, playableCards, storeNightJacks } from "./night-tools.ts";
+import { hasJackBox, hasAceKeyring, jackBoxCards, jokerOptions, playableCard, playableCards, storeNightJacks } from "./night-tools.ts";
 import {
   advanceStorm,
   hasMirrorRules,
@@ -147,7 +147,7 @@ function removeFromHand(state: GameState, cardId: string): Card {
   const joker = jokerOptions(state).find(card => card.id === cardId);
   if (joker) { state.night!.jokerUsed = true; return joker; }
   if (hasJackBox(state)) {
-    const box = state.night!.jackBox ?? [];
+    const box = jackBoxCards(state);
     const boxIndex = box.findIndex(card => card.id === cardId);
     if (boxIndex >= 0) return box.splice(boxIndex, 1)[0];
   }
@@ -159,7 +159,7 @@ function removeFromHand(state: GameState, cardId: string): Card {
 }
 
 export function remainingCards(state: GameState): Card[] {
-  return [...state.hands[0], ...state.hands[1], ...state.deck, ...(state.night?.jackBox ?? [])];
+  return [...state.hands[0], ...state.hands[1], ...state.deck, ...jackBoxCards(state)];
 }
 
 export function isNightShift(state: GameState): boolean {
@@ -167,7 +167,7 @@ export function isNightShift(state: GameState): boolean {
 }
 
 export function nightAceCandidates(state: GameState): Card[] {
-  if (!isNightShift(state)) return [];
+  if (!hasAceKeyring(state)) return [];
   const suitOrder = ["hearts", "spades", "diamonds", "clubs"];
   return state.deck
     .filter(isAce)
@@ -313,7 +313,7 @@ export function legalExchanges(state: GameState, cardId: string): ExchangeTarget
   });
 
   // Stored Jacks retain their Entrance exchange without becoming hand cards.
-  if (hasJackBox(state) && state.night?.jackBox?.some(c => c.id === cardId)) return targets;
+  if (jackBoxCards(state).some(c => c.id === cardId)) return targets;
 
   for (const id of ATTRACTION_IDS) {
     if (!isAttractionUnlocked(state, id)) continue;
@@ -330,7 +330,7 @@ export function legalExchanges(state: GameState, cardId: string): ExchangeTarget
     });
   }
 
-  if (isNightShift(state) && isFace(card)) {
+  if (hasAceKeyring(state) && isFace(card)) {
     for (const ace of nightAceCandidates(state)) {
       if (placementOptionsForCard(state, ace).length > 0) {
         targets.push({ kind: "ace-rack", cardId: ace.id });

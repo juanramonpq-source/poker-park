@@ -37,7 +37,7 @@ import { AttractionSheet, ICONS } from "@/components/game/AttractionBoard";
 import { RideFinale } from "@/components/game/RideFinale";
 import { PlayingCard } from "@/components/game/PlayingCard";
 import { NightJokerPicker } from "@/components/game/NightTools";
-import { jokerAvailable } from "@/lib/game/night-tools";
+import { hasAceKeyring, jokerAvailable } from "@/lib/game/night-tools";
 import { ParkMascots } from "@/components/game/ParkMascots";
 import { ParkMapArtwork } from "@/components/game/ParkMapArtwork";
 import { cn } from "@/lib/utils";
@@ -304,7 +304,7 @@ function EntranceTile({
             );
           })}
         </div>
-        {game.challenge === "night" ? (
+        {hasAceKeyring(game) ? (
           <button
             type="button"
             className="ace-keyring-trigger"
@@ -487,7 +487,7 @@ export function Park({ game }: { game: GameState }) {
       </div>
       <ParkMascots />
       {openAttraction ? <AttractionSheet id={openAttraction} game={game} /> : null}
-      {aceRackOpen && game.challenge === "night" ? <AceRackSheet game={game} onClose={() => setAceRackOpen(false)} /> : null}
+      {aceRackOpen && hasAceKeyring(game) ? <AceRackSheet game={game} onClose={() => setAceRackOpen(false)} /> : null}
     </div>
   );
 }

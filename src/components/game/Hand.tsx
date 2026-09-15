@@ -5,7 +5,7 @@ import { canVisitAnything, legalExchanges, legalPlacements, legalVisits } from "
 import { Check, X } from "lucide-react";
 import { PlayingCard } from "@/components/game/PlayingCard";
 import { NightJackBox } from "@/components/game/NightTools";
-import { playableCard } from "@/lib/game/night-tools";
+import { jackBoxCards, playableCard } from "@/lib/game/night-tools";
 import { cn } from "@/lib/utils";
 import { useGameStore, useLegalForSelected } from "@/store/game-store";
 import type { AttractionId, Card, GameState } from "@/lib/game/types";
@@ -130,7 +130,7 @@ export function Hand() {
           ? "Elige la carta que quieres cambiar"
           : isNight ? "Elige una carta para la revisión" : "Elige una carta de tu mano";
   const guideDetail = selectedCard
-    ? `${game.night?.jackBox?.some(c => c.id === selectedCard.id) ? "Desde la caseta" : "Seleccionada"}: ${cardName(selectedCard)}`
+    ? `${jackBoxCards(game).some(c => c.id === selectedCard.id) ? "Desde la caseta" : "Seleccionada"}: ${cardName(selectedCard)}`
     : `${hand.length} cartas · toca o arrastra`;
 
   const beginDrag = (event: ReactPointerEvent<HTMLButtonElement>, card: Card) => {
