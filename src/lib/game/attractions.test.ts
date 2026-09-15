@@ -161,9 +161,12 @@ describe("figuras", () => {
 describe("retos del Pase Maestro", () => {
   it("el Parque Espejo invierte las dependencias de todas las atracciones", () => {
     const coaster: (Card | null)[] = Array.from({ length: 8 }, () => null);
-    assert.deepEqual(legalSlotsForCard("coaster", coaster, card("hearts", 2), true), [7]);
-    coaster[7] = card("hearts", 2);
-    assert.deepEqual(legalSlotsForCard("coaster", coaster, card("clubs", 3), true), [6]);
+    assert.deepEqual(legalSlotsForCard("coaster", coaster, card("hearts", 10), true), [7]);
+    assert.deepEqual(legalSlotsForCard("coaster", coaster, card("spades", 9), true), [7]);
+    assert.deepEqual(legalSlotsForCard("coaster", coaster, card("diamonds", 2), true), []);
+    assert.deepEqual(legalSlotsForCard("coaster", coaster, card("clubs", 3), true), []);
+    coaster[7] = card("hearts", 10);
+    assert.deepEqual(legalSlotsForCard("coaster", coaster, card("clubs", 9), true), [6]);
 
     const haunted: (Card | null)[] = Array.from({ length: 5 }, () => null);
     assert.deepEqual(legalSlotsForCard("haunted", haunted, card("spades", 1), true), [4]);

@@ -31,7 +31,7 @@ const FESTIVAL_BRIEFING = [
 ];
 
 const MIRROR_BRIEFING = [
-  "Montaña Rusa: empieza en la salida y rellena la vía hacia atrás. Casa del Terror: el A♠ del tejado va primero.",
+  "Montaña Rusa: empieza en la salida con 10 o 9 y rellena la vía hacia atrás, bajando de uno en uno. Casa del Terror: el A♠ del tejado va primero.",
   "Túnel del Amor: abre con A♥ en la cumbre y baja por los dos lados. Bosque: primero las dos columnas de la entrada.",
   "Sillas Voladoras: cuelga las cuatro figuras antes de levantar la torre. Restaurante: A♣ primero. Aseos: reina antes que rey.",
 ];

@@ -1,6 +1,5 @@
 import { createGame } from "../../src/lib/game/engine.ts";
 import { makeDeck } from "../../src/lib/game/deck.ts";
-import { hasMirrorRules } from "../../src/lib/game/challenges.ts";
 import { ATTRACTION_IDS, type GameChallenge, type GameDifficulty, type Mode } from "../../src/lib/game/types.ts";
 
 export function completedPark(mode: Mode = "solo", challenge: GameChallenge = "classic", difficulty: GameDifficulty = "standard") {
@@ -8,7 +7,6 @@ export function completedPark(mode: Mode = "solo", challenge: GameChallenge = "c
   const deck = makeDeck();
   const card = (id: string) => ({ ...deck.find(card => card.id === id)! });
   game.attractions.coaster.slots = [2,3,4,5,6,7,8,9].map(rank => card(`clubs-${rank}`));
-  if (hasMirrorRules(game)) game.attractions.coaster.slots.reverse();
   game.attractions.haunted.slots = [2,3,4,5,1].map(rank => card(`spades-${rank}`));
   game.attractions.love.slots = [2,3,4,1,5,6,7].map(rank => card(`hearts-${rank}`));
   game.attractions.forest.slots = ["diamonds-2","diamonds-3","diamonds-4","diamonds-5","diamonds-1","diamonds-6","diamonds-7","diamonds-8","clubs-10","diamonds-9","diamonds-10"].map(card);

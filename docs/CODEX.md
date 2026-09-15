@@ -247,6 +247,8 @@ Forma (vía con looping):
 
 Relleno **en orden de índice 0→7**, ranks consecutivos, sin saltos.
 El hueco 0 solo admite **2 o 3**. Ranks 2–10. Sin figuras ni ases.
+En Espejo y 00:13 se rellena de 7→0: el hueco 7 admite **10 o 9** y
+cada carta siguiente disminuye exactamente en uno.
 
 ### Casa del Terror `haunted` — 5
 ```

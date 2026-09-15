@@ -210,7 +210,7 @@ pareja, cada integrante mantiene su mano independiente.
 ## Modos del Pase Maestro
 
 - **Festival de las Luces:** reglas clásicas y combo por alternar atracciones; 4 cambios en dificultad Clásico.
-- **Parque Espejo:** dependencias de las siete atracciones en orden inverso; 5 cambios en dificultad Clásico.
+- **Parque Espejo:** dependencias de las siete atracciones en orden inverso; en la Montaña Rusa se empieza por la salida con 10 o 9 y se continúa hacia atrás bajando de uno en uno. Tiene 5 cambios en dificultad Clásico.
 - Todos los retos se pueden jugar en solitario, en pareja o con el compañero automático.
 - **Día de Tormenta:** un sector cierra temporalmente y el siguiente se anuncia; 5 cambios en Clásico y bloqueo tras dos turnos solitarios o cuatro pases en pareja.
 - **Poker Park 00:13:** reto final con Espejo, Tormenta y Festival activos a la vez. Para completar las 7 atracciones hay que respetar las dependencias invertidas, planificar los cierres anunciados por el pronóstico y alternar destinos para mantener el combo de luces. Las 00:13 indican la apertura, no una cuenta atrás. Concede 6 cambios en Clásico o 7 en Fácil y conserva el margen de dos rondas completas antes de declarar un bloqueo meteorológico.

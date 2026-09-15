@@ -184,9 +184,11 @@ describe("advertencias de Fácil", () => {
     for (const challenge of ["classic", "mirror"] as const) {
       const g = createGame("solo", undefined, challenge, "easy");
       const reversed = hasMirrorRules(g);
-      [2, 3, 4].forEach((r, i) => { g.attractions.coaster.slots[reversed ? 7 - i : i] = card(`hearts-${r}`); });
-      hand(g, ["hearts-5"]);
-      assert.ok(placementWarning(g, "hearts-5", "coaster", reversed ? 4 : 3)?.groups.some(group => group.attractions.includes("love")));
+      const ranks = reversed ? [10, 9, 8] : [2, 3, 4];
+      ranks.forEach((r, i) => { g.attractions.coaster.slots[reversed ? 7 - i : i] = card(`hearts-${r}`); });
+      const next = reversed ? "hearts-7" : "hearts-5";
+      hand(g, [next]);
+      assert.ok(placementWarning(g, next, "coaster", reversed ? 4 : 3)?.groups.some(group => group.attractions.includes("love")));
     }
   });
   it("detecta diamantes insuficientes para el Bosque y valores agotados de la Montaña", () => {

@@ -1,4 +1,3 @@
-import { hasMirrorRules } from "./challenges.ts";
 import { makeDeck } from "./deck.ts";
 import { jokerAvailable, playableCard } from "./night-tools.ts";
 import { ATTRACTION_IDS, type AttractionId, type Card, type GameState } from "./types.ts";
@@ -15,17 +14,16 @@ const ace = (suit: Card["suit"]): Need => card => card.rank === 1 && card.suit =
 /** Eventual empty-slot requirements. Order and temporary power/weather are not shortages. */
 function needs(state: GameState, id: AttractionId, coasterStart: number): Need[] {
   const slots = state.attractions[id].slots;
-  const reversed = hasMirrorRules(state);
   const firstCoasterCard = slots.findIndex(Boolean);
   const start = firstCoasterCard < 0 ? coasterStart :
-    slots[firstCoasterCard]!.rank - (reversed ? 7 - firstCoasterCard : firstCoasterCard);
+    slots[firstCoasterCard]!.rank - firstCoasterCard;
   let restroomRank = slots.some(c => c?.rank === 12) ? 13 : 12;
   const result: Need[] = [];
   slots.forEach((card, index) => {
     if (card) return;
     switch (id) {
       case "coaster": {
-        const rank = start + (reversed ? 7 - index : index);
+        const rank = start + index;
         result.push(c => number(c) && c.rank === rank); break;
       }
       case "haunted": result.push(index === 4 ? ace("spades") : suitNumber("spades")); break;

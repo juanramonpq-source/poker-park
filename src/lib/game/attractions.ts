@@ -62,7 +62,7 @@ export const ATTRACTION_DEFS: Record<AttractionId, AttractionDef> = {
 };
 
 const MIRROR_RULES: Record<AttractionId, string> = {
-  coaster: "Empieza por la salida: coloca un 2 o un 3 en el último hueco y continúa hacia atrás, subiendo de uno en uno.",
+  coaster: "Empieza por la salida: coloca un 10 o un 9 en el último hueco y continúa hacia atrás, bajando de uno en uno.",
   haunted: "El as de picas abre el tejado. Solo después pueden colocarse las cuatro picas de número que forman la casa.",
   love: "El as de corazones abre la cumbre. Desde ahí, baja por cada lado del arco sin dejar huecos.",
   forest: "Primero coloca los dos diamantes de la entrada, bajo el claro. Con las dos columnas abiertas, completa el bosque.",
@@ -126,10 +126,10 @@ export function isAttractionValid(id: AttractionId, slots: (Card | null)[], mirr
             continue;
           }
           if (empty || card.rank < 2 || card.rank > 10) return false;
-          if (i === 7 && card.rank !== 2 && card.rank !== 3) return false;
+          if (i === 7 && card.rank !== 10 && card.rank !== 9) return false;
           if (i < 7) {
             const previous = slots[i + 1];
-            if (!previous || card.rank !== previous.rank + 1) return false;
+            if (!previous || card.rank !== previous.rank - 1) return false;
           }
         }
         return true;
@@ -292,10 +292,10 @@ export function slotHint(
         })()
       : slots.findIndex((c) => !c);
     if (next !== index) return undefined;
-    if (index === (mirrored ? 7 : 0)) return "2 o 3";
+    if (index === (mirrored ? 7 : 0)) return mirrored ? "10 o 9" : "2 o 3";
     const prev = slots[index + (mirrored ? 1 : -1)];
     if (!prev) return undefined;
-    return rankLabel((prev.rank + 1) as Rank);
+    return rankLabel((prev.rank + (mirrored ? -1 : 1)) as Rank);
   }
   if (id === "love") {
     if (mirrored) {
