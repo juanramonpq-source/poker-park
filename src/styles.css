@@ -82,6 +82,9 @@
 
 @layer base {
   html {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background: var(--color-bg);
@@ -90,7 +93,10 @@
 
   body {
     margin: 0;
-    min-height: 100dvh;
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+    overflow: hidden;
     font-family: var(--font-sans);
     background: var(--color-bg);
     color: var(--color-fg);
@@ -205,8 +211,11 @@
 
 .title-screen {
   overscroll-behavior: none;
-  touch-action: none;
+  /* The fixed page cannot pan; its bounded help panels can. */
+  touch-action: manipulation;
 }
+
+.end-tally { height: 100dvh; overscroll-behavior: contain; }
 
 .title-cover {
   object-position: center center;
@@ -3644,7 +3653,11 @@
 .master-pass-card,
 .developer-card,
 .master-gallery-card { position: relative; width: min(100%, 34rem); max-height: calc(100dvh - 1.4rem); overflow-y: auto; border: 1px solid #65507f; border-radius: 1.75rem; background: linear-gradient(155deg, #1c1a42, #090c24); color: #fff8e9; box-shadow: 0 32px 100px #000; padding: 1rem; }
-.master-pass-card { display: grid; width: min(100%, 38rem); grid-template-rows: auto auto auto minmax(0, 1fr); overflow: hidden; }
+.master-pass-layer { padding: max(.7rem, env(safe-area-inset-top)) max(.7rem, env(safe-area-inset-right)) max(.7rem, env(safe-area-inset-bottom)) max(.7rem, env(safe-area-inset-left)); }
+.master-pass-card { display: flex; flex-direction: column; width: min(100%, 38rem); max-height: calc(100dvh - max(.7rem, env(safe-area-inset-top)) - max(.7rem, env(safe-area-inset-bottom))); min-height: 0; overflow: hidden; }
+.master-pass-card > header,
+.master-pass-intro,
+.master-mode-grid { flex-shrink: 0; }
 .master-pass-card > header,
 .developer-card > header,
 .master-gallery-card > header { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: .65rem; }
@@ -3678,7 +3691,11 @@
 .master-mode-copy p { margin-top: .12rem; color: #bdb2cd; font-size: .48rem; line-height: 1.2; }
 .master-mode-state { grid-column: 2; display: inline-flex; min-height: .65rem; align-items: center; gap: .18rem; color: #75edc5; font-size: .44rem; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
 .master-mode-state svg { width: .65rem; height: .65rem; }
-.master-start-panel { display: grid; align-content: start; margin-top: .5rem; border-radius: 1rem; background: rgb(255 208 91 / .08); padding: .6rem; }
+.master-start-panel { display: flex; flex-direction: column; min-height: 0; margin-top: .5rem; border-radius: 1rem; background: rgb(255 208 91 / .08); padding: .6rem; overflow: hidden; }
+.master-mode-info { min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: thin; scrollbar-color: #a79abe transparent; padding-right: .2rem; }
+.master-start-controls { flex-shrink: 0; border-top: 1px solid rgb(255 208 91 / .18); margin-top: .45rem; }
+.master-start-controls .mode-difficulty { margin-top: .45rem; }
+.master-start-controls .mode-difficulty > p:last-child:not(:first-child) { font-weight: 500; letter-spacing: normal; text-transform: none; }
 .master-start-panel span { display: grid; }
 .master-start-panel small { color: #a79abe; font-size: .48rem; font-weight: 900; text-transform: uppercase; }
 .master-start-panel strong { color: #fff; font-size: .72rem; }
@@ -3893,8 +3910,14 @@
   .master-start-panel { margin-top: .35rem; padding: .45rem; }
   .festival-briefing { margin-top: .35rem; padding: .4rem; }
   .festival-briefing ol { gap: .14rem; margin-top: .2rem; }
-  .festival-briefing-example { display: none; }
   .mode-difficulty { margin-top: .45rem; }
   .mode-difficulty button { min-height: 3.15rem; }
   .master-start-actions { margin-top: .35rem; }
+}
+
+@media (max-height: 500px) and (min-width: 600px) {
+  .master-pass-card { display: grid; width: min(100%, 52rem); grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); grid-template-rows: auto minmax(0, 1fr); gap: .4rem .7rem; }
+  .master-pass-card > header { grid-column: 1 / -1; }
+  .master-mode-grid { align-content: start; margin-top: 0; }
+  .master-start-panel { margin-top: 0; }
 }

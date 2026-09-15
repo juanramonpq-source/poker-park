@@ -159,6 +159,7 @@ export function MasterPassOverlay({
         <div key={selected} className="master-start-panel master-detail-entrance">
           {selectedMode ? (
             <>
+            <div className="master-mode-info" role="region" aria-label={`Instrucciones de ${selectedMode.title}`} tabIndex={0}>
             <div className="master-mode-summary">
               <span><small>Entrada seleccionada</small><strong>{selectedMode.title}</strong><p>{selectedMode.rule}</p></span>
               <span className="master-mode-reward"><Sparkles aria-hidden /><span><small>Recompensa perfecta</small><strong>{selectedMode.reward}</strong></span></span>
@@ -206,10 +207,13 @@ export function MasterPassOverlay({
                 <p>Los cambios gastan las maniobras del reto. Las dependencias y los cierres por tormenta siguen vigentes.</p>
               </section>
             ) : null}
+            </div>
+            <div className="master-start-controls">
             <DifficultySelector challenge={selectedMode.id} value={difficulty} onChange={setDifficulty} dark />
             <div className="master-start-actions">
               <Button size="lg" onClick={() => setPairChoiceOpen(true)}><Users /> En pareja</Button>
               <Button size="lg" variant="secondary" onClick={() => setSoloChoiceOpen(true)}><User /> Modo solitario</Button>
+            </div>
             </div>
             </>
           ) : null}

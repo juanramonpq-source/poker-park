@@ -394,6 +394,10 @@ Easter egg: en el título, 7 toques desbloquean “pase de por vida”
   atracción o hasta un hueco legal iluminado.
 - Los textos y paneles no permiten selección nativa ni el menú táctil de
   mantener pulsado. Los campos de nombres y códigos conservan la edición.
+- La página principal permanece fija, sin desplazamiento ni rebote del documento.
+  El Pase Maestro mantiene visibles la dificultad y los botones de inicio en los
+  cuatro retos; solo su área de instrucciones permite desplazamiento interno.
+  Las ayudas extensas y el recuento final conservan su propio desplazamiento.
 - Baldosas legales: `tile-hot` (borde verde + pulso). Si hay visitante
   posible, tocar la baldosa **deja el visitante** directo.
 - HUD: chip de mazo, botón de cambios con el saldo real del modo, reglas,
