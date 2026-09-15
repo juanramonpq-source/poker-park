@@ -32,14 +32,35 @@ export function OpeningSequence({ stage, setStage, wake, skip, reduced }: {
     if (["studio", "ticket", "validated"].includes(stage)) action.current?.focus({ preventScroll: true });
   }, [stage, assetReady]);
 
-  const black = ["loading", "studio", "ticket", "tearing", "validated", "flying"].includes(stage);
+  const black = ["loading", "studio", "studio-turn", "ticket", "tearing", "validated", "flying"].includes(stage);
   if (!black) return stage === "ready" ? null : <button type="button" className="opening-skip" onClick={skip}>Omitir apertura</button>;
   return <div className="opening-cinema" data-opening-stage={stage} role="dialog" aria-modal="true" aria-label="Bienvenida a Poker Park">
+    <svg className="opening-studio-color-filters" width="0" height="0" aria-hidden>
+      <defs>
+        <filter id="studio-triangle-red" colorInterpolationFilters="sRGB">
+          <feColorMatrix type="matrix" values="0 .15 .85 0 0  0 .25 0 0 0  .3 0 0 0 0  0 0 0 1 0" />
+        </filter>
+        <filter id="studio-triangle-blue" colorInterpolationFilters="sRGB">
+          <feColorMatrix type="matrix" values="0 0 .65 0 0  .45 .5 0 0 0  1 0 0 0 0  0 0 0 1 0" />
+        </filter>
+      </defs>
+    </svg>
     <img className="opening-asset-preload" src="/images/opening-ticket-sprites.png" alt="" aria-hidden onLoad={() => setAssetReady(true)} onError={() => setAssetFailed(true)} />
-    {stage === "studio" ? <button ref={action} type="button" className="opening-studio" onClick={() => { wake(); setStage("ticket"); }}>
-      <img src="/brand/pentonui-games-logo.webp" alt="Pentonúi Games" />
+    {stage === "studio" || stage === "studio-turn" ? <button ref={action} type="button" className="opening-studio" data-turning={stage === "studio-turn" || undefined} disabled={stage === "studio-turn"}
+      aria-label="Pentonúi Games · Toca para comenzar y activar el sonido"
+      onClick={() => { if (stage !== "studio") return; wake(); setStage(reduced ? "ticket" : "studio-turn"); }}>
+      <span className="opening-studio-brand" aria-hidden>
+        <span className="opening-studio-flower">
+          <span className="opening-studio-face opening-studio-face-front" />
+          <span className="opening-studio-face opening-studio-face-back">
+            <span className="opening-studio-triangle opening-studio-triangle-red" />
+            <span className="opening-studio-triangle opening-studio-triangle-blue" />
+          </span>
+        </span>
+        <span className="opening-studio-wordmark" />
+      </span>
       <strong>Pentonúi Games</strong>
-      <span>Toca para comenzar · activa el sonido</span>
+      <span className="opening-studio-hint">Toca para comenzar · activa el sonido</span>
     </button> : stage !== "loading" ? <div className="opening-ticket-scene">
       <button ref={action} type="button" className="opening-ticket" data-flying={stage === "flying" || undefined} disabled={stage === "tearing" || stage === "flying" || !assetReady || assetFailed}
         aria-label={stage === "validated" ? "¡Ya puedes entrar! Soltar la entrada" : "Rasgar y validar la entrada de Poker Park"}

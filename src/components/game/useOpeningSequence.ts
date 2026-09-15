@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 export const OPENING_SEEN_KEY = "poker-park.opening-seen.v1";
-export type OpeningStage = "loading" | "studio" | "ticket" | "tearing" | "validated" | "flying" | "sun" | "title" | "landing" | "ready";
+export type OpeningStage = "loading" | "studio" | "studio-turn" | "ticket" | "tearing" | "validated" | "flying" | "sun" | "title" | "landing" | "ready";
 let visitedMenu = false;
 
 export function useOpeningSequence() {
@@ -20,6 +20,7 @@ export function useOpeningSequence() {
 
   useEffect(() => {
     const next: Partial<Record<OpeningStage, [OpeningStage, number]>> = {
+      "studio-turn": ["ticket", reduced ? 80 : 2500],
       tearing: ["validated", reduced ? 80 : 560],
       flying: ["sun", reduced ? 180 : 1850],
       sun: ["title", reduced ? 200 : 2700],

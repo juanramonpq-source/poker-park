@@ -42,6 +42,14 @@ function Motes() {
 
 const TUTORIAL_SEEN_KEY = "poker-park-tutorial-seen";
 
+function TitleSign() {
+  return <span className="title-sign-art">
+    <img className="title-sign" src="/brand/poker-park-title-v1.webp" alt="Poker Park" width={2022} height={778} fetchPriority="high" draggable={false} />
+    <Sparkles className="title-sign-glint title-sign-glint-left" aria-hidden />
+    <Sparkles className="title-sign-glint title-sign-glint-right" aria-hidden />
+  </span>;
+}
+
 export function TitleScreen() {
   const opening = useOpeningSequence();
   const titleAction = useRef<HTMLButtonElement>(null);
@@ -255,7 +263,7 @@ export function TitleScreen() {
   };
 
   const cover = showcaseTheme === "classic"
-    ? (secrets.impossiblePerfect ? "/images/park-impossible.webp" : "/images/park-cover.webp")
+    ? (secrets.impossiblePerfect ? "/images/park-impossible.webp" : "/images/park-cover-mobile-hq-v1.webp")
     : CHALLENGE_BACKGROUNDS[showcaseTheme];
   const desktopCover = showcaseTheme === "classic" && !secrets.impossiblePerfect
     ? "/images/park-cover-desktop.webp"
@@ -283,6 +291,8 @@ export function TitleScreen() {
           src={cover}
           alt=""
           className="title-cover"
+          fetchPriority="high"
+          decoding="async"
         />
       </picture>
       <div className="title-vignette" />
@@ -310,8 +320,11 @@ export function TitleScreen() {
             <span>Juego de cartas</span>
           </div>
 
-          <h1 className="title-name">
-            {opening.stage === "title" ? <button ref={titleAction} type="button" className="opening-title-action" onClick={() => { wake(); opening.setStage("landing"); }}>Poker Park<span>Toca para entrar</span></button> : "Poker Park"}
+          <h1 className="title-name title-name-sign">
+            {opening.stage === "title" ? <button ref={titleAction} type="button" className="opening-title-action" onClick={() => { wake(); opening.setStage("landing"); }}>
+              <TitleSign />
+              <span className="opening-title-caption">Toca para entrar</span>
+            </button> : <TitleSign />}
           </h1>
           <p className="title-description">
             Vive un día en un parque de atracciones, guiado por una baraja francesa.

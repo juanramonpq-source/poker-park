@@ -15,18 +15,31 @@ for (const engine of [webkit, chromium]) {
     page.on("pageerror", error => errors.push(error.message));
     page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
     await page.addInitScript(() => localStorage.setItem("poker-park.opening-seen.v1", "seen"));
+    async function recordLanding(target) {
+      await target.locator('.title-screen').evaluate(el => {
+        window.__openingInputSnapshots = [];
+        new MutationObserver(() => window.__openingInputSnapshots.push({
+          stage: el.getAttribute('data-opening'),
+          inert: el.querySelector('.title-panel').inert,
+        })).observe(el, { attributes: true, attributeFilter: ['data-opening'] });
+      });
+    }
     async function showTitle() {
       await page.goto(url, { waitUntil: "domcontentloaded" });
       await page.locator('.title-screen[data-opening="title"]').waitFor();
       // Let the title's own reveal finish before testing a stationary tap target.
       await page.waitForTimeout(650);
+      await recordLanding(page);
     }
-    async function expectLanding(label) {
-      const stage = await page.locator('.title-screen').getAttribute('data-opening');
-      assert.equal(stage, 'landing', `${engine.name()}: ${label} did not start the menu drop`);
-      assert.equal(await page.locator('.title-panel').evaluate(el => el.inert), true);
-      await page.locator('.title-screen[data-opening="ready"]').waitFor();
-      assert.equal(await page.locator('.title-panel').evaluate(el => el.inert), false);
+    async function expectLanding(label, target = page) {
+      // Observe the transition in-page so slow browser round trips cannot miss
+      // the short animation. Still require a locked menu throughout landing.
+      await target.locator('.title-screen[data-opening="ready"]').waitFor();
+      const snapshots = await target.evaluate(() => window.__openingInputSnapshots);
+      const landing = snapshots.filter(snapshot => snapshot.stage === 'landing');
+      assert(landing.length > 0, `${engine.name()}: ${label} did not start the menu drop`);
+      assert(landing.every(snapshot => snapshot.inert), 'Menu must be inert during landing');
+      assert.equal(await target.locator('.title-panel').evaluate(el => el.inert), false);
     }
     for (const point of [{ x: 195, y: 40 }, { x: 8, y: 420 }, { x: 195, y: 744 }]) {
       await showTitle();
@@ -55,10 +68,10 @@ for (const engine of [webkit, chromium]) {
     for (const input of ['mouse', 'keyboard']) {
       await desktop.goto(url, { waitUntil: 'domcontentloaded' });
       await desktop.locator('.title-screen[data-opening="title"]').waitFor();
+      await recordLanding(desktop);
       if (input === 'mouse') await desktop.mouse.click(20, 300);
       else { await desktop.locator('.opening-title-action').focus(); await desktop.keyboard.press('Enter'); }
-      assert.equal(await desktop.locator('.title-screen').getAttribute('data-opening'), 'landing');
-      await desktop.locator('.title-screen[data-opening="ready"]').waitFor();
+      await expectLanding(input, desktop);
     }
     await desktop.screenshot({ path: `screenshots/title-input-${engine.name()}-desktop.png` });
     assert.deepEqual(errors, []);
