@@ -27,8 +27,9 @@ type MasterMode = Exclude<GameChallenge, "classic" | "night">;
 
 const FESTIVAL_BRIEFING = [
   "La meta sigue siendo completar las 7 atracciones, con exactamente las mismas reglas que en una jornada normal.",
+  "Reserva huecos en al menos dos atracciones hasta el final: si solo queda una con varios huecos, ya no podrás alternar.",
   "Cada carta colocada legalmente en una atracción distinta de la anterior aumenta el combo: ×1, ×2, ×3…",
-  "Repetir la misma atracción en dos colocaciones seguidas devuelve el combo a ×1. Las bombillas indican el brillo conseguido; no cambian qué cartas son válidas.",
+  "Repetir la misma atracción en dos colocaciones seguidas cierra el parque y pierdes el reto. El último destino queda rojo hasta colocar en otro. Cambiar cartas o pasar no borra el aviso.",
 ];
 
 const MIRROR_BRIEFING = [
@@ -46,7 +47,7 @@ const STORM_BRIEFING = [
 const IMPOSSIBLE_BRIEFING = [
   "Espejo invierte las dependencias de las siete atracciones: cada recorrido debe construirse desde el otro lado.",
   "Tormenta cierra temporalmente una atracción en cada turno. El pronóstico revela la siguiente y las cartas ya colocadas permanecen a salvo.",
-  "Festival enciende la cadena de luces al alternar atracciones. Repetir destino reinicia el combo a x1, pero no cambia qué cartas son válidas.",
+  "Festival enciende la cadena de luces al alternar atracciones. Repetir destino en dos colocaciones consecutivas cierra el parque y pierdes el reto; el último destino queda rojo.",
 ];
 
 const MASTER_MODES: {
@@ -173,7 +174,7 @@ export function MasterPassOverlay({
                 <ol>
                   {FESTIVAL_BRIEFING.map((rule, index) => <li key={rule}><span>{index + 1}</span>{rule}</li>)}
                 </ol>
-                <p className="festival-briefing-example"><strong>Ejemplo:</strong> Montaña Rusa → Túnel del Amor → Bosque da combo ×3 y 6 bombillas. Bosque otra vez reinicia el combo a ×1.</p>
+                <p className="festival-briefing-example"><strong>Ejemplo:</strong> Montaña Rusa → Túnel del Amor → Bosque da combo ×3 y 6 bombillas. Bosque otra vez cierra el parque; Montaña otra vez permite continuar.</p>
               </section>
             ) : null}
             {selectedMode.id === "impossible" ? (

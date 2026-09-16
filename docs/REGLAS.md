@@ -209,11 +209,11 @@ pareja, cada integrante mantiene su mano independiente.
 
 ## Modos del Pase Maestro
 
-- **Festival de las Luces:** reglas clásicas y combo por alternar atracciones; 4 cambios en dificultad Clásico.
+- **Festival de las Luces:** reglas clásicas y alternancia obligatoria: dos colocaciones consecutivas en la misma atracción cierran el parque y pierden el reto, incluso si la segunda completa el parque; 4 cambios en dificultad Clásico.
 - **Parque Espejo:** dependencias de las siete atracciones en orden inverso; en la Montaña Rusa se empieza por la salida con 10 o 9 y se continúa hacia atrás bajando de uno en uno. Tiene 5 cambios en dificultad Clásico.
 - Todos los retos se pueden jugar en solitario, en pareja o con el compañero automático.
 - **Día de Tormenta:** un sector cierra temporalmente y el siguiente se anuncia; 5 cambios en Clásico y bloqueo tras dos turnos solitarios o cuatro pases en pareja.
-- **Poker Park 00:13:** reto final con Espejo, Tormenta y Festival activos a la vez. Para completar las 7 atracciones hay que respetar las dependencias invertidas, planificar los cierres anunciados por el pronóstico y alternar destinos para mantener el combo de luces. Las 00:13 indican la apertura, no una cuenta atrás. Concede 6 cambios en Clásico o 7 en Fácil y conserva el margen de dos rondas completas antes de declarar un bloqueo meteorológico.
+- **Poker Park 00:13:** reto final con Espejo, Tormenta y Festival activos a la vez. Para completar las 7 atracciones hay que respetar las dependencias invertidas, planificar los cierres anunciados por el pronóstico y alternar destinos para evitar perder el reto por repetición consecutiva. Las 00:13 indican la apertura, no una cuenta atrás. Concede 6 cambios en Clásico o 7 en Fácil y conserva el margen de dos rondas completas antes de declarar un bloqueo meteorológico.
 
 ### Equipo de apoyo del Pase Maestro
 
@@ -237,6 +237,6 @@ En ambas dificultades, el apoyo depende del reto:
   una en Fácil). No se amplían los límites ni se elimina la obligación de
   colocar la carta recibida. La tormenta y las dependencias siguen vigentes.
 - El comodín adicional sigue reservado a Guardia solitaria Fácil.
-- Festival conserva sus reglas: el combo no restringe colocaciones.
+- Festival y 00:13 cierran por repetición consecutiva. El último destino queda resaltado en rojo hasta colocar en otra atracción. Un intercambio o pase no elimina el aviso; los visitantes opcionales no cuentan como colocaciones de construcción. Reserva huecos en dos atracciones hasta el final para poder alternar.
 
 Justificación y experimento reproducible: [análisis de dificultad](ANALISIS-PASE-MAESTRO.md).

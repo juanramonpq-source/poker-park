@@ -127,7 +127,7 @@ GameState.version = 7
   drawnThisTurn, consecutivePasses
   lastMessage, lastCompleted, swappedCardId
   pendingAdvance   // true mientras dura la fiesta de “conseguido”
-  ended, endReason: empty | block | closed | null
+  ended, endReason: empty | block | closed | repeat | null
 ```
 
 `MAX_EXCHANGES = 3` conserva el valor del parque de día en dificultad Clásico.
@@ -521,3 +521,5 @@ el cliente para Android e iOS.
 ## 13. Créditos en producto
 
 Pantalla final y pie: **Creado por Pentonúi Games**.
+
+Festival y 00:13: `placeCard` cierra inmediatamente con `endReason = "repeat"` al repetir el destino de la última colocación. Sin fiesta, desbloqueo ni recompensa perfecta, incluso con siete atracciones completas. El destino rojo persiste entre intercambios y pases.

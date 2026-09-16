@@ -507,6 +507,16 @@ export function placeCard(
   const next = clone(state);
   const card = removeFromHand(next, cardId);
   next.attractions[attractionId].slots[index] = card;
+  if ((next.challenge === "festival" || next.challenge === "impossible") &&
+      next.festival?.lastAttractionId === attractionId) {
+    next.ended = true;
+    next.endReason = "repeat";
+    next.pendingAdvance = false;
+    next.lastCompleted = null;
+    next.swappedCardId = null;
+    next.lastMessage = `Has repetido ${ATTRACTION_DEFS[attractionId].name} en dos colocaciones consecutivas. Las luces se apagan y el parque cierra: reto fallido.`;
+    return next;
+  }
   recordFestivalPlacement(next, attractionId);
   return finishAction(
     state,

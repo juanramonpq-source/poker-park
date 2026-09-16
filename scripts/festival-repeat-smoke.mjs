@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import { chromium } from 'playwright';
+import { existsSync, mkdirSync } from 'node:fs';
+import { completedPark } from './fixtures/completed-park.ts';
+import { createGame } from '../src/lib/game/engine.ts';
+const browser=await chromium.launch({headless:true,...(existsSync('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')?{executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'}:{})});
+mkdirSync('screenshots',{recursive:true});
+for(const width of [390,1280]) for(const challenge of ['festival','impossible']) {
+ const page=await browser.newPage({viewport:{width,height:width===390?844:800}});const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+ await page.goto('http://127.0.0.1:8080');
+ await page.getByRole('button',{name:/Omitir aper/}).click();
+ const g=createGame('solo',undefined,challenge);g.storm=undefined;g.festival.lastAttractionId='restrooms';
+ g.attractions.restrooms.slots[challenge==='impossible'?1:0]={id:'hearts-12',suit:'hearts',rank:challenge==='impossible'?12:13};
+ const c={id:'spades-13',suit:'spades',rank:challenge==='impossible'?13:12};g.hands[0]=[c];
+ await page.evaluate(async({g,c})=>{const {useGameStore:s}=await import('/src/store/game-store.ts');s.setState({game:g,screen:'playing',mapIntroOpen:false,selectedCardId:c.id});},{g,c});
+ const tile=page.locator('[data-attraction-id="restrooms"]');await tile.waitFor();assert.ok((await tile.getAttribute('class')).includes('tile-repeat-risk')); const color=await tile.evaluate(e=>getComputedStyle(e).borderColor); assert.ok(color.startsWith('rgb('),color);await page.screenshot({path:`screenshots/repeat-${challenge}-${width}.png`});
+ await tile.click();await page.getByText('Última atracción usada.',{exact:false}).waitFor();
+ await page.evaluate(async()=>{const {useGameStore:s}=await import('/src/store/game-store.ts');s.getState().place('restrooms',s.getState().game.challenge==='impossible'?0:1);});
+ await page.evaluate(async()=>{const {useGameStore:s}=await import('/src/store/game-store.ts');s.getState().finishMapOutro();});
+ await page.getByText('Las luces se han apagado',{exact:true}).waitFor();
+ const state=await page.evaluate(async()=>{const {useGameStore:s}=await import('/src/store/game-store.ts');return {reason:s.getState().game.endReason,pending:s.getState().game.pendingAdvance};});assert.equal(state.reason,'repeat');assert.equal(state.pending,false);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);assert.deepEqual(errors,[]);await page.close();console.log({width,challenge,red:true,closed:true,errors});
+}
+const page=await browser.newPage();await page.goto('http://127.0.0.1:8080');await page.getByRole('button',{name:/Omitir aper/}).click();
+const failed=completedPark('solo','impossible');failed.ended=true;failed.endReason='repeat';failed.lastMessage='Has repetido Aseos. Reto fallido.';
+await page.evaluate(async g=>{localStorage.removeItem('poker-park.secrets.v1');const {useGameStore:s}=await import('/src/store/game-store.ts');s.setState({game:g,screen:'end',mapIntroOpen:false,mapOutroOpen:false});},failed);
+await page.getByText('Las luces se han apagado',{exact:true}).waitFor();
+await page.waitForTimeout(8000);
+assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('poker-park.secrets.v1')??'{}').impossiblePerfect===true),false);
+assert.equal(await page.locator('.fireworks').count(),0);console.log({sevenCompleteRepeatNoReward:true});
+await browser.close();

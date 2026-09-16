@@ -323,3 +323,44 @@ describe("modo solitario", () => {
     }
   });
 });
+
+
+describe("Festival: repetir cierra el reto", () => {
+  for (const challenge of ["festival", "impossible"] as const) {
+    for (const mode of ["solo", "hotseat", "ai", "online"] as const) {
+      it(`${challenge} ${mode}: una segunda colocación consecutiva cierra sin fiesta`, () => {
+        const g = createGame(mode, undefined, challenge);
+        g.storm = undefined;
+        g.festival!.lastAttractionId = "restrooms";
+        g.attractions.restrooms.slots[challenge === "impossible" ? 1 : 0] = card("hearts", challenge === "impossible" ? 12 : 13);
+        const c = card("spades", challenge === "impossible" ? 13 : 12);
+        g.hands[g.currentPlayer] = [c];
+        const n = placeCard(g, c.id, "restrooms", challenge === "impossible" ? 0 : 1);
+        assert.equal(n.ended, true);
+        assert.equal(n.endReason, "repeat");
+        assert.equal(n.pendingAdvance, false);
+        assert.equal(n.lastCompleted, null);
+        assert.equal(g.ended, false);
+      });
+    }
+  }
+  it("permite volver al destino tras colocar en otro", () => {
+    let g = createGame("solo", undefined, "festival");
+    g.hands[0] = [card("hearts", 2), card("clubs", 3), card("hearts", 4)];
+    g = placeCard(g, "hearts-2", "love", 0);
+    g = placeCard(g, "clubs-3", "forest", 0);
+    g = placeCard(g, "hearts-4", "love", 1);
+    assert.equal(g.ended, false);
+    assert.equal(g.festival!.combo, 3);
+  });
+});
+
+it("el compañero evita una repetición aunque complete una atracción", () => {
+  const g = createGame("ai", undefined, "festival");
+  g.festival!.lastAttractionId = "restrooms";
+  g.attractions.restrooms.slots[0] = card("hearts", 13);
+  g.hands[g.currentPlayer] = [card("hearts", 12), card("clubs", 2)];
+  const move = chooseAiMove(g);
+  assert.equal(move.type, "place");
+  if (move.type === "place") assert.notEqual(move.attractionId, "restrooms");
+});

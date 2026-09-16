@@ -3982,3 +3982,24 @@
   .master-mode-grid { align-content: start; margin-top: 0; }
   .master-start-panel { margin-top: 0; }
 }
+
+/* La última colocación sigue visible hasta cambiar de destino. */
+.park-tile.tile-repeat-risk {
+  animation: none;
+  opacity: 1;
+  border-color: var(--color-suit-red);
+  box-shadow: inset 0 0 0 3px var(--color-suit-red), 0 0 0 2px var(--color-suit-red);
+}
+.park-tile.tile-repeat-risk .tile-label span {
+  color: var(--color-suit-red);
+  font-weight: 900;
+}
+.festival-repeat-warning {
+  padding: .65rem;
+  border: 2px solid var(--color-suit-red);
+  border-radius: .75rem;
+  background: var(--color-surface);
+  color: var(--color-suit-red);
+  font-weight: 800;
+  font-size: .85rem;
+}

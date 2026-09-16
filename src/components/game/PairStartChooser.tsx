@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const CHALLENGE_HINTS: Record<GameChallenge, string> = {
   classic: "Completad las siete atracciones respetando el recorrido propio de cada una.",
   night: "Empezad con dos sectores iluminados y devolved la corriente al resto del parque.",
-  festival: "Alternad atracciones para mantener el combo de luces mientras completáis el parque.",
+  festival: "Alternad atracciones sin repetir dos colocaciones seguidas: repetir cierra el parque.",
   mirror: "Construid las siete atracciones siguiendo sus dependencias en orden inverso.",
   storm: "Consultad el pronóstico: un sector distinto queda cerrado temporalmente cada turno.",
   impossible: "Combinad Espejo, Tormenta y Festival en la jornada final de las 00:13.",

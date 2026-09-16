@@ -31,8 +31,8 @@ export function MasterModeGuide({ mode }: { mode: MasterMode }) {
         <div className="guide-stop"><Heart aria-hidden /><b>×2</b><small>Amor</small></div><Arrow />
         <div className="guide-stop"><Trees aria-hidden /><b>×3</b><small>Bosque</small></div>
       </div>
-      <p className="guide-note"><Lightbulb aria-hidden />Repetir atracción → vuelves a ×1.</p>
-      <p className="guide-note">Las cartas se colocan como siempre.</p>
+      <p className="guide-note"><Lightbulb aria-hidden />Repetir dos veces seguidas → parque cerrado y reto fallido.</p>
+      <p className="guide-note">Última atracción en rojo. Coloca en otra para poder volver.</p>
     </> : null}
     {mode === "mirror" ? <>
       <p className="guide-caption">Empieza por el otro extremo</p>
@@ -66,11 +66,12 @@ export function MasterModeGuide({ mode }: { mode: MasterMode }) {
         <span className="guide-plus" aria-hidden>+</span>
         <div className="guide-stop is-raining"><CloudLightning aria-hidden /><b>Tormenta</b><small>Un sector cerrado</small></div>
         <span className="guide-plus" aria-hidden>+</span>
-        <div className="guide-stop"><Lightbulb aria-hidden /><b>Festival</b><small>Alterna y suma brillo</small></div>
+        <div className="guide-stop"><Lightbulb aria-hidden /><b>Festival</b><small>Repetir seguido cierra</small></div>
       </div>
       <p className="guide-note"><Clock3 aria-hidden /><strong>00:13 no es una cuenta atrás.</strong></p>
       <p className="guide-note">6 cambios en Clásico · 7 en Fácil.</p>
     </> : null}
+    {mode === "festival" || mode === "impossible" ? <p className="guide-note">Planifica el final: reserva huecos en al menos dos atracciones para poder alternar hasta la última carta. Los cambios y pases no borran el rojo; los visitantes opcionales no rompen la cadena.</p> : null}
     {mode !== "festival" ? <div className="guide-support" aria-label="Ayudas del reto">
       <div className="guide-support-row">
         <span className="guide-support-title"><Archive aria-hidden />Caseta de Jotas <small>Solo en solitario</small></span>

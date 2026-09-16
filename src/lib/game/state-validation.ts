@@ -39,7 +39,7 @@ const gameSchema = z.object({
   swappedCardId: z.string().nullable(),
   pendingAdvance: z.boolean(),
   ended: z.boolean(),
-  endReason: z.enum(["empty", "block", "closed"]).nullable().optional(),
+  endReason: z.enum(["empty", "block", "closed", "repeat"]).nullable().optional(),
   night: z.object({
     unlocked: z.array(attractionId).max(7), route: z.array(attractionId).max(7),
     pendingUnlock: z.boolean(), emergencyUses: counter, aceRack: cards.optional(),

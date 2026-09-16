@@ -29,6 +29,7 @@ import {
   CHALLENGE_BACKGROUNDS,
   CHALLENGE_NAMES,
   hasMirrorRules,
+  hasFestivalRules,
   nextStormAttraction,
   stormClosedAttraction,
 } from "@/lib/game/challenges";
@@ -179,6 +180,7 @@ function MapTile({
   const complete = isAttractionComplete(id, attr.slots, hasMirrorRules(game));
   const locked = !isAttractionUnlocked(game, id);
   const stormClosed = isAttractionStormClosed(game, id);
+  const repeatRisk = hasFestivalRules(game) && game.festival?.lastAttractionId === id;
   const selectedCardId = useGameStore((s) => s.selectedCardId);
   const exchangeMode = useGameStore((s) => s.exchangeMode);
   const openPark = useGameStore((s) => s.openPark);
@@ -214,9 +216,10 @@ function MapTile({
         showingAiMove && "tile-ai-move",
         locked && "tile-locked",
         stormClosed && "tile-storm-closed",
+        repeatRisk && "tile-repeat-risk",
         className,
       )}
-      aria-label={`${def.name}, ${locked ? "sin suministro" : stormClosed ? "cerrada por lluvia este turno" : complete ? "conseguido" : attractionProgress(id, attr.slots)}${hot || canVisit ? ", disponible para la carta elegida" : ""}`}
+      aria-label={`${def.name}${repeatRisk ? ", última atracción: repetir colocación cierra el parque" : ""}, ${locked ? "sin suministro" : stormClosed ? "cerrada por lluvia este turno" : complete ? "conseguido" : attractionProgress(id, attr.slots)}${hot || canVisit ? ", disponible para la carta elegida" : ""}`}
       data-attraction-id={id}
       data-card-drop-attraction={id}
     >
@@ -239,7 +242,7 @@ function MapTile({
       <div className="tile-label">
         <p>{def.name}</p>
         <span className={cn(complete && "text-good", (hot || canVisit) && "text-good")}>
-          {locked ? "Sin suministro" : stormClosed ? "Cerrada por lluvia" : complete ? "Revisada" : hot || canVisit ? "Disponible" : "Ver esquema"}
+          {repeatRisk && !complete ? "Repetir = cierre" : locked ? "Sin suministro" : stormClosed ? "Cerrada por lluvia" : complete ? "Revisada" : hot || canVisit ? "Disponible" : "Ver esquema"}
         </span>
       </div>
       {locked ? <span className="tile-lock"><LockKeyhole aria-hidden /><small>Sector cerrado</small></span> : null}
@@ -466,7 +469,7 @@ export function Park({ game }: { game: GameState }) {
             </span>
             <span className="turn-copy"><strong>{statusTitle}</strong><small>{statusDetail}</small></span>
             {challenge === "festival" ? (
-              <span className="mode-meter festival-meter"><Lightbulb aria-hidden /><span><small>Meta: 7 · bonus</small><strong>×{game.festival?.combo ?? 0} · {game.festival?.bulbs ?? 0} bombillas</strong></span></span>
+              <span className="mode-meter festival-meter"><Lightbulb aria-hidden /><span><small>Meta: 7 · no repitas</small><strong>×{game.festival?.combo ?? 0} · {game.festival?.bulbs ?? 0} bombillas</strong></span></span>
             ) : challenge === "mirror" ? (
               <span className="mode-meter mirror-meter"><FlipHorizontal2 aria-hidden /><span><small>Reglas</small><strong>Orden invertido</strong></span></span>
             ) : challenge === "storm" ? (

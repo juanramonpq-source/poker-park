@@ -171,6 +171,8 @@ function nightCopy(count: number, solo: boolean) {
 
 function endingCopy(game: GameState) {
   switch (game.endReason) {
+    case "repeat":
+      return { label: "Reto fallido: atracción repetida", body: game.lastMessage ?? "Dos colocaciones consecutivas en la misma atracción apagaron las luces y cerraron el parque." };
     case "empty":
       return {
         label: "Se agotaron las cartas",
@@ -254,9 +256,9 @@ export function EndScreen() {
   const isNight = game?.challenge === "night";
   const isMasterMode = challenge === "festival" || challenge === "mirror" || challenge === "storm" || challenge === "impossible";
   const rating = dayRating(done.length);
-  const copy = isNight ? nightCopy(done.length, isSolo) : isMasterMode ? masterCopy(challenge, done.length, isSolo) : ratingCopy(rating, isSolo);
+  const copy = game?.endReason === "repeat" ? { title: "Las luces se han apagado", body: "Has repetido atracción. El parque cierra y el reto queda pendiente para otra jornada." } : isNight ? nightCopy(done.length, isSolo) : isMasterMode ? masterCopy(challenge, done.length, isSolo) : ratingCopy(rating, isSolo);
   const badges = game ? (isNight ? maintenanceBadges(done.length, game.night?.emergencyUses ?? 0) : dayBadges(game)) : [];
-  const perfect = rating === "perfect";
+  const perfect = rating === "perfect" && game?.endReason !== "repeat";
   const baseScale = isNight ? NIGHT_SCALE : MASTER_SCALES[challenge] ?? RATING_SCALE.map((row) => row.title);
   const scale = isSolo && challenge === "impossible"
     ? baseScale.map((title) => title === "El parque os recuerda" ? "El parque te recuerda" : title)

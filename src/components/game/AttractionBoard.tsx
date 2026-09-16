@@ -340,6 +340,7 @@ export function AttractionSheet({
           </div>
         </header>
 
+        {(game.challenge === "festival" || game.challenge === "impossible") && game.festival?.lastAttractionId === id && !complete ? <p className="festival-repeat-warning" role="status">Última atracción usada. Colocar aquí otra vez cierra el parque y pierdes el reto. Coloca en otra para volver después.</p> : null}
         <div className="attraction-rule">
           <CircleHelp aria-hidden />
           <p>{attractionRules(id, mirrored)}</p>

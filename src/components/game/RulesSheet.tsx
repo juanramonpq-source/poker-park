@@ -51,7 +51,7 @@ const SECTIONS: Array<{
   },
   {
     title: "Poker Park 00:13",
-    body: "Es el reto final del Pase Maestro y activa sus tres reglas a la vez. Debes completar las 7 atracciones con las dependencias de Parque Espejo invertidas; en cada turno, Día de Tormenta cierra temporalmente una atracción y anuncia la siguiente; y Festival de las Luces registra el combo al alternar destinos, sin cambiar qué cartas son válidas. Las 00:13 señalan la apertura del parque, no una cuenta atrás. Dispones de 6 cambios en Clásico o 7 en Fácil. Si el clima deja el parque sin jugadas, el bloqueo espera dos rondas completas: dos turnos en solitario o cuatro pases en los modos de dos jugadores.",
+    body: "Es el reto final del Pase Maestro y activa sus tres reglas a la vez. Debes completar las 7 atracciones con las dependencias de Parque Espejo invertidas; en cada turno, Día de Tormenta cierra temporalmente una atracción y anuncia la siguiente; y Festival de las Luces obliga a alternar destinos: repetir atracción en dos colocaciones consecutivas cierra el parque y pierde el reto. El último destino queda rojo; un intercambio o pase no elimina el aviso. Las 00:13 señalan la apertura del parque, no una cuenta atrás. Dispones de 6 cambios en Clásico o 7 en Fácil. Si el clima deja el parque sin jugadas, el bloqueo espera dos rondas completas: dos turnos en solitario o cuatro pases en los modos de dos jugadores.",
     visible: (secrets) => masterTrialsComplete(secrets) || secrets.impossiblePerfect,
   },
 ];

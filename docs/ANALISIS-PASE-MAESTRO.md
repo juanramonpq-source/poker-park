@@ -100,3 +100,43 @@ humanas, latencia de red ni decisiones de un compañero humano.
 - En Espejo/00:13 las figuras van antes de la torre; en Tormenta, después.
 - Se conservan los límites 4/5/5/6, la lógica de recompensas y las reglas
   de las siete atracciones. No se promete solución para toda baraja.
+
+
+## Revisión del 16 de septiembre: alternancia obligatoria
+
+Festival y 00:13 pierden el reto al repetir dos colocaciones consecutivas.
+La prohibición no es permanente: A → B → A es válida. Los datos anteriores
+corresponden a reglas anteriores y no describen esta versión.
+
+`scripts/festival-repeat-balance.mjs` compara 200 semillas por combinación
+(solo y dos manos; Festival y 00:13), usando la misma política voraz que
+penaliza repeticiones y sabe utilizar las casetas existentes. Son 2.400
+partidas entre reglas previas, nuevas y nuevas con dos cambios adicionales.
+Resultados en `artifacts/festival-repeat-balance.json`.
+
+| Reto / modalidad | Media previa | Media nueva | Nueva con +2 cambios |
+|---|---:|---:|---:|
+| Festival solo | 3,325 | 3,205 | 3,205 |
+| Festival dos manos | 4,135 | 3,590 | 3,630 |
+| 00:13 solo | 3,130 | 2,450 | 2,450 |
+| 00:13 dos manos | 2,675 | 1,525 | 1,525 |
+
+Solo se completó 1/200 Festival en dos manos con reglas nuevas; ninguna
+partida de las otras tres combinaciones llegó a siete. El agente concentra
+cartas para completar atracciones y no reserva destinos para el final.
+Estos resultados muestran un aumento de dificultad y una limitación de la
+política; no permiten estimar tasas humanas ni asegurar un equilibrio final.
+Dos intercambios extra no corrigen la causa y no se añaden.
+
+`scripts/festival-route-proof.mjs` construye un orden de baraja válido y
+reproduce las 46 colocaciones con el motor real, manos iniciales normales,
+robos, caseta solitaria y tormenta en 00:13. Verifica las siete atracciones,
+sin repeticiones y sin gastar intercambios, en ambos retos y modalidades.
+Resultados en `artifacts/festival-route-proof.json`. Prueba existencia de
+recorridos completos, no solvencia de todos los repartos ni facilidad humana.
+
+Decisión: conservar presupuestos 4/5 para Festival y 6/7 para 00:13 y los
+apoyos existentes. Añadir el consejo de reservar huecos en al menos dos
+atracciones hasta el final y señal roja persistente. La planificación de
+alternancias forma parte del reto solicitado. Antes de suavizar más, hace
+falta valorar partidas humanas o una política que planifique el final.

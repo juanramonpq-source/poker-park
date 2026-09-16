@@ -1,6 +1,7 @@
 import { isAttractionComplete, legalSlotsForCard } from "./attractions.ts";
 import { isAce, isFace } from "./deck.ts";
-import { hasMirrorRules } from "./challenges.ts";
+import { playableCards } from "./night-tools.ts";
+import { hasFestivalRules, hasMirrorRules } from "./challenges.ts";
 import {
   hasLegalAction,
   hasRequiredAction,
@@ -45,6 +46,7 @@ function scorePlace(
   attractionId: AttractionId,
   index: number,
 ): number {
+  if (hasFestivalRules(state) && state.festival?.lastAttractionId === attractionId) return -10000;
   let score = 12;
   const slots = state.attractions[attractionId].slots;
   const next = slots.slice();
@@ -89,7 +91,7 @@ export function chooseAiMove(state: GameState): AiMove {
     }
   };
 
-  const hand = state.hands[state.currentPlayer];
+  const hand = playableCards(state);
   const swapped = state.swappedCardId
     ? hand.find((c) => c.id === state.swappedCardId)
     : undefined;
