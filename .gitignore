@@ -21,3 +21,4 @@ screenshots/
 
 # Operating system files
 .DS_Store
+.worktrees/
