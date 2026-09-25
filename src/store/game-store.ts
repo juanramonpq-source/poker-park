@@ -9,6 +9,7 @@ import {
   closePark,
   completedAttractions,
   createGame,
+  dayRating,
   exchangeLimit,
   exchangeCard,
   hasRequiredAction,
@@ -31,6 +32,13 @@ import {
   saveSettings,
   unlockSecret,
 } from "@/lib/game/persist";
+import {
+  beginTrackedRun,
+  loadPlayStats,
+  pausePlayTimer,
+  recordFinishedRun,
+  resumePlayTimer,
+} from "@/lib/game/play-stats";
 import type {
   AttractionId,
   Card,
@@ -175,6 +183,9 @@ export const useGameStore = create<GameStore>((set, get) => {
 
   const beginMapOutro = (game: GameState) => {
     if (get().mapOutroOpen) return;
+    const completed = completedAttractions(game).length;
+    const runId = loadPlayStats().activeRunId;
+    if (runId) recordFinishedRun(runId, completed, dayRating(completed) === "perfect");
     audio.playMapFold();
     set({
       game,
@@ -387,6 +398,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       window.setTimeout(() => audio.playDeal(), 70);
       window.setTimeout(() => audio.playDeal(), 140);
       const game = createGame(mode, names, challenge, difficulty);
+      beginTrackedRun();
       persist(game);
       pulse("deal");
       set({
@@ -461,6 +473,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       }
       audio.unlockAudio();
       audio.startChallengeBed(saved.challenge ?? "classic");
+      if (loadPlayStats().activeRunId) resumePlayTimer();
+      else beginTrackedRun();
       set({
         game: saved,
         screen: saved.ended ? "end" : "playing",
@@ -476,6 +490,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       window.clearTimeout(aiTimer);
       window.clearTimeout(aiRevealTimer);
       window.clearTimeout(aiRevealClearTimer);
+      pausePlayTimer();
       const theme = loadSettings().showcaseTheme;
       if (theme === "classic") audio.startTitleBed();
       else audio.startChallengeBed(theme);
@@ -496,6 +511,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       window.clearTimeout(aiTimer);
       window.clearTimeout(aiRevealTimer);
       window.clearTimeout(aiRevealClearTimer);
+      pausePlayTimer();
       clearGame();
       const theme = loadSettings().showcaseTheme;
       if (theme === "classic") audio.startTitleBed();

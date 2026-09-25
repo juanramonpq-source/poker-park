@@ -17,6 +17,7 @@ import { OnlineGameProvider } from "@/lib/multiplayer/online-game";
 import { OnlineStatusPill } from "@/components/game/OnlineStatusPill";
 import { PlacementCaution } from "@/components/game/PlacementCaution";
 import { ProgressUnlockPopups } from "@/components/game/ProgressUnlockPopups";
+import { pausePlayTimer, resumePlayTimer } from "@/lib/game/play-stats";
 
 function PlayingTable() {
   const game = useGameStore((s) => s.game);
@@ -57,6 +58,22 @@ function GameAppContent() {
   useEffect(() => {
     if (screen === "title") hydrate();
   }, [hydrate, screen]);
+
+  useEffect(() => {
+    const syncTimer = () => {
+      if (screen === "playing" && document.visibilityState === "visible") resumePlayTimer();
+      else pausePlayTimer();
+    };
+    const pauseTimer = () => pausePlayTimer();
+    syncTimer();
+    document.addEventListener("visibilitychange", syncTimer);
+    window.addEventListener("pagehide", pauseTimer);
+    return () => {
+      document.removeEventListener("visibilitychange", syncTimer);
+      window.removeEventListener("pagehide", pauseTimer);
+      pausePlayTimer();
+    };
+  }, [screen]);
 
   return (
     <div

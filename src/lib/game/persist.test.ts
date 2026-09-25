@@ -21,11 +21,13 @@ describe("recuperación de datos", () => {
     values.set("poker-park.opening-seen.v1", "seen");
     values.set("poker-park.mascots.v1", JSON.stringify({ greetings: { turtle: 26 } }));
     values.set("poker-park.finales.v1", JSON.stringify({ parkEndingSeen: true }));
+    values.set("poker-park.stats.v1", JSON.stringify({ finishedDays: 4 }));
     values.set("other-app", "keep");
     resetPokerParkProgress();
     assert.equal(values.has("poker-park.opening-seen.v1"), false);
     assert.equal(values.has("poker-park.mascots.v1"), false);
     assert.equal(values.has("poker-park.finales.v1"), false);
+    assert.equal(values.has("poker-park.stats.v1"), false);
     assert.equal(values.get("other-app"), "keep");
   });
 
