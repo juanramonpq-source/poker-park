@@ -135,6 +135,11 @@ y los cierres temporales por tormenta no se confunden con una jornada resuelta.
   Tormenta/00:13 son dos turnos en solitario o cuatro pases en pareja), o
 - el parque está resuelto y se elige **Cerrar el parque**.
 
+Al completar por primera vez los seis retos —Parque clásico, Noche de Guardia,
+Festival, Espejo, Tormenta y Poker Park 00:13— aparece el cierre general «Todo
+día en un parque de atracciones llega a su fin». Este mensaje no depende de las
+medallas de las mascotas ni de haber jugado en una dificultad concreta.
+
 En **Poker Park 00:13** no hay límite de tiempo: la tormenta solo cierra una
 atracción durante un turno. El bloqueo exige dos rondas completas —dos turnos
 en solitario o cuatro pases en pareja— para no confundir una mala rotación del
@@ -166,10 +171,16 @@ Cada mascota tiene tres medallas acumulativas en la portada: bronce al superar
 recuento o de los créditos no suma saludos. Las medallas son cosméticas y no
 condicionan retos, reglas ni desbloqueos.
 
-La colección tiene una última sorpresa: al conseguir las seis medallas de los
-retos en dificultad Clásica y las tres medallas de mascota en oro, aparece una
-décima medalla azul con el emblema de Pentonúi. El juego anuncia el logro una
-sola vez y después conserva la medalla en la portada.
+La colección tiene una última sorpresa: después de completar los seis retos,
+al conseguir también las tres medallas de mascota en oro aparece una décima
+medalla azul con el emblema de Pentonúi. El juego anuncia el logro una sola vez,
+agradece haber llegado hasta el final y conserva la medalla en la portada.
+
+Ese agradecimiento ofrece compartir la hazaña con Pentonúi Games mediante un
+formulario voluntario. El jugador puede indicar su nombre, correo, valoración y
+un mensaje breve; antes de enviar ve también las estadísticas locales que se
+adjuntarán. Cancelar no envía nada. El tiempo activo se cuenta desde la versión
+que introduce esta función y el tiempo anterior no se puede reconstruir.
 
 ## Reto desbloqueable: La Noche de Guardia
 

@@ -89,6 +89,10 @@ src/lib/game/engine.ts         turnos, colocación, fin, recuento
 src/lib/game/ai.ts             compañero automático
 src/lib/game/persist.ts        localStorage v7
 src/lib/game/mascot-progress.ts saludos locales, favorita y medallas de mascotas
+src/lib/game/finale-progress.ts finales narrativos y envío ya realizado
+src/lib/game/play-stats.ts     estadísticas locales desde esta versión
+src/lib/achievement.ts         contrato del formulario voluntario
+src/lib/achievement.server.ts  correo privado y límite de envíos
 src/lib/game/audio.ts          mezclador, ambientes, SFX y música de recuperación
 src/lib/game/soundtrack.ts     siete pistas Suno, carga y bucles con fundidos
 src/lib/game/attractions.test.ts
@@ -230,11 +234,23 @@ y los créditos reaccionan, pero no incrementan el contador. El recuento revela
 el total, el detalle por mascota y la favorita; los empates se resuelven a favor
 de la última saludada. Cada mascota concede medallas acumulativas de bronce,
 plata y oro al superar 25, 50 y 100 saludos, visibles junto a las medallas de la
-portada. Al reunir las seis medallas de retos en dificultad Clásica y las tres
-medallas de mascota en oro se concede, una sola vez, la décima medalla azul de
-Pentonúi. El desbloqueo se anuncia con una ventana especial tanto si la última
-condición se completa al terminar una partida como si se detecta al regresar a
-la portada. Este progreso no forma parte de `GameState` ni se sincroniza online.
+portada. Al completar los seis retos aparece, con independencia de las mascotas
+y de la dificultad, el cierre narrativo «Todo día en un parque de atracciones
+llega a su fin». Al reunir además las tres medallas de mascota en oro se
+concede, una sola vez, la décima medalla azul de Pentonúi y aparece el
+agradecimiento definitivo. Desde esa ventana se puede abrir un formulario
+voluntario con nombre, correo, valoración, mensaje y estadísticas locales.
+Cancelarlo no envía nada. Tras un envío correcto, la medalla azul permite
+volver a consultar el logro, pero no repite el formulario en ese dispositivo.
+Este progreso no forma parte de `GameState` ni se sincroniza online.
+
+El navegador envía el formulario a `POST /api/achievement`; Netlify lo reenvía
+al servidor de Railway. El destinatario solo existe en las variables privadas
+`RESEND_API_KEY`, `PENTONUI_ACHIEVEMENT_TO` y `PENTONUI_ACHIEVEMENT_FROM`.
+Nunca se incorporan sus valores al cliente, al repositorio, a las respuestas ni
+a los registros. El tiempo activo y los demás acumulados comienzan en la
+versión que introduce `poker-park.stats.v1`; no se reconstruyen partidas
+anteriores.
 
 ---
 

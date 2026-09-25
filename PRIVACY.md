@@ -1,10 +1,10 @@
 # Privacidad de Poker Park
 
-Última actualización: 10 de septiembre de 2026.
+Última actualización: 25 de septiembre de 2026.
 
-Poker Park está diseñado para jugar sin crear una cuenta. La aplicación no
-solicita nombres reales, correo electrónico, ubicación, contactos ni datos de
-pago. Tampoco incorpora publicidad ni herramientas propias de seguimiento.
+Poker Park está diseñado para jugar sin crear una cuenta. Durante una partida
+no solicita nombres reales, correo electrónico, ubicación, contactos ni datos
+de pago. Tampoco incorpora publicidad ni herramientas propias de seguimiento.
 
 Las copias de partidas, los desbloqueos y las preferencias se guardan en el
 almacenamiento local del navegador o dispositivo. El jugador puede eliminarlos
@@ -14,6 +14,29 @@ El proveedor que aloja la aplicación puede generar registros técnicos básicos
 como dirección IP, fecha de acceso o información del navegador, para prestar y
 proteger el servicio. Esos registros no forman parte del sistema de progreso de
 Poker Park.
+
+## Mensaje voluntario al completar Poker Park
+
+Después de superar los seis retos y conseguir las tres medallas de mascota en
+oro, el jugador puede enviar voluntariamente su hazaña a Pentonúi Games. El
+formulario pide el **nombre** que desee usar, su **correo electrónico**, una
+**valoración** de 1 a 5 y un **mensaje** opcional. También muestra y adjunta el
+**tiempo activo**, las **jornadas terminadas**, los **parques perfectos**, las
+**atracciones completadas** y los **retos superados** guardados en el
+dispositivo.
+
+El envío requiere aceptar expresamente esos datos. Cancelar el formulario no
+envía nada y permite seguir usando el juego. La dirección privada que recibe el
+mensaje no se entrega al navegador ni se muestra al jugador. El servidor usa el
+correo del jugador como dirección de respuesta y un proveedor de correo
+transaccional para entregar el mensaje.
+
+Las estadísticas empiezan a contarse con esta versión. El tiempo jugado antes
+de la actualización no se puede reconstruir. El servidor aplica un límite
+temporal a los envíos mediante una huella efímera de la dirección de red; no
+incluye esa huella en el correo ni la incorpora al progreso. El mensaje enviado
+puede conservarse en los buzones y sistemas del proveedor de correo conforme a
+sus políticas.
 
 ## Salas online
 
