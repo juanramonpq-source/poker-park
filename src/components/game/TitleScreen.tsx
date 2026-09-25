@@ -116,10 +116,10 @@ export function TitleScreen() {
 
   useEffect(() => {
     if (opening.stage !== "ready") return;
-    const award = claimPentonuiMedal(secrets.classicMedals);
+    const award = claimPentonuiMedal(secrets);
     setMascotProgress(award.progress);
     if (award.newlyAwarded) setPentonuiReveal(true);
-  }, [opening.stage, secrets.classicMedals]);
+  }, [opening.stage, secrets]);
 
   useEffect(() => {
     if (pentonuiReveal) playLifetimeUnlock();
@@ -192,7 +192,7 @@ export function TitleScreen() {
   const applyDeveloperSecrets = (next: Secrets) => {
     saveSecrets(next);
     setSecrets(next);
-    const award = claimPentonuiMedal(next.classicMedals);
+    const award = claimPentonuiMedal(next);
     setMascotProgress(award.progress);
     if (award.newlyAwarded) setPentonuiReveal(true);
     hydrate();
@@ -201,7 +201,7 @@ export function TitleScreen() {
 
   const recordMenuMascotProgress = (progress: MascotProgress) => {
     setMascotProgress(progress);
-    const award = claimPentonuiMedal(secrets.classicMedals);
+    const award = claimPentonuiMedal(secrets);
     setMascotProgress(award.progress);
     if (award.newlyAwarded) setPentonuiReveal(true);
   };

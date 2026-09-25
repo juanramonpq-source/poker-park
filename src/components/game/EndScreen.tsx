@@ -298,7 +298,7 @@ export function EndScreen() {
           timers.push(window.setTimeout(() => pulse("end"), 800));
         }
         setSecrets(nextSecrets);
-        const award = claimPentonuiMedal(nextSecrets.classicMedals);
+        const award = claimPentonuiMedal(nextSecrets);
         setMascotProgress(award.progress);
         if (award.newlyAwarded) {
           setPentonuiReveal(true);

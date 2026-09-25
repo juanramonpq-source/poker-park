@@ -204,6 +204,15 @@ export function masterTrialsComplete(secrets: Secrets) {
   return secrets.festivalPerfect && secrets.mirrorPerfect && secrets.stormPerfect;
 }
 
+export function allChallengesComplete(secrets: Secrets): boolean {
+  return secrets.perfect
+    && secrets.nightPerfect
+    && secrets.festivalPerfect
+    && secrets.mirrorPerfect
+    && secrets.stormPerfect
+    && secrets.impossiblePerfect;
+}
+
 export function unlockAllSecrets() {
   const next: Secrets = {
     perfect: true,
@@ -226,6 +235,7 @@ export function resetPokerParkProgress() {
     localStorage.removeItem(SECRETS_KEY);
     localStorage.removeItem(SETTINGS_KEY);
     localStorage.removeItem("poker-park.mascots.v1");
+    localStorage.removeItem("poker-park.finales.v1");
     localStorage.removeItem("poker-park-tutorial-seen");
     localStorage.removeItem("poker-park.opening-seen.v1");
   } catch {

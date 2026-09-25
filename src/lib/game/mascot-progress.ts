@@ -1,4 +1,4 @@
-import type { GameChallenge } from "./types.ts";
+import { allChallengesComplete, type Secrets } from "./persist.ts";
 
 export const MASCOT_IDS = ["turtle", "hedgehog", "fish"] as const;
 const MASCOT_PROGRESS_KEY = "poker-park.mascots.v1";
@@ -109,19 +109,17 @@ export function favoriteMascotNote(progress: MascotProgress): string {
     : "Este dispositivo todavía no tiene una mascota favorita.";
 }
 
-const REQUIRED_CLASSIC_MEDALS: GameChallenge[] = ["classic", "night", "festival", "mirror", "storm", "impossible"];
-
 export function qualifiesForPentonuiMedal(
   progress: MascotProgress,
-  classicMedals: readonly GameChallenge[],
+  secrets: Secrets,
 ): boolean {
-  return REQUIRED_CLASSIC_MEDALS.every((medal) => classicMedals.includes(medal))
+  return allChallengesComplete(secrets)
     && MASCOT_IDS.every((id) => progress.greetings[id] > 100);
 }
 
-export function claimPentonuiMedal(classicMedals: readonly GameChallenge[]) {
+export function claimPentonuiMedal(secrets: Secrets) {
   const current = loadMascotProgress();
-  if (current.pentonuiMedal || !qualifiesForPentonuiMedal(current, classicMedals)) {
+  if (current.pentonuiMedal || !qualifiesForPentonuiMedal(current, secrets)) {
     return { progress: current, newlyAwarded: false };
   }
   const progress = { ...current, pentonuiMedal: true };

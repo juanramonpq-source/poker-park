@@ -24,6 +24,7 @@ import type { LucideIcon } from "lucide-react";
 import type { SecretFlag, Secrets } from "@/lib/game/persist";
 import type { GameChallenge } from "@/lib/game/types";
 import { unlockAllMascotProgress } from "@/lib/game/mascot-progress";
+import { resetFinaleProgress } from "@/lib/game/finale-progress";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -144,7 +145,7 @@ export function DeveloperMenu({
             {PROGRESS_PRESETS.map(({ id, title, kicker, result, icon: Icon, secrets: preset }) => {
               const active = activePreset?.id === id;
               return (
-                <button type="button" key={id} className={cn(active && "is-active")} onClick={() => onApplySecrets(preset)} aria-pressed={active}>
+                <button type="button" key={id} className={cn(active && "is-active")} onClick={() => { resetFinaleProgress(); onApplySecrets(preset); }} aria-pressed={active}>
                   <span className="developer-step-icon"><Icon /></span>
                   <span><small>{kicker}</small><strong>{title}</strong><em>{result}</em></span>
                   {active ? <Check /> : <ChevronRight />}
@@ -200,7 +201,7 @@ export function DeveloperMenu({
             <section className="developer-danger-zone">
               <h3><RotateCcw /> Acciones globales</h3>
               <div className="developer-global-actions">
-                <button type="button" onClick={() => { unlockAllMascotProgress(); onApplySecrets(PROGRESS_PRESETS.at(-1)!.secrets); }}><Sparkles /><span><strong>Desbloquear absolutamente todo</strong><small>Activa también las medallas de Tuga, Púa, Burbujas y la medalla Pentonúi.</small></span></button>
+                <button type="button" onClick={() => { resetFinaleProgress(); unlockAllMascotProgress(); onApplySecrets(PROGRESS_PRESETS.at(-1)!.secrets); }}><Sparkles /><span><strong>Desbloquear absolutamente todo</strong><small>Activa también las medallas de Tuga, Púa, Burbujas y la medalla Pentonúi.</small></span></button>
                 <button type="button" className="is-danger" onClick={() => setConfirmReset(true)}><RotateCcw /><span><strong>Resetear Poker Park</strong><small>Borra partida, tutorial, secretos, ajustes e insignias.</small></span></button>
               </div>
               {confirmReset ? (

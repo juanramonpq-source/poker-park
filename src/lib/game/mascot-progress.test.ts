@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { beforeEach, describe, it } from "node:test";
+import type { Secrets } from "./persist.ts";
 
 const values = new Map<string, string>();
 Object.defineProperty(globalThis, "localStorage", {
@@ -80,10 +81,20 @@ describe("progreso secreto de las mascotas", () => {
     }), "Mascota favorita de este dispositivo: Púa.");
   });
 
-  it("reserva la medalla Pentonui para las seis clasicas y los tres oros", async () => {
+  it("concede Pentonúi con seis retos y tres oros", async () => {
     const progressModule = await import("./mascot-progress.ts");
     assert.equal(typeof progressModule.qualifiesForPentonuiMedal, "function");
-    const allClassicMedals = ["classic", "night", "festival", "mirror", "storm", "impossible"] as const;
+    const completedSecrets: Secrets = {
+      perfect: true,
+      lifetime: false,
+      nightPerfect: true,
+      pentonuiSignal: true,
+      festivalPerfect: true,
+      mirrorPerfect: true,
+      stormPerfect: true,
+      impossiblePerfect: true,
+      classicMedals: [],
+    };
     const almost = {
       version: 1,
       greetings: { turtle: 101, hedgehog: 101, fish: 100 },
@@ -91,15 +102,40 @@ describe("progreso secreto de las mascotas", () => {
       pentonuiMedal: false,
     } as const;
 
-    assert.equal(progressModule.qualifiesForPentonuiMedal(almost, allClassicMedals), false);
     assert.equal(progressModule.qualifiesForPentonuiMedal({
       ...almost,
       greetings: { ...almost.greetings, fish: 101 },
-    }, allClassicMedals.slice(0, 5)), false);
+    }, completedSecrets), true);
+  });
+
+  it("no concede Pentonúi con un reto u oro pendiente", async () => {
+    const progressModule = await import("./mascot-progress.ts");
+    const completedSecrets: Secrets = {
+      perfect: true,
+      lifetime: false,
+      nightPerfect: true,
+      pentonuiSignal: true,
+      festivalPerfect: true,
+      mirrorPerfect: true,
+      stormPerfect: true,
+      impossiblePerfect: true,
+      classicMedals: [],
+    };
+    const gold = {
+      version: 1,
+      greetings: { turtle: 101, hedgehog: 101, fish: 101 },
+      lastGreeted: "fish",
+      pentonuiMedal: false,
+    } as const;
+
     assert.equal(progressModule.qualifiesForPentonuiMedal({
-      ...almost,
-      greetings: { ...almost.greetings, fish: 101 },
-    }, allClassicMedals), true);
+      ...gold,
+      greetings: { ...gold.greetings, fish: 100 },
+    }, completedSecrets), false);
+    assert.equal(progressModule.qualifiesForPentonuiMedal(gold, {
+      ...completedSecrets,
+      stormPerfect: false,
+    }), false);
   });
 
   it("concede y guarda la medalla Pentonui una sola vez", async () => {
@@ -111,12 +147,22 @@ describe("progreso secreto de las mascotas", () => {
       lastGreeted: "fish",
       pentonuiMedal: false,
     }));
-    const allClassicMedals = ["classic", "night", "festival", "mirror", "storm", "impossible"] as const;
+    const completedSecrets: Secrets = {
+      perfect: true,
+      lifetime: false,
+      nightPerfect: true,
+      pentonuiSignal: true,
+      festivalPerfect: true,
+      mirrorPerfect: true,
+      stormPerfect: true,
+      impossiblePerfect: true,
+      classicMedals: [],
+    };
 
-    const first = progressModule.claimPentonuiMedal(allClassicMedals);
+    const first = progressModule.claimPentonuiMedal(completedSecrets);
     assert.equal(first.newlyAwarded, true);
     assert.equal(first.progress.pentonuiMedal, true);
-    const second = progressModule.claimPentonuiMedal(allClassicMedals);
+    const second = progressModule.claimPentonuiMedal(completedSecrets);
     assert.equal(second.newlyAwarded, false);
     assert.equal(second.progress.pentonuiMedal, true);
   });

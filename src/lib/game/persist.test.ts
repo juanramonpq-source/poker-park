@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { beforeEach, describe, it } from "node:test";
-import { loadGame, loadSettings, loadSecrets, saveGame, recordPerfectCompletion, resetPokerParkProgress } from "./persist.ts";
+import { allChallengesComplete, loadGame, loadSettings, loadSecrets, saveGame, recordPerfectCompletion, resetPokerParkProgress } from "./persist.ts";
 import { createGame } from "./engine.ts";
 import { isGameState } from "./state-validation.ts";
 
@@ -20,10 +20,12 @@ describe("recuperación de datos", () => {
   it("el reinicio permite volver a ver la apertura sin borrar datos ajenos", () => {
     values.set("poker-park.opening-seen.v1", "seen");
     values.set("poker-park.mascots.v1", JSON.stringify({ greetings: { turtle: 26 } }));
+    values.set("poker-park.finales.v1", JSON.stringify({ parkEndingSeen: true }));
     values.set("other-app", "keep");
     resetPokerParkProgress();
     assert.equal(values.has("poker-park.opening-seen.v1"), false);
     assert.equal(values.has("poker-park.mascots.v1"), false);
+    assert.equal(values.has("poker-park.finales.v1"), false);
     assert.equal(values.get("other-app"), "keep");
   });
 
@@ -85,6 +87,7 @@ describe("progreso por dificultad", () => {
     assert.equal(secrets.stormPerfect, true);
     assert.equal(secrets.impossiblePerfect, true);
     assert.deepEqual(secrets.classicMedals, []);
+    assert.equal(allChallengesComplete(secrets), true);
   });
 
   it("Clásico concede la medalla diferenciada del reto y no la duplica", () => {
