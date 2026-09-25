@@ -11,7 +11,7 @@ const TIER_NAMES = {
   gold: "oro",
 } as const;
 
-export function MascotMedals({ progress }: { progress: MascotProgress }) {
+export function MascotMedals({ progress, onPentonuiClick }: { progress: MascotProgress; onPentonuiClick?: () => void }) {
   const medals = MASCOT_IDS.flatMap((id) => {
     const tier = mascotMedalTiers(progress.greetings[id]).at(-1);
     return tier ? [{ id, tier }] : [];
@@ -31,9 +31,9 @@ export function MascotMedals({ progress }: { progress: MascotProgress }) {
         </span>
       ))}
       {progress.pentonuiMedal ? (
-        <span className="title-mascot-medal mascot-medal-pentonui" title="Medalla Pentonúi · Colección completa" aria-label="Medalla Pentonúi: colección completa">
+        <button type="button" className="title-mascot-medal mascot-medal-pentonui" title="Medalla Pentonúi · Colección completa" aria-label="Medalla Pentonúi: colección completa" onClick={onPentonuiClick}>
           <img src="/brand/pentonui-games-icon.png" alt="" />
-        </span>
+        </button>
       ) : null}
     </div>
   );

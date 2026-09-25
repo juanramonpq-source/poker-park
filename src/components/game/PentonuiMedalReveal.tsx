@@ -1,21 +1,39 @@
-import { Sparkles } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { Send, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function PentonuiMedalReveal({ onClose }: { onClose: () => void }) {
+export function PentonuiMedalReveal({
+  onClose,
+  onShare,
+  alreadySubmitted = false,
+}: {
+  onClose: () => void;
+  onShare: () => void;
+  alreadySubmitted?: boolean;
+}) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    dialog.current?.showModal();
+    return () => dialog.current?.close();
+  }, []);
+
   return (
-    <div className="pentonui-medal-reveal" role="dialog" aria-modal="true" aria-labelledby="pentonui-medal-title">
+    <dialog ref={dialog} className="pentonui-medal-reveal" aria-labelledby="pentonui-medal-title" onCancel={event => event.preventDefault()}>
       <div className="pentonui-medal-backdrop" aria-hidden />
       <section className="pentonui-medal-card stagger-in">
         <div className="pentonui-medal-burst" aria-hidden><span /><span /><span /></div>
         <div className="pentonui-medal-seal" aria-hidden>
           <img src="/brand/pentonui-games-icon.png" alt="" />
         </div>
-        <small>El parque te reconoce</small>
-        <h2 id="pentonui-medal-title">Medalla Pentonúi</h2>
-        <p>Has reunido las nueve medallas: dominaste los seis retos y te ganaste la amistad de Tuga, Púa y Burbujas.</p>
-        <div className="pentonui-medal-legend"><Sparkles aria-hidden /> Ya formas parte de Poker Park</div>
-        <Button size="lg" autoFocus onClick={onClose}>Guardar en mi colección</Button>
+        <small>Final definitivo · Medalla Pentonúi</small>
+        <h2 id="pentonui-medal-title">Has llegado al último secreto del parque</h2>
+        <p>Gracias por recorrer los seis retos y ganarte la amistad de Tuga, Púa y Burbujas. Muy pocas personas llegan hasta aquí.</p>
+        <div className="pentonui-medal-legend"><Sparkles aria-hidden /> Ya formas parte de la historia de Poker Park</div>
+        <div className="pentonui-medal-actions">
+          <Button size="lg" autoFocus onClick={onShare} disabled={alreadySubmitted}><Send aria-hidden /> {alreadySubmitted ? "Hazaña ya enviada" : "Compartir mi hazaña"}</Button>
+          <Button size="lg" variant="secondary" onClick={onClose}>Ahora no</Button>
+        </div>
       </section>
-    </div>
+    </dialog>
   );
 }

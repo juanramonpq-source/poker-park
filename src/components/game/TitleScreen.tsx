@@ -27,8 +27,8 @@ import { OnlineLobby } from "@/components/game/OnlineLobby";
 import { OpeningSequence } from "@/components/game/OpeningSequence";
 import { useOpeningSequence } from "@/components/game/useOpeningSequence";
 import { MascotMedals } from "@/components/game/MascotMedals";
-import { claimPentonuiMedal, loadMascotProgress, type MascotProgress } from "@/lib/game/mascot-progress";
-import { PentonuiMedalReveal } from "@/components/game/PentonuiMedalReveal";
+import { loadMascotProgress, type MascotProgress } from "@/lib/game/mascot-progress";
+import { FinaleSequence } from "@/components/game/FinaleSequence";
 
 function Motes() {
   return (
@@ -87,7 +87,7 @@ export function TitleScreen() {
     lastGreeted: null,
     pentonuiMedal: false,
   });
-  const [pentonuiReveal, setPentonuiReveal] = useState(false);
+  const [achievementEntryOpen, setAchievementEntryOpen] = useState(false);
   const [tutorialOpen, setTutorialOpen] = useState(false);
   const [tutorialChoiceOpen, setTutorialChoiceOpen] = useState(false);
   const [nightModeOpen, setNightModeOpen] = useState(false);
@@ -113,17 +113,6 @@ export function TitleScreen() {
     setTutorialComplete(window.localStorage.getItem(TUTORIAL_SEEN_KEY) === "true");
     if (new URL(window.location.href).searchParams.has("sala")) setOnlineSetup({ challenge: "classic", difficulty: "standard" });
   }, []);
-
-  useEffect(() => {
-    if (opening.stage !== "ready") return;
-    const award = claimPentonuiMedal(secrets);
-    setMascotProgress(award.progress);
-    if (award.newlyAwarded) setPentonuiReveal(true);
-  }, [opening.stage, secrets]);
-
-  useEffect(() => {
-    if (pentonuiReveal) playLifetimeUnlock();
-  }, [pentonuiReveal]);
 
   const wake = () => {
     unlockAudio();
@@ -192,18 +181,13 @@ export function TitleScreen() {
   const applyDeveloperSecrets = (next: Secrets) => {
     saveSecrets(next);
     setSecrets(next);
-    const award = claimPentonuiMedal(next);
-    setMascotProgress(award.progress);
-    if (award.newlyAwarded) setPentonuiReveal(true);
+    setMascotProgress(loadMascotProgress());
     hydrate();
     playUi();
   };
 
   const recordMenuMascotProgress = (progress: MascotProgress) => {
     setMascotProgress(progress);
-    const award = claimPentonuiMedal(secrets);
-    setMascotProgress(award.progress);
-    if (award.newlyAwarded) setPentonuiReveal(true);
   };
 
   const setDeveloperTutorialSeen = (seen: boolean) => {
@@ -309,7 +293,7 @@ export function TitleScreen() {
         </button>
         <div className="title-medal-rack">
           <ClassicMedals earned={secrets.classicMedals} />
-          <MascotMedals progress={mascotProgress} />
+          <MascotMedals progress={mascotProgress} onPentonuiClick={() => setAchievementEntryOpen(true)} />
         </div>
       </div>
 
@@ -501,7 +485,12 @@ export function TitleScreen() {
       <LegalSheet open={legalOpen} onClose={() => setLegalOpen(false)} />
       {onlineSetup ? <OnlineLobby initialChallenge={onlineSetup.challenge} initialDifficulty={onlineSetup.difficulty} onClose={() => setOnlineSetup(null)} /> : null}
       <MenuMascots onProgress={recordMenuMascotProgress} />
-      {pentonuiReveal && opening.stage === "ready" ? <PentonuiMedalReveal onClose={() => setPentonuiReveal(false)} /> : null}
+      <FinaleSequence
+        active={opening.stage === "ready"}
+        allowAchievementForm={achievementEntryOpen}
+        onAchievementFormClose={() => setAchievementEntryOpen(false)}
+        onMascotProgress={setMascotProgress}
+      />
     </main>
   );
 }

@@ -20,8 +20,8 @@ import { MascotParade } from "@/components/game/ParkMascots";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { useOnlineGame } from "@/lib/multiplayer/online-game";
-import { claimPentonuiMedal, favoriteMascot, favoriteMascotNote, loadMascotProgress, MASCOT_IDS, MASCOT_NAMES, totalMascotGreetings } from "@/lib/game/mascot-progress";
-import { PentonuiMedalReveal } from "@/components/game/PentonuiMedalReveal";
+import { favoriteMascot, favoriteMascotNote, loadMascotProgress, MASCOT_IDS, MASCOT_NAMES, totalMascotGreetings } from "@/lib/game/mascot-progress";
+import { FinaleSequence } from "@/components/game/FinaleSequence";
 
 const NIGHT_SCALE = [
   "Sin corriente", "Primera comprobación", "Sector asegurado", "Guardia en marcha",
@@ -246,7 +246,6 @@ export function EndScreen() {
   const [nightReward, setNightReward] = useState(() => loadSecrets().nightPerfect);
   const [secrets, setSecrets] = useState(() => loadSecrets());
   const [mascotProgress, setMascotProgress] = useState(loadMascotProgress);
-  const [pentonuiReveal, setPentonuiReveal] = useState(false);
   const [nightWasLocked] = useState(() => !loadSecrets().perfect);
   const [nightRevealDismissed, setNightRevealDismissed] = useState(false);
   const done = game ? completedAttractions(game) : [];
@@ -298,12 +297,7 @@ export function EndScreen() {
           timers.push(window.setTimeout(() => pulse("end"), 800));
         }
         setSecrets(nextSecrets);
-        const award = claimPentonuiMedal(nextSecrets);
-        setMascotProgress(award.progress);
-        if (award.newlyAwarded) {
-          setPentonuiReveal(true);
-          playLifetimeUnlock();
-        }
+        setMascotProgress(loadMascotProgress());
       }, 520));
     };
     timers.push(window.setTimeout(tick, done.length === 0 ? 640 : 680));
@@ -389,7 +383,10 @@ export function EndScreen() {
 
   return (
     <main className="end-tally relative min-h-dvh overflow-y-auto bg-bg pb-10 text-fg">
-      {pentonuiReveal ? <PentonuiMedalReveal onClose={() => setPentonuiReveal(false)} /> : null}
+      <FinaleSequence
+        active={resolved && !(challenge === "classic" && perfect && nightWasLocked && !nightRevealDismissed)}
+        onMascotProgress={setMascotProgress}
+      />
       {challenge === "classic" && perfect && resolved && nightWasLocked && !nightRevealDismissed ? (
         <NightFirstReveal onClose={() => setNightRevealDismissed(true)} />
       ) : null}
