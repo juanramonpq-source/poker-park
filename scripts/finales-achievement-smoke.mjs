@@ -183,8 +183,8 @@ async function formSmoke() {
     assert.equal(await page.getByLabel("Tu nombre").inputValue(), "Alex del Parque");
     assert.equal(requests.length, 1);
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem("poker-park.finales.v1")).achievementSubmittedAt), null);
-    assert.doesNotMatch(await page.locator("body").innerText(), /juanramonpq|hotmail\.com/i);
-    assert.doesNotMatch(JSON.stringify(requests[0]), /juanramonpq|hotmail\.com/i);
+    assert.equal("to" in requests[0], false, "el navegador no debe conocer el destinatario");
+    assert.equal("recipient" in requests[0], false, "el formulario no debe enviar un destinatario");
     await page.screenshot({ path: "screenshots/hazana-error-mobile.png", fullPage: true });
     assert.deepEqual(errors, []);
     await context.close();

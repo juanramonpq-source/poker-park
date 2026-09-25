@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiAchievementRouteImport } from './routes/api/achievement'
 import { Route as ApiRtcRouteImport } from './routes/api/rtc'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAchievementRoute = ApiAchievementRouteImport.update({
+  id: '/api/achievement',
+  path: '/api/achievement',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRtcRoute = ApiRtcRouteImport.update({
@@ -25,27 +31,31 @@ const ApiRtcRoute = ApiRtcRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/achievement': typeof ApiAchievementRoute
   '/api/rtc': typeof ApiRtcRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/achievement': typeof ApiAchievementRoute
   '/api/rtc': typeof ApiRtcRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/achievement': typeof ApiAchievementRoute
   '/api/rtc': typeof ApiRtcRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/rtc'
+  fullPaths: '/' | '/api/achievement' | '/api/rtc'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/rtc'
-  id: '__root__' | '/' | '/api/rtc'
+  to: '/' | '/api/achievement' | '/api/rtc'
+  id: '__root__' | '/' | '/api/achievement' | '/api/rtc'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiAchievementRoute: typeof ApiAchievementRoute
   ApiRtcRoute: typeof ApiRtcRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/achievement': {
+      id: '/api/achievement'
+      path: '/api/achievement'
+      fullPath: '/api/achievement'
+      preLoaderRoute: typeof ApiAchievementRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/rtc': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiAchievementRoute: ApiAchievementRoute,
   ApiRtcRoute: ApiRtcRoute,
 }
 export const routeTree = rootRouteImport

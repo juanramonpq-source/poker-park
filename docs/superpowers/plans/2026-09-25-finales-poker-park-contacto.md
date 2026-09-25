@@ -297,7 +297,7 @@ Expose only `POST` with the repository's established `createFileRoute(...).serve
 
 - [ ] **Step 5: Run server tests, typecheck and source secret scan**
 
-Run: `node --experimental-strip-types --test src/lib/achievement.server.test.ts && npm run typecheck && ! git grep -n -i -E 'juanramonpq|hotmail\.com'`
+Run: `node --experimental-strip-types --test src/lib/achievement.server.test.ts && npm run typecheck`, followed by a silent `git grep` using the private recipient supplied only in the operator shell.
 
 Expected: PASS and the scan of every tracked file returns no match.
 
