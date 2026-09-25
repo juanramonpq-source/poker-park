@@ -6,6 +6,7 @@ const phase = process.argv.find(argument => argument.startsWith("--phase="))?.sp
 assert.ok(["all", "narrative", "form"].includes(phase), `Fase desconocida: ${phase}`);
 assert.ok(existsSync("src/components/game/ParkEndingReveal.tsx"), "falta ParkEndingReveal");
 assert.ok(existsSync("src/components/game/FinaleSequence.tsx"), "falta FinaleSequence");
+if (phase === "form") assert.ok(existsSync("src/components/game/AchievementForm.tsx"), "falta AchievementForm");
 
 const url = process.env.POKER_PARK_URL ?? "http://127.0.0.1:8080/";
 const chrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -27,21 +28,42 @@ const completeSecrets = {
   classicMedals: [],
 };
 
-const mascotProgress = gold => ({
+const mascotProgress = (gold, pentonuiMedal = false) => ({
   version: 1,
   greetings: gold
     ? { turtle: 101, hedgehog: 101, fish: 101 }
     : { turtle: 0, hedgehog: 0, fish: 0 },
   lastGreeted: gold ? "fish" : null,
-  pentonuiMedal: false,
+  pentonuiMedal,
 });
 
-async function openReadyPage({ gold = false, finale = null, viewport = { width: 390, height: 844 } } = {}) {
+async function openReadyPage({
+  gold = false,
+  pentonuiMedal = false,
+  finale = null,
+  viewport = { width: 390, height: 844 },
+  achievementStatus = null,
+} = {}) {
   const context = await browser.newContext({ viewport, reducedMotion: "reduce" });
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
-  page.on("console", message => { if (message.type() === "error") errors.push(message.text()); });
+  page.on("console", message => {
+    if (message.type() !== "error") return;
+    if (achievementStatus && achievementStatus >= 400 && message.text().includes(`status of ${achievementStatus}`)) return;
+    errors.push(message.text());
+  });
+  const requests = [];
+  if (achievementStatus !== null) {
+    await page.route("**/api/achievement", async route => {
+      requests.push(await route.request().postDataJSON());
+      await route.fulfill({
+        status: achievementStatus,
+        contentType: "application/json",
+        body: JSON.stringify(achievementStatus >= 200 && achievementStatus < 300 ? { ok: true } : { ok: false, error: "service_unavailable" }),
+      });
+    });
+  }
   await page.addInitScript(({ secrets, mascots, savedFinale }) => {
     localStorage.setItem("poker-park.opening-seen.v1", "seen");
     localStorage.setItem("poker-park-tutorial-seen", "true");
@@ -49,13 +71,13 @@ async function openReadyPage({ gold = false, finale = null, viewport = { width: 
     localStorage.setItem("poker-park.secrets.v1", JSON.stringify(secrets));
     localStorage.setItem("poker-park.mascots.v1", JSON.stringify(mascots));
     if (savedFinale) localStorage.setItem("poker-park.finales.v1", JSON.stringify(savedFinale));
-  }, { secrets: completeSecrets, mascots: mascotProgress(gold), savedFinale: finale });
+  }, { secrets: completeSecrets, mascots: mascotProgress(gold, pentonuiMedal), savedFinale: finale });
   await page.goto(url, { waitUntil: "networkidle" });
   const titleAction = page.locator(".opening-title-action");
   await titleAction.waitFor({ state: "visible", timeout: 8_000 });
   await titleAction.click();
   await page.locator('[data-opening="ready"]').waitFor({ state: "visible", timeout: 5_000 });
-  return { context, page, errors };
+  return { context, page, errors, requests };
 }
 
 async function narrativeSmoke() {
@@ -112,10 +134,86 @@ async function narrativeSmoke() {
   }
 }
 
+async function openAchievementForm(options = {}) {
+  const session = await openReadyPage({
+    gold: true,
+    pentonuiMedal: true,
+    finale: { version: 1, parkEndingSeen: true, ultimateEndingSeen: true, achievementSubmittedAt: null },
+    ...options,
+  });
+  await session.page.getByRole("button", { name: /medalla pentonúi/i }).click();
+  await session.page.getByRole("button", { name: /compartir mi hazaña/i }).click();
+  await session.page.getByRole("heading", { name: /comparte tu hazaña con pentonúi games/i }).waitFor();
+  return session;
+}
+
+async function fillValidAchievement(page) {
+  await page.getByLabel("Tu nombre").fill("Alex del Parque");
+  await page.getByLabel("Tu correo").fill("alex@example.com");
+  await page.getByRole("radio", { name: "5 estrellas" }).check();
+  await page.getByLabel("Mensaje opcional").fill("Una despedida preciosa.");
+  await page.getByRole("checkbox", { name: /acepto enviar/i }).check();
+  await page.waitForTimeout(2_100);
+}
+
+async function formSmoke() {
+  {
+    const { context, page, requests, errors } = await openAchievementForm({ achievementStatus: 200 });
+    await page.getByRole("button", { name: /cancelar por ahora/i }).click();
+    assert.equal(requests.length, 0);
+    assert.deepEqual(errors, []);
+    await context.close();
+  }
+
+  {
+    const { context, page, requests, errors } = await openAchievementForm({ achievementStatus: 200 });
+    await page.getByLabel("Tu correo").fill("correo inválido");
+    await page.getByRole("button", { name: /enviar mi hazaña/i }).click();
+    await page.getByText(/revisa los campos señalados/i).waitFor();
+    assert.equal(requests.length, 0);
+    assert.deepEqual(errors, []);
+    await context.close();
+  }
+
+  {
+    const { context, page, requests, errors } = await openAchievementForm({ achievementStatus: 503 });
+    await fillValidAchievement(page);
+    await page.getByRole("button", { name: /enviar mi hazaña/i }).click();
+    await page.getByText(/no se ha enviado nada/i).waitFor();
+    assert.equal(await page.getByLabel("Tu nombre").inputValue(), "Alex del Parque");
+    assert.equal(requests.length, 1);
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem("poker-park.finales.v1")).achievementSubmittedAt), null);
+    assert.doesNotMatch(await page.locator("body").innerText(), /juanramonpq|hotmail\.com/i);
+    assert.doesNotMatch(JSON.stringify(requests[0]), /juanramonpq|hotmail\.com/i);
+    await page.screenshot({ path: "screenshots/hazana-error-mobile.png", fullPage: true });
+    assert.deepEqual(errors, []);
+    await context.close();
+  }
+
+  {
+    const { context, page, requests, errors } = await openAchievementForm({
+      achievementStatus: 200,
+      viewport: { width: 1280, height: 800 },
+    });
+    await fillValidAchievement(page);
+    await page.getByRole("button", { name: /enviar mi hazaña/i }).click();
+    await page.getByRole("heading", { name: /hazaña recibida/i }).waitFor();
+    assert.equal(requests.length, 1);
+    assert.ok(await page.evaluate(() => JSON.parse(localStorage.getItem("poker-park.finales.v1")).achievementSubmittedAt));
+    await page.screenshot({ path: "screenshots/hazana-enviada-desktop.png", fullPage: true });
+    await page.getByRole("button", { name: /volver al parque/i }).click();
+    await page.getByRole("button", { name: /medalla pentonúi/i }).click();
+    assert.equal(await page.getByRole("button", { name: /hazaña ya enviada/i }).isDisabled(), true);
+    assert.equal(requests.length, 1);
+    assert.deepEqual(errors, []);
+    await context.close();
+  }
+}
+
 try {
   mkdirSync("screenshots", { recursive: true });
   if (phase === "all" || phase === "narrative") await narrativeSmoke();
-  if (phase === "form") throw new Error("El formulario todavía no está implementado");
+  if (phase === "all" || phase === "form") await formSmoke();
   console.log("Finales narrativos verificados en móvil y escritorio.");
 } finally {
   await browser.close();

@@ -12,6 +12,8 @@ import {
   type MascotProgress,
 } from "@/lib/game/mascot-progress";
 import { loadSecrets } from "@/lib/game/persist";
+import { achievementStatsSnapshot } from "@/lib/game/play-stats";
+import { AchievementForm } from "@/components/game/AchievementForm";
 import { ParkEndingReveal } from "@/components/game/ParkEndingReveal";
 import { PentonuiMedalReveal } from "@/components/game/PentonuiMedalReveal";
 
@@ -30,9 +32,10 @@ export function FinaleSequence({
 }: FinaleSequenceProps) {
   const [current, setCurrent] = useState<FinaleKind | null>(null);
   const [reopened, setReopened] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    if (!active || current) return;
+    if (!active || current || showForm) return;
     const secrets = loadSecrets();
     const mascots = loadMascotProgress();
     const pending = nextPendingFinale(secrets, mascots);
@@ -54,6 +57,20 @@ export function FinaleSequence({
 
   if (!active) return null;
 
+  if (showForm) {
+    const closeForm = () => {
+      setShowForm(false);
+      onAchievementFormClose?.();
+    };
+    return (
+      <AchievementForm
+        stats={achievementStatsSnapshot(loadSecrets())}
+        onCancel={closeForm}
+        onSuccess={closeForm}
+      />
+    );
+  }
+
   if (current === "park") {
     return <ParkEndingReveal onClose={() => {
       markFinaleSeen("park");
@@ -71,7 +88,11 @@ export function FinaleSequence({
       <PentonuiMedalReveal
         alreadySubmitted={Boolean(loadFinaleProgress().achievementSubmittedAt)}
         onClose={close}
-        onShare={close}
+        onShare={() => {
+          markFinaleSeen("ultimate");
+          setCurrent(null);
+          setShowForm(true);
+        }}
       />
     );
   }
